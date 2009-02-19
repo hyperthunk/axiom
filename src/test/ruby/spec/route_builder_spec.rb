@@ -43,6 +43,25 @@ describe ExRouteBuilder, "defining routes" do
     ExRouteBuilder.new.add_header({}).class.should == ExProcessor
   end
 
+  it "should add each of the supplied headers to the given exchange" do
+
+    mock_message = org.apache.camel.Message.new
+    ex = org.apache.camel.Exchange.new
+    ex.stubs(:out).returns(mock_message)
+
+    new_headers = {
+      :route_slip => 'IO8988273TY2232',
+      :reply_to => 'jms:topicname?setCorrelationIdIgnored=false'
+    }
+
+    new_headers.each do |k,v|
+      mock_message.expects(:set_header).with(k,v).at_least_once
+    end
+
+    processor = ExRouteBuilder.new.add_header(new_headers)
+    processor.process(ex)
+  end
+
 end
 
 describe ExRouteBuilderConfigurator, "when configuring routes" do

@@ -39,10 +39,11 @@ class ExRouteBuilder < RouteBuilder
   def add_header hash
     ExProcessor.new { |exchange|
       # exchange = Exchange.new
-      out_channel = exchange.get_out
-      out_channel.copy_from(exchange.get_in)
+      out_channel = exchange.out
+      # TODO: put this in another processor instance/singleton
+      # out_channel.copy_from(exchange.get_in)
       hash.each { |k, v|
-        out_channel.headers.put k, v
+        out_channel.set_header k, v
       }
     }
   end
