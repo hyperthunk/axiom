@@ -12,41 +12,41 @@ module ExpectationSupport
   end
 end
 
-describe ExProcessor do
+describe DelegatingProcessor do
 
   it "should puke if the expected block is missing" do
-    lambda { ExProcessor.new }.should raise_error
+    lambda { DelegatingProcessor.new }.should raise_error
   end
 
   it "should call the supplied block to perform processing" do
     # NB: this is really ugly, maybe there's a better way???
     block_called = false
-    ExProcessor.new {|_| block_called = true }.process nil
+    DelegatingProcessor.new {|_| block_called = true }.process nil
     block_called.should be_true
   end
 
   it "should pass the exchange instance to the processing block" do
     mock_exchange = Exchange.new
-    ExProcessor.new { |exchange|
+    DelegatingProcessor.new { |exchange|
       exchange.should === mock_exchange
     }.process mock_exchange
   end
 
 end
 
-describe ExRouteBuilder, "configuring routes using a user defined block of java DSL code" do
+describe SimpleRouteBuilder, "configuring routes using a user defined block of java DSL code" do
 
   include ExpectationSupport
 
   it "should puke the the supplied block is nil" do
     lambda do
-      ExRouteBuilder.new
+      SimpleRouteBuilder.new
     end.should raise_error
   end
 
   it "should execute the routing instructions in the context of the builder" do
     check_expectations(
-      ExRouteBuilder.new do
+      SimpleRouteBuilder.new do
         from("direct:start").to("mock:result")
       end
     )
@@ -54,17 +54,17 @@ describe ExRouteBuilder, "configuring routes using a user defined block of java 
 
 end
 
-describe ExRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
+describe SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
 
   include ExpectationSupport
 
   it "should generate a processor instance for calls to set_header" do
-    ExRouteBuilder.new{}.add_header({}).class.should == ExProcessor
+    SimpleRouteBuilder.new{}.add_header({}).class.should == DelegatingProcessor
   end
 
   it "should not puke if the supplied header values are nil" do
     lambda do
-      ExRouteBuilder.new{}.add_header(nil)
+      SimpleRouteBuilder.new{}.add_header(nil)
     end.should_not raise_error
   end
 
@@ -82,18 +82,18 @@ describe ExRouteBuilder, "adding headers dynamically with the DSL wrapper method
       mock_message.expects(:set_header).with(k,v).at_least_once
     end
 
-    processor = ExRouteBuilder.new{}.add_header(new_headers)
+    processor = SimpleRouteBuilder.new{}.add_header(new_headers)
     processor.process(ex)
   end
 
 end
 
-describe ExRouteBuilderConfigurator, "when configuring routes" do
+describe RouteBuilderConfigurator, "when configuring routes" do
 
   include ExpectationSupport
 
   it "should evaluate the supplied script source and configure a builder" do
-    config = ExRouteBuilderConfigurator.new
+    config = RouteBuilderConfigurator.new
     builder = config.configure 'route { from("direct:start").to("mock:result") }'
     check_expectations builder
   end

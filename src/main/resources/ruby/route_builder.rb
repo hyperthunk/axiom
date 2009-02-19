@@ -4,9 +4,9 @@ import org.apache.camel.Exchange
 import org.axiom.management.RouteConfigurationScriptEvaluator
 import java.lang.IllegalArgumentException
 
-# implements a simple processor that can take a
-# proc and execute it on demand
-class ExProcessor
+# implements a simple processor that delegates
+# to a proc, executing it on demand
+class DelegatingProcessor
   include Processor
 
   def initialize &block
@@ -25,7 +25,7 @@ end
 # route configuration code in the instance context (thereby
 # providing a convenient and simpilfied syntax for defining
 # RouteBuilder instances without messy java noise)
-class ExRouteBuilder < RouteBuilder
+class SimpleRouteBuilder < RouteBuilder
 
   # stores the supplied block for later evaluation
   def initialize(&block)
@@ -38,7 +38,7 @@ class ExRouteBuilder < RouteBuilder
   # and adds all the header k=>v pairs from the
   # supplied hash in addition to these (possibly overwriting existing values)
   def add_header hash
-    ExProcessor.new do |exchange|
+    DelegatingProcessor.new do |exchange|
       out_channel = exchange.out
       hash.each { |k, v| out_channel.set_header k, v } unless hash.nil?
     end
@@ -55,10 +55,10 @@ end
 # context of the current JRuby runtime (which is nigh on impossible to
 # get out of spring otherwise - creating a second runtime is semantically
 # incorrect), and having the result evaluated as a block passed to RouteBuider
-class ExRouteBuilderConfigurator
+class RouteBuilderConfigurator
   include RouteConfigurationScriptEvaluator
 
-  attr_reader :control_channel
+  attr_reader :control_channel, :channel_processor
 
   def initialize
     # TODO: these names are bound in spring config - should be externalized...
@@ -69,7 +69,7 @@ class ExRouteBuilderConfigurator
   # convenience hook for script writers
 
   def route &block
-    ExRouteBuilder.new &block
+    SimpleRouteBuilder.new &block
   end
 
   # configures the supplied script source in the context of a RouteBuilder instance
@@ -80,4 +80,4 @@ class ExRouteBuilderConfigurator
 end
 
 # This return value (for the script) is a hook for spring-framework integration
-ExRouteBuilderConfigurator.new
+RouteBuilderConfigurator.new

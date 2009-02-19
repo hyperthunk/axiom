@@ -5,7 +5,7 @@ import org.apache.camel.Processor;
 
 /**
  *  Provides a means to configure a jruby routing script
- *  and obtain a {@link org.apache.camel.builder.RouteBuilder}.
+ *  and obtain a  {@link org.apache.camel.builder.RouteBuilder}.
  */
 public interface RouteConfigurationScriptEvaluator {
     /**

@@ -28,7 +28,7 @@ module ProcessorTestSupport
   end
 
   def processor_for context
-    config = ExRouteBuilderConfigurator.new
+    config = RouteBuilderConfigurator.new
     processor = ControlChannelProcessor.new context, config
   end
 end
@@ -60,9 +60,9 @@ describe "stopping and starting via the control channel" do
 
     mock_channel = Message.new
     mock_channel.stubs(:getHeader).returns "configure"
-    mock_channel.stubs(:getBody).returns ExRouteBuilder.new {}
+    mock_channel.stubs(:getBody).returns SimpleRouteBuilder.new {}
 
-    config = ExRouteBuilderConfigurator.new
+    config = RouteBuilderConfigurator.new
     processor = ControlChannelProcessor.new context, config
     processor.process(stubbed_exchange mock_channel)
   end
