@@ -18,6 +18,13 @@ describe ExProcessor do
     lambda { ExProcessor.new }.should raise_error
   end
 
+  it "should call the supplied block to perform processing" do
+    # NB: this is really ugly, maybe there's a better way???
+    block_called = false
+    ExProcessor.new {|_| block_called = true }.process nil
+    block_called.should be_true
+  end
+
   it "should pass the exchange instance to the processing block" do
     mock_exchange = Exchange.new
     ExProcessor.new { |exchange|
@@ -27,9 +34,15 @@ describe ExProcessor do
 
 end
 
-describe ExRouteBuilder, "defining routes" do
+describe ExRouteBuilder, "configuring routes using a user defined block of java DSL code" do
 
   include ExpectationSupport
+
+  it "should puke the the supplied block is nil" do
+    lambda do
+      ExRouteBuilder.new
+    end.should raise_error
+  end
 
   it "should execute the routing instructions in the context of the builder" do
     check_expectations(
@@ -39,12 +52,23 @@ describe ExRouteBuilder, "defining routes" do
     )
   end
 
+end
+
+describe ExRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
+
+  include ExpectationSupport
+
   it "should generate a processor instance for calls to set_header" do
-    ExRouteBuilder.new.add_header({}).class.should == ExProcessor
+    ExRouteBuilder.new{}.add_header({}).class.should == ExProcessor
+  end
+
+  it "should not puke if the supplied header values are nil" do
+    lambda do
+      ExRouteBuilder.new{}.add_header(nil)
+    end.should_not raise_error
   end
 
   it "should add each of the supplied headers to the given exchange" do
-
     mock_message = org.apache.camel.Message.new
     ex = org.apache.camel.Exchange.new
     ex.stubs(:out).returns(mock_message)
@@ -58,7 +82,7 @@ describe ExRouteBuilder, "defining routes" do
       mock_message.expects(:set_header).with(k,v).at_least_once
     end
 
-    processor = ExRouteBuilder.new.add_header(new_headers)
+    processor = ExRouteBuilder.new{}.add_header(new_headers)
     processor.process(ex)
   end
 

@@ -11,7 +11,7 @@ class ExProcessor
 
   def initialize &block
     # TODO: better choice of exception type....
-    raise Exception.new unless block
+    fail if block.nil?
     @strategy = block
   end
 
@@ -29,6 +29,7 @@ class ExRouteBuilder < RouteBuilder
 
   # stores the supplied block for later evaluation
   def initialize(&block)
+    fail if block.nil?
     @configurator = block
   end
 
@@ -37,20 +38,14 @@ class ExRouteBuilder < RouteBuilder
   # and adds all the header k=>v pairs from the
   # supplied hash in addition to these (possibly overwriting existing values)
   def add_header hash
-    ExProcessor.new { |exchange|
-      # exchange = Exchange.new
+    ExProcessor.new do |exchange|
       out_channel = exchange.out
-      # TODO: put this in another processor instance/singleton
-      # out_channel.copy_from(exchange.get_in)
-      hash.each { |k, v|
-        out_channel.set_header k, v
-      }
-    }
+      hash.each { |k, v| out_channel.set_header k, v } unless hash.nil?
+    end
   end
 
   # configures the block supplied (on initialization)
   # in the context of this instance
-
   def configure()
     instance_eval &@configurator
   end

@@ -49,7 +49,7 @@ describe "stopping and starting via the control channel" do
       mock_channel.stubs(:getHeader).returns "test", instruction.to_s
 
       processor = processor_for context
-      2.times { processor.process (stubbed_exchange mock_channel) }
+      2.times { processor.process(stubbed_exchange mock_channel) }
     end
 
   end
@@ -64,7 +64,7 @@ describe "stopping and starting via the control channel" do
 
     config = ExRouteBuilderConfigurator.new
     processor = ControlChannelProcessor.new context, config
-    processor.process (stubbed_exchange mock_channel)
+    processor.process(stubbed_exchange mock_channel)
   end
 
 end
