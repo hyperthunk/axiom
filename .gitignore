@@ -11,4 +11,4 @@ ebin/
 *.ipr
 *.iws
 *.iml
-
+target/*

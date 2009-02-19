@@ -12,11 +12,26 @@ module ExpectationSupport
   end
 end
 
+describe ExProcessor do
+
+  it "should puke if the expected block is missing" do
+    lambda { ExProcessor.new }.should raise_error
+  end
+
+  it "should pass the exchange instance to the processing block" do
+    mock_exchange = Exchange.new
+    ExProcessor.new { |exchange|
+      exchange.should === mock_exchange
+    }.process mock_exchange
+  end
+
+end
+
 describe ExRouteBuilder, "defining routes" do
 
   include ExpectationSupport
 
-  it "execute the routing instructions in the context of the builder" do
+  it "should execute the routing instructions in the context of the builder" do
     check_expectations(
       ExRouteBuilder.new do
         from("direct:start").to("mock:result")

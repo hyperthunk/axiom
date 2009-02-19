@@ -2,6 +2,7 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.Processor
 import org.apache.camel.Exchange
 import org.axiom.management.RouteConfigurationScriptEvaluator
+import java.lang.IllegalArgumentException
 
 # implements a simple processor that can take a
 # proc and execute it on demand
@@ -9,6 +10,8 @@ class ExProcessor
   include Processor
 
   def initialize &block
+    # TODO: better choice of exception type....
+    raise Exception.new unless block
     @strategy = block
   end
 
