@@ -1,0 +1,14 @@
+.coverage
+*.kpf
+*.pyc
+*.beam
+*.o
+*.so
+build/*
+^ideas$
+erl_crash.dump
+ebin/
+*.ipr
+*.iws
+*.iml
+
