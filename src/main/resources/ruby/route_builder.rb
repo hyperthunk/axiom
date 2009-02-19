@@ -1,24 +1,27 @@
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.Processor
-import org.apache.camel.Exchange
 import org.axiom.management.RouteConfigurationScriptEvaluator
-import java.lang.IllegalArgumentException
 
-# implements a simple processor that delegates
-# to a proc, executing it on demand
+# a mapping between a proc/lambda and a type/module
+module Functor
+  def initialize &func
+    fail if func.nil?
+    @func = func
+  end
+  def __call__ *args
+    @func.call *args
+  end
+  def to_proc
+    @func
+  end
+end
+
+# implements a simple camel processor that
+# takes a block for later execution
 class DelegatingProcessor
   include Processor
-
-  def initialize &block
-    # TODO: better choice of exception type....
-    fail if block.nil?
-    @strategy = block
-  end
-
-  def process(exchange)
-    @strategy.call exchange
-  end
-
+  include Functor
+  alias process __call__
 end
 
 # wraps the camel RouteBuilder and evaluates a block of
@@ -26,12 +29,7 @@ end
 # providing a convenient and simpilfied syntax for defining
 # RouteBuilder instances without messy java noise)
 class SimpleRouteBuilder < RouteBuilder
-
-  # stores the supplied block for later evaluation
-  def initialize(&block)
-    fail if block.nil?
-    @configurator = block
-  end
+  include Functor
 
   # creates a processor implementation that copies the
   # input channel from the exchange, to the output channel,
@@ -47,7 +45,7 @@ class SimpleRouteBuilder < RouteBuilder
   # configures the block supplied (on initialization)
   # in the context of this instance
   def configure()
-    instance_eval &@configurator
+    instance_eval &self
   end
 end
 
