@@ -2,16 +2,6 @@ import org.apache.camel.builder.RouteBuilder
 
 require File.join(File.dirname(__FILE__), '../../../main/resources/ruby/route_builder.rb')
 
-# TODO: use the jtestr helper support for this.....
-
-module ExpectationSupport
-  def check_expectations builder
-    builder.expects(:from).with("direct:start").returns(builder)
-    builder.expects(:to).with("mock:result")
-    builder.configure
-  end
-end
-
 describe DelegatingProcessor do
 
   it "should puke if the expected block is missing" do
@@ -36,8 +26,6 @@ end
 
 describe SimpleRouteBuilder, "configuring routes using a user defined block of java DSL code" do
 
-  include ExpectationSupport
-
   it "should puke the the supplied block is nil" do
     lambda do
       SimpleRouteBuilder.new
@@ -45,18 +33,15 @@ describe SimpleRouteBuilder, "configuring routes using a user defined block of j
   end
 
   it "should execute the routing instructions in the context of the builder" do
-    check_expectations(
-      SimpleRouteBuilder.new do
+    route_builder = SimpleRouteBuilder.new do
         from("direct:start").to("mock:result")
-      end
-    )
+    end
+    check_basic_route route_builder
   end
 
 end
 
 describe SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
-
-  include ExpectationSupport
 
   it "should generate a processor instance for calls to set_header" do
     SimpleRouteBuilder.new{}.add_header({}).class.should == DelegatingProcessor
@@ -90,12 +75,10 @@ end
 
 describe RouteBuilderConfigurator, "when configuring routes" do
 
-  include ExpectationSupport
-
   it "should evaluate the supplied script source and configure a builder" do
     config = RouteBuilderConfigurator.new
-    builder = config.configure 'route { from("direct:start").to("mock:result") }'
-    check_expectations builder
+    route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
+    check_basic_route route_builder
   end
 
 end

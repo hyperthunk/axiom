@@ -3,6 +3,7 @@ import org.apache.camel.Processor
 import org.axiom.management.RouteConfigurationScriptEvaluator
 
 # a mapping between a proc/lambda and a type/module
+# so that they are interchangable 
 module Functor
   def initialize &func
     fail if func.nil?
@@ -17,7 +18,7 @@ module Functor
 end
 
 # implements a simple camel processor that
-# takes a block for later execution
+# delegates to a block for defered execution
 class DelegatingProcessor
   include Processor
   include Functor
@@ -31,10 +32,8 @@ end
 class SimpleRouteBuilder < RouteBuilder
   include Functor
 
-  # creates a processor implementation that copies the
-  # input channel from the exchange, to the output channel,
-  # and adds all the header k=>v pairs from the
-  # supplied hash in addition to these (possibly overwriting existing values)
+  # adds all the header k=>v pairs from the supplied hash
+  # to the current route
   def add_header hash
     DelegatingProcessor.new do |exchange|
       out_channel = exchange.out
@@ -42,8 +41,7 @@ class SimpleRouteBuilder < RouteBuilder
     end
   end
 
-  # configures the block supplied (on initialization)
-  # in the context of this instance
+  # see the javadoc for org.apache.camel.RouteBuilder
   def configure()
     instance_eval &self
   end
