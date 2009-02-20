@@ -1,8 +1,8 @@
 
 The axiom project is built using maven2, and requires Java >= 1.5 to compile. In
-order to run the jtestr tests on unix based operating systems, it is necessary to
-use Java 1.6. I've made this the default source and JDK level in the pom
-build section, as we never build anything without also testing it.
+order to run the jtestr tests on os-x, it is necessary to use Java 1.6. 
+I've therefore made this the default source and JDK level in the pom
+build section.
 
 Install:
 
@@ -11,9 +11,7 @@ You should be able to accomplish this by running the command:
     $ mvn clean install
 
 Note that you may need to edit your personal ~/.m2/settings.xml file in order to
-access some of the repositories in which dependencies are being installed. You 
-may also need to configure your mirror/proxy servers (nexus, for example) if 
-trying to build from inside the corporate firewall for the first time.
+access some of the repositories in which dependencies are being installed. 
 
 Testing:
 
@@ -30,12 +28,12 @@ Notes:
 Installing on OSX
 
 There are some *special* problems when installing on OSX, not the least of which 
-is that Java 1.6 is still not fully supported (at the time of writing) therefore
-you should take some additional steps to ensure that both maven and its plugins
+is that Java 1.6 is still not the default JDK on Leopard, therefore you should 
+probably take some additional steps to ensure that both maven and its plugins
 use the correct JDK (1.6).
 
-Export the following environment variables into the bash session in which you're
-launching maven:
+One way to do this is by exporting the following environment variables into the 
+bash session in which you're launching maven:
 
 export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home
 export JAVA_VERSION=1.6

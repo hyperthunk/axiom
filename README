@@ -1,5 +1,47 @@
+
+Introduction
+-------------
+
 An axiom is a proposition not proved or demonstrated, but taken for granted, 
 to serve as a starting point for deducing and inferring other truths.
 
-For details on build/install please read the relevant INSTALL document.
+This particular axiom, is a framework for testing integration scenarios and
+validating expectations about routing/rules and business logic executed in 
+a variety of systems integration landscapes.
+
+The projects aims are:
+
+ - Make testing integration scenarios simple(r)
+   - Simple to understand
+   - Simple to configure, deploy and run axiom itself
+   - Simple to hook up to your existing infrastructure
+ - Facilitate instrumenting/debugging complex integration architectures (simply)
+ - Provide a set of (simple) mechanisms for verifying rules/constraints 
+ - Provide immediate feedback in useful formats (surefire reports, rss feeds, email, etc) 
+
+Axiom is distributed under a BSD-style license (please see the LICENSE document for details).
+
+Overview
+---------
+
+Axiom is a java application with embedded jruby. It uses the apache camel 
+routing/mediation engine to interact with your integration stack (messaging
+systems, web servers, service brokers, ESBs, etc). Camel not only integrates 
+well with a variety of different transports/protocols, it also provides a rich
+routing DSL (in java, scala or spring-xml dialects) which makes for simple configuration.
+
+The camel libraries also provide a lot of the Enterprise Integration Patterns 
+as components of the framework, making it simpler and easier to reason about your 
+design using well trodden techniques.
+
+Status
+-------
+
+Axiom is in the Alpha::Prototyping stage and is not yet fit for purpose 
+(and certainly isn't ready for use in a real environment, test or otherwise). 
+
+Getting Started
+----------------
+
+For details on how to build and/or install please read the relevant INSTALL document.
 
