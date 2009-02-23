@@ -41,7 +41,7 @@ helper_for /control channel/i do
   end
 
   def processor_for context
-    config = RouteBuilderConfigurator.new
+    config = Axiom::RouteBuilderConfigurator.new
     processor = org.axiom.management.ControlChannelProcessor.new context, config
   end
 end

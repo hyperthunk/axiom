@@ -72,7 +72,7 @@ describe "stopping and starting via the control channel" do
     mock_channel.stubs(:getHeader).returns "configure"
     mock_channel.stubs(:getBody).returns Axiom::SimpleRouteBuilder.new {}
 
-    config = RouteBuilderConfigurator.new
+    config = Axiom::RouteBuilderConfigurator.new
     processor = ControlChannelProcessor.new context, config
     processor.process(stubbed_exchange mock_channel)
   end

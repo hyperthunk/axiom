@@ -29,15 +29,13 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMA
 require 'ruby/functor'
 require 'ruby/processor'
 
-import org.apache.camel.builder.RouteBuilder
-
 module Axiom
 
   # wraps the camel RouteBuilder and evaluates a block of
   # route configuration code in the instance context (thereby
   # providing a convenient and simpilfied syntax for defining
   # RouteBuilder instances without messy java noise)
-  class SimpleRouteBuilder < RouteBuilder
+  class SimpleRouteBuilder < org.apache.camel.builder.RouteBuilder
     include Axiom::Functor
 
     # adds all the header k=>v pairs from the supplied hash

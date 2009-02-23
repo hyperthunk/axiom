@@ -103,17 +103,17 @@ describe Axiom::SimpleRouteBuilder, "adding headers dynamically with the DSL wra
 
 end
 
-describe RouteBuilderConfigurator, "when configuring routes" do
+describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
 
   it "should evaluate the supplied script source and configure a builder" do
-    config = RouteBuilderConfigurator.new
+    config = Axiom::RouteBuilderConfigurator.new
     route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
     check_basic_route route_builder
   end
 
 end
 
-describe RouteBuilderConfigurator, "when ...." do
+describe Axiom::RouteBuilderConfigurator, "when ...." do
 
   before :each do
     Configuration.any_instance.stubs(:containsKey).returns true
@@ -123,7 +123,7 @@ describe RouteBuilderConfigurator, "when ...." do
     it "should lookup #{config} in the supplied configuration source" do
       properties = Configuration.new
       properties.expects(:getString).with(config.to_s).once.returns true
-      builder = RouteBuilderConfigurator.new
+      builder = Axiom::RouteBuilderConfigurator.new
       builder.setProperties properties
       builder.send(:[], config).should be_true
     end
