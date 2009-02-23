@@ -90,21 +90,3 @@ describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
   end
 
 end
-
-describe Axiom::RouteBuilderConfigurator, "when ...." do
-
-  before :each do
-    Configuration.any_instance.stubs(:containsKey).returns true
-  end
-
-  [:control_channel, :control_node, :xml2code_transformer].each do |config|
-    it "should lookup #{config} in the supplied configuration source" do
-      properties = Configuration.new
-      properties.expects(:getString).with(config.to_s).once.returns true
-      builder = Axiom::RouteBuilderConfigurator.new
-      builder.setProperties properties
-      builder.send(:[], config).should be_true
-    end
-  end
-
-end
