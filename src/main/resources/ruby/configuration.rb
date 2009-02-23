@@ -1,19 +1,22 @@
+module Axiom
+  
+  module Configuration
 
+    attr_accessor :properties
+    alias setProperties properties=
 
-module Configuration
+    def [] key
+      key = key.to_s
+      # fail "no configuration exists for key #{key}" unless @properties.containsKey key
+      @properties.getString key
+    end
 
-  attr_accessor :properties
-  alias setProperties properties=
+    alias_method :>>, :[]
 
-  def [] key
-    key = key.to_s
-    # fail "no configuration exists for key #{key}" unless @properties.containsKey key
-    @properties.getString key
-  end
-  alias_method :>>, :[]
+    def config
+      self
+    end
 
-  def config
-    self
   end
 
 end

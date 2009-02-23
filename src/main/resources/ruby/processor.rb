@@ -1,10 +1,13 @@
+require 'ruby/functor'
 
-import org.apache.camel.Processor
+module Axiom
 
-# implements a simple camel processor that
-# delegates to a block for defered execution
-class DelegatingProcessor
-  include Processor
-  include Functor
-  alias process __call__
-end
+  # implements a simple camel processor that
+  # delegates to a block for defered execution
+  class Processor
+    include org.apache.camel.Processor
+    include Axiom::Functor
+    alias process __call__
+  end
+
+end  

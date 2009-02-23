@@ -31,22 +31,22 @@ import org.apache.camel.Exchange
 
 require 'ruby/route_builder_configurator'
 
-describe DelegatingProcessor do
+describe Axiom::Processor do
 
   it "should puke if the expected block is missing" do
-    lambda { DelegatingProcessor.new }.should raise_error
+    lambda { Axiom::Processor.new }.should raise_error
   end
 
   it "should call the supplied block to perform processing" do
     # NB: this is really ugly, maybe there's a better way???
     block_called = false
-    DelegatingProcessor.new {|_| block_called = true }.process nil
+    Axiom::Processor.new {|_| block_called = true }.process nil
     block_called.should be_true
   end
 
   it "should pass the exchange instance to the processing block" do
     mock_exchange = Exchange.new
-    DelegatingProcessor.new { |exchange|
+    Axiom::Processor.new { |exchange|
       exchange.should === mock_exchange
     }.process mock_exchange
   end
@@ -73,7 +73,7 @@ end
 describe SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
 
   it "should generate a processor instance for calls to set_header" do
-    SimpleRouteBuilder.new{}.add_header({}).class.should == DelegatingProcessor
+    SimpleRouteBuilder.new{}.add_header({}).class.should == Axiom::Processor
   end
 
   it "should not puke if the supplied header values are nil" do

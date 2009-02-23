@@ -26,24 +26,22 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-require 'ruby/configuration'
 require 'ruby/functor'
 require 'ruby/processor'
 
 import org.apache.camel.builder.RouteBuilder
-import org.axiom.management.RouteConfigurationScriptEvaluator
 
 # wraps the camel RouteBuilder and evaluates a block of
 # route configuration code in the instance context (thereby
 # providing a convenient and simpilfied syntax for defining
 # RouteBuilder instances without messy java noise)
 class SimpleRouteBuilder < RouteBuilder
-  include Functor
+  include Axiom::Functor
 
   # adds all the header k=>v pairs from the supplied hash
   # to the current route
   def add_header hash
-    DelegatingProcessor.new do |exchange|
+    Axiom::Processor.new do |exchange|
       out_channel = exchange.out
       hash.each { |k, v| out_channel.set_header k, v }
     end

@@ -31,6 +31,8 @@ import org.apache.camel.Exchange
 import org.apache.camel.Message
 import java.util.List
 
+
+
 describe "initializing the control channel processor" do
   it "should puke if the ctor is passed null context" do
     lambda {

@@ -1,5 +1,6 @@
 
 require 'ruby/route_builder'
+require 'ruby/configuration'
 
 # provides a mechanism for evaluating a script (source) in the
 # context of the current JRuby runtime (which is nigh on impossible to
@@ -7,7 +8,7 @@ require 'ruby/route_builder'
 # incorrect), and having the result evaluated as a block passed to RouteBuider
 class RouteBuilderConfigurator
   include org.axiom.management.RouteConfigurationScriptEvaluator
-  include Configuration
+  include Axiom::Configuration
 
   # convenience hook for script writers
   def route &block
