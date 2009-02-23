@@ -29,7 +29,7 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.commons.configuration.Configuration
 import org.apache.camel.Exchange
 
-require File.join(File.dirname(__FILE__), '../../../main/resources/ruby/route_builder.rb')
+require 'ruby/route_builder_configurator'
 
 describe DelegatingProcessor do
 

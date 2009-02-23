@@ -48,7 +48,7 @@
     </camel:camelContext>
 
     <lang:jruby id="script-evaluator"
-        script-source="classpath:ruby/route_builder.rb"
+        script-source="classpath:ruby/route_builder_configurator.rb"
         script-interfaces="org.axiom.management.RouteConfigurationScriptEvaluator">
     </lang:jruby>
 
