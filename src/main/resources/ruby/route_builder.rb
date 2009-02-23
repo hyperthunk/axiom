@@ -26,12 +26,17 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
+require 'java'
+require 'delegate'
+
 import org.apache.camel.builder.RouteBuilder
 import org.apache.camel.Processor
 import org.axiom.management.RouteConfigurationScriptEvaluator
 
+# NB: Functor isn't required in ruby 1.9 as something similar is built in
+
 # a mapping between a proc/lambda and a type/module
-# so that they are interchangable 
+# so that they are interchangable - no method_missings hooks though!
 module Functor
   def initialize &func
     fail if func.nil?
@@ -65,43 +70,50 @@ class SimpleRouteBuilder < RouteBuilder
   def add_header hash
     DelegatingProcessor.new do |exchange|
       out_channel = exchange.out
-      hash.each { |k, v| out_channel.set_header k, v } unless hash.nil?
+      hash.each { |k, v| out_channel.set_header k, v }
     end
   end
 
   # see the javadoc for org.apache.camel.RouteBuilder
-  def configure()
+  def configure
     instance_eval &self
   end
+end
+
+class ConfigurationHandler
+
+  attr_accessor :properties
+  alias setProperties properties=
+
+  def method_missing sym, *args, &blk
+    key = sym.to_s
+    # fail "no configuration exists for key #{key}" unless @properties.containsKey key
+    @properties.getString key
+  end
+
 end
 
 # provides a mechanism for evaluating a script (source) in the
 # context of the current JRuby runtime (which is nigh on impossible to
 # get out of spring otherwise - creating a second runtime is semantically
 # incorrect), and having the result evaluated as a block passed to RouteBuider
-class RouteBuilderConfigurator
+class RouteBuilderConfigurator < DelegateClass(ConfigurationHandler)
   include RouteConfigurationScriptEvaluator
 
-  attr_reader :control_channel, :channel_processor
-
-  def initialize
-    # TODO: these names are bound in spring config - should be externalized...
-    @control_channel = "direct:control-channel"
-    @channel_processor = "control-channel-processor"
+  def RouteBuilderConfigurator.new_instance
+    RouteBuilderConfigurator.new ConfigurationHandler.new
   end
 
   # convenience hook for script writers
-
   def route &block
     SimpleRouteBuilder.new &block
   end
 
   # configures the supplied script source in the context of a RouteBuilder instance
-
   def configure(scriptSource)
     eval scriptSource
   end
 end
 
 # This return value (for the script) is a hook for spring-framework integration
-RouteBuilderConfigurator.new
+RouteBuilderConfigurator.new_instance

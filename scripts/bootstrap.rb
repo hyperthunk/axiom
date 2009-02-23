@@ -33,19 +33,19 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMA
 # TODO: provide a canned mechanism for reading properties in here
 
 route {
-  from("direct:start").inOut.to(control_channel)
+  from("direct:start").inOut.to(control.channel)
 
-  from("jetty://0.0.0.0:8088/axiom/control-channel").
+  from("jetty://#{jetty.host.port}/axiom/control-channel").
     inOut.
-    to(xml2code_transformer).
-    process(add_header("payload-type" => "code")).
-    to(control_channel)
+    to(control.nodes.xml2code).
+    process(add_header "payload-type" => "code").
+    to(control.channel)
 
-  from(control_channel).
+  from(control.channel).
     processRef(channel_processor).
       proceed.
       choice.
         when(header("command").isEqualTo("shutdown")).
-          to("direct:shutdown"). 
+          to("direct:shutdown").
         otherwise.stop
 }

@@ -57,7 +57,7 @@ public class TestRouteConfigurationScriptEvaluatorSpringIntegration implements A
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
         this.applicationContext = applicationContext;
-    }    
+    }
 
     @Test
     public void injectedJRubyBeanShouldGenerateRouteBuilderFromScript() throws IOException {
