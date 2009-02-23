@@ -80,13 +80,3 @@ describe Axiom::SimpleRouteBuilder, "adding headers dynamically with the DSL wra
   end
 
 end
-
-describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
-
-  it "should evaluate the supplied script source and configure a builder" do
-    config = Axiom::RouteBuilderConfigurator.new
-    route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
-    check_basic_route route_builder
-  end
-
-end

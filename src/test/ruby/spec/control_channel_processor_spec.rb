@@ -33,7 +33,7 @@ import java.util.List
 
 require 'ruby/route_builder'
 
-describe "initializing the control channel processor" do
+describe ControlChannelProcessor, "when initializing a new instance" do
   it "should puke if the ctor is passed null context" do
     lambda {
       ControlChannelProcessor.new nil, nil
@@ -47,7 +47,8 @@ describe "initializing the control channel processor" do
   end
 end
 
-describe "stopping and starting via the control channel" do
+describe ControlChannelProcessor,
+  "when stopping and starting a subordinate context via the control channel" do
 
   [:start, :stop].each do |instruction|
     it "should #{instruction} the camel context when the relevant header is supplied" do

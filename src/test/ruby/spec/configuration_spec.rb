@@ -33,21 +33,27 @@ describe Axiom::Configuration, "when accessing configuration data in DSL code" d
 
   before :each do
     org.apache.commons.configuration.Configuration.
-        any_instance.stubs(:containsKey).returns true
+      any_instance.stubs(:containsKey).returns true
+    @properties = org.apache.commons.configuration.Configuration.new
+    self.setProperties @properties
   end
 
   it "should return self from 'config'" do
     config.should == self
   end
 
-  [:control_channel, :control_node, :xml2code_transformer].each do |config|
+  it "should treat symbols as strings when looking up keys" do
+    @properties.expects(:getString).with('config_item').once.returns 'ok'
+    (config >> :config_item).should eql('ok')
+  end
+
+  ['axiom.control.routes.direct.start',
+   'axiom.control.nodes.xml2code.transformer',
+   'axiom.control.routes.shutdown'].each do |config|
     [ :[], :>> ].each do |method|
       it "should lookup #{config} in the supplied configuration source" do
-        properties = Configuration.new
-        properties.expects(:getString).with(config.to_s).once.returns true
-
-        self.setProperties properties
-        self.send(method, config).should be_true
+        @properties.expects(:getString).with(config.to_s).once.returns 'ok'
+        self.send(method, config).should eql("ok")
       end
     end
   end

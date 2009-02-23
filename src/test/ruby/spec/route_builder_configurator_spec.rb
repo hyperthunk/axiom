@@ -25,24 +25,22 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-helper_for /routes/i do
-  def check_basic_route route_builder
-    route_builder.expects(:from).with("direct:start").returns(route_builder)
-    route_builder.expects(:to).with("mock:result")
-    route_builder.configure
-  end
-end
+require 'ruby/route_builder_configurator'
+require 'ruby/route_builder'
 
-helper_for /control channel/i do
-  def stubbed_exchange mock_channel
-    mock_exchange = org.apache.camel.Exchange.new
-    mock_exchange.stubs(:getIn).returns mock_channel
-    mock_exchange
-  end
+describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
 
-  def processor_for context
+  it "should return a route builder instance, passing the supplied block" do
+    theBlock = lambda { 'ok' }
     config = Axiom::RouteBuilderConfigurator.new
-    processor = org.axiom.management.ControlChannelProcessor.new context, config
+    route_builder = config.route &theBlock
+    route_builder.configure.should == 'ok'
   end
-end
 
+  it "should evaluate the supplied script source and configure a builder" do
+    config = Axiom::RouteBuilderConfigurator.new
+    route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
+    check_basic_route route_builder
+  end
+
+end
