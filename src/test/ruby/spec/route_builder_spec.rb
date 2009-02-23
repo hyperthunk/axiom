@@ -32,28 +32,6 @@ import org.apache.camel.Exchange
 require 'ruby/route_builder'
 require 'ruby/route_builder_configurator'
 
-describe Axiom::Processor do
-
-  it "should puke if the expected block is missing" do
-    lambda { Axiom::Processor.new }.should raise_error
-  end
-
-  it "should call the supplied block to perform processing" do
-    # NB: this is really ugly, maybe there's a better way???
-    block_called = false
-    Axiom::Processor.new {|_| block_called = true }.process nil
-    block_called.should be_true
-  end
-
-  it "should pass the exchange instance to the processing block" do
-    mock_exchange = Exchange.new
-    Axiom::Processor.new { |exchange|
-      exchange.should === mock_exchange
-    }.process mock_exchange
-  end
-
-end
-
 describe Axiom::SimpleRouteBuilder, "configuring routes using a user defined block of java DSL code" do
 
   it "should puke the the supplied block is nil" do
