@@ -12,7 +12,7 @@ class RouteBuilderConfigurator
 
   # convenience hook for script writers
   def route &block
-    SimpleRouteBuilder.new &block
+    Axiom::SimpleRouteBuilder.new &block
   end
 
   # configures the supplied script source in the context of a RouteBuilder instance

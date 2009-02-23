@@ -31,7 +31,7 @@ import org.apache.camel.Exchange
 import org.apache.camel.Message
 import java.util.List
 
-
+require 'ruby/route_builder'
 
 describe "initializing the control channel processor" do
   it "should puke if the ctor is passed null context" do
@@ -70,7 +70,7 @@ describe "stopping and starting via the control channel" do
 
     mock_channel = Message.new
     mock_channel.stubs(:getHeader).returns "configure"
-    mock_channel.stubs(:getBody).returns SimpleRouteBuilder.new {}
+    mock_channel.stubs(:getBody).returns Axiom::SimpleRouteBuilder.new {}
 
     config = RouteBuilderConfigurator.new
     processor = ControlChannelProcessor.new context, config

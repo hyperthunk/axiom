@@ -29,6 +29,7 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.commons.configuration.Configuration
 import org.apache.camel.Exchange
 
+require 'ruby/route_builder'
 require 'ruby/route_builder_configurator'
 
 describe Axiom::Processor do
@@ -53,16 +54,16 @@ describe Axiom::Processor do
 
 end
 
-describe SimpleRouteBuilder, "configuring routes using a user defined block of java DSL code" do
+describe Axiom::SimpleRouteBuilder, "configuring routes using a user defined block of java DSL code" do
 
   it "should puke the the supplied block is nil" do
     lambda do
-      SimpleRouteBuilder.new
+      Axiom::SimpleRouteBuilder.new
     end.should raise_error
   end
 
   it "should execute the routing instructions in the context of the builder" do
-    route_builder = SimpleRouteBuilder.new do
+    route_builder = Axiom::SimpleRouteBuilder.new do
         from("direct:start").to("mock:result")
     end
     check_basic_route route_builder
@@ -70,15 +71,15 @@ describe SimpleRouteBuilder, "configuring routes using a user defined block of j
 
 end
 
-describe SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
+describe Axiom::SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
 
   it "should generate a processor instance for calls to set_header" do
-    SimpleRouteBuilder.new{}.add_header({}).class.should == Axiom::Processor
+    Axiom::SimpleRouteBuilder.new{}.add_header({}).class.should == Axiom::Processor
   end
 
   it "should not puke if the supplied header values are nil" do
     lambda do
-      SimpleRouteBuilder.new{}.add_header(nil)
+      Axiom::SimpleRouteBuilder.new{}.add_header(nil)
     end.should_not raise_error
   end
 
@@ -96,7 +97,7 @@ describe SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper me
       mock_message.expects(:set_header).with(k,v).at_least_once
     end
 
-    processor = SimpleRouteBuilder.new{}.add_header(new_headers)
+    processor = Axiom::SimpleRouteBuilder.new{}.add_header(new_headers)
     processor.process(ex)
   end
 
