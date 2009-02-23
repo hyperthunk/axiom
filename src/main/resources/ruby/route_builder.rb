@@ -26,37 +26,12 @@ LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 =end
 
-require 'java'
-require 'delegate'
+require 'ruby/configuration'
+require 'ruby/functor'
+require 'ruby/processor'
 
 import org.apache.camel.builder.RouteBuilder
-import org.apache.camel.Processor
 import org.axiom.management.RouteConfigurationScriptEvaluator
-
-# NB: Functor isn't required in ruby 1.9 as something similar is built in
-
-# a mapping between a proc/lambda and a type/module
-# so that they are interchangable - no method_missings hooks though!
-module Functor
-  def initialize &func
-    fail if func.nil?
-    @func = func
-  end
-  def __call__ *args
-    @func.call *args
-  end
-  def to_proc
-    @func
-  end
-end
-
-# implements a simple camel processor that
-# delegates to a block for defered execution
-class DelegatingProcessor
-  include Processor
-  include Functor
-  alias process __call__
-end
 
 # wraps the camel RouteBuilder and evaluates a block of
 # route configuration code in the instance context (thereby
@@ -80,29 +55,13 @@ class SimpleRouteBuilder < RouteBuilder
   end
 end
 
-class ConfigurationHandler
-
-  attr_accessor :properties
-  alias setProperties properties=
-
-  def method_missing sym, *args, &blk
-    key = sym.to_s
-    # fail "no configuration exists for key #{key}" unless @properties.containsKey key
-    @properties.getString key
-  end
-
-end
-
 # provides a mechanism for evaluating a script (source) in the
 # context of the current JRuby runtime (which is nigh on impossible to
 # get out of spring otherwise - creating a second runtime is semantically
 # incorrect), and having the result evaluated as a block passed to RouteBuider
-class RouteBuilderConfigurator < DelegateClass(ConfigurationHandler)
+class RouteBuilderConfigurator
   include RouteConfigurationScriptEvaluator
-
-  def RouteBuilderConfigurator.new_instance
-    RouteBuilderConfigurator.new ConfigurationHandler.new
-  end
+  include Configuration
 
   # convenience hook for script writers
   def route &block
@@ -116,4 +75,4 @@ class RouteBuilderConfigurator < DelegateClass(ConfigurationHandler)
 end
 
 # This return value (for the script) is a hook for spring-framework integration
-RouteBuilderConfigurator.new_instance
+RouteBuilderConfigurator.new

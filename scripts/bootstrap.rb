@@ -31,21 +31,22 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMA
 # enabled in the properties/configuration stage instead
 
 # TODO: provide a canned mechanism for reading properties in here
+control_channel = config >> 'axiom.control.channel'
 
 route {
-  from("direct:start").inOut.to(control.channel)
+  from("direct:start").inOut.to(control_channel)
 
-  from("jetty://#{jetty.host.port}/axiom/control-channel").
+  from("jetty://#{config >> 'jetty.host.port'}/axiom/control-channel").
     inOut.
-    to(control.nodes.xml2code).
+    to(config >> 'axiom.control.channel.nodes.xml2code').
     process(add_header "payload-type" => "code").
-    to(control.channel)
+    to(control_channel)
 
-  from(control.channel).
-    processRef(channel_processor).
+  from(control_channel).
+    processRef(config >> 'axiom.control.channel.nodes.default').
       proceed.
       choice.
         when(header("command").isEqualTo("shutdown")).
-          to("direct:shutdown").
+          to(config >> 'axiom.control.channel.shutdown').
         otherwise.stop
 }

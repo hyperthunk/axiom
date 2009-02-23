@@ -27,6 +27,7 @@
 
 import org.apache.camel.builder.RouteBuilder
 import org.apache.commons.configuration.Configuration
+import org.apache.camel.Exchange
 
 require File.join(File.dirname(__FILE__), '../../../main/resources/ruby/route_builder.rb')
 
@@ -104,7 +105,7 @@ end
 describe RouteBuilderConfigurator, "when configuring routes" do
 
   it "should evaluate the supplied script source and configure a builder" do
-    config = RouteBuilderConfigurator.new_instance
+    config = RouteBuilderConfigurator.new
     route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
     check_basic_route route_builder
   end
@@ -121,9 +122,9 @@ describe RouteBuilderConfigurator, "when ...." do
     it "should lookup #{config} in the supplied configuration source" do
       properties = Configuration.new
       properties.expects(:getString).with(config.to_s).once.returns true
-      builder = RouteBuilderConfigurator.new_instance
+      builder = RouteBuilderConfigurator.new
       builder.setProperties properties
-      builder.send(config).should be_true
+      builder.send(:[], config).should be_true
     end
   end
 

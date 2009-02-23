@@ -35,14 +35,14 @@ end
 
 helper_for /control channel/i do
   def stubbed_exchange mock_channel
-    mock_exchange = Exchange.new
+    mock_exchange = org.apache.camel.Exchange.new
     mock_exchange.stubs(:getIn).returns mock_channel
     mock_exchange
   end
 
   def processor_for context
-    config = RouteBuilderConfigurator.new_instance
-    processor = ControlChannelProcessor.new context, config
+    config = RouteBuilderConfigurator.new
+    processor = org.axiom.management.ControlChannelProcessor.new context, config
   end
 end
 
