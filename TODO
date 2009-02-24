@@ -3,7 +3,7 @@
    - see http://commons.apache.org/configuration/apidocs/index.html for details
 * - make the above class search for additional configuration sources in the axiom.configuration.paths=list:of:paths and load them
 * - embed the ExternalizedConfigurationSource in the spring application context  
- - declare a Configuration bean which is made by calling the factory method in the above source/factory bean/class
+* - declare a Configuration bean which is made by calling the factory method in the above source/factory bean/class
  - write a BootstrapRouteLoader class (in java) which loads configuration (using the above) and creates a route builder
  - write a ControlChannel class (in java) which takes a route loader and starts up the control channel
  - write a ContextConfigurationEndpoint (or similar) and have this exposed in the bootstrap.rb routes
