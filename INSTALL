@@ -1,12 +1,12 @@
 
 The axiom project is built using maven2, and requires Java >= 1.5 to compile. In
-order to run the jtestr tests on os-x, it is necessary to use Java 1.6. 
-I've therefore made this the default source and JDK level in the pom
-build section.
+order to run the jtestr tests on os-x, it seems to be necessary that you use
+Java 1.6. I've therefore made this the default source and JDK level in the pom
+build section - you can probably change these without great issue on other platforms.
 
 Install:
 
-You should be able to accomplish this by running the command:
+You should be able to accomplish a local install by running the command:
 
     $ mvn clean install
 

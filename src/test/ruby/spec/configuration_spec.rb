@@ -51,7 +51,7 @@ describe Axiom::Configuration, "when accessing configuration data in DSL code" d
    'axiom.control.nodes.xml2code.transformer',
    'axiom.control.routes.shutdown'].each do |config|
     [ :[], :>> ].each do |method|
-      it "should lookup #{config} in the supplied configuration source" do
+      it "should lookup '#{config}' in the configuration source using the '#{method}' method" do
         @properties.expects(:getString).with(config.to_s).once.returns 'ok'
         self.send(method, config).should eql("ok")
       end

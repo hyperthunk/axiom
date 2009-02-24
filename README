@@ -2,10 +2,7 @@
 Introduction
 -------------
 
-An axiom is a proposition not proved or demonstrated, but taken for granted, 
-to serve as a starting point for deducing and inferring other truths.
-
-This particular axiom, is a framework for testing integration scenarios and
+Axiom (working title) is a framework for testing integration scenarios and
 validating expectations about routing/rules and business logic executed in 
 a variety of systems integration landscapes.
 
