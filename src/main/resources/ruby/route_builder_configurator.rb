@@ -39,15 +39,15 @@ module Axiom
     include Axiom::Configuration
 
     # convenience hook for script writers
-
+    #
     def route &block
       Axiom::SimpleRouteBuilder.new &block
     end
 
     # configures the supplied script source in the context of a RouteBuilder instance
-
-    def configure(scriptSource)
-      eval scriptSource
+    #
+    def configure(body)
+      eval body
     end
   end
 

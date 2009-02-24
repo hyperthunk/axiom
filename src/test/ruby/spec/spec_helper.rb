@@ -25,7 +25,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-helper_for /routes/i do
+helper_for /route/i do
   def check_basic_route route_builder
     route_builder.expects(:from).with("direct:start").returns(route_builder)
     route_builder.expects(:to).with("mock:result")
@@ -38,11 +38,6 @@ helper_for /control channel/i do
     mock_exchange = org.apache.camel.Exchange.new
     mock_exchange.stubs(:getIn).returns mock_channel
     mock_exchange
-  end
-
-  def processor_for context
-    config = Axiom::RouteBuilderConfigurator.new
-    processor = org.axiom.management.ControlChannelProcessor.new context, config
   end
 end
 

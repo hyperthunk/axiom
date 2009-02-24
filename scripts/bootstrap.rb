@@ -30,23 +30,26 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMA
 # note that you don't have to configure logging/tracing here as it is
 # enabled in the properties/configuration stage instead
 
-# TODO: provide a canned mechanism for reading properties in here
 control_channel = config >> 'axiom.control.channel'
 
 route {
+  
   from("direct:start").inOut.to(control_channel)
 
-  from("jetty://#{config >> 'jetty.host.port'}/axiom/control-channel").
-    inOut.
-    to(config >> 'axiom.control.channel.nodes.xml2code').
-    process(add_header "payload-type" => "code").
-    to(control_channel)
+  from("jetty://#{config >> 'jetty.host'}/axiom/control-channel").
+    inOut.to(control_channel)
+
+  intercept(xpath('/config[count(routes) > 0]')).
+    to(config >> 'axiom.control.channel.nodes.xml2code')
+    process(add_header "payload-classifier" => 'code').proceed
+
+  intercept(header('payload-classifier').isEqualTo('code')).
+    to('bean:route-builder-dsl-evaluator/configure').proceed
 
   from(control_channel).
     processRef(config >> 'axiom.control.channel.nodes.default').
-      proceed.
-      choice.
+      proceed.choice.
         when(header("command").isEqualTo("shutdown")).
           to(config >> 'axiom.control.channel.shutdown').
-        otherwise.stop
+        otherwise.stop # stops the routing, not the server itself!
 }

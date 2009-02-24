@@ -25,30 +25,16 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import org.axiom.management.ControlChannelProcessor
 import org.apache.camel.CamelContext
 import org.apache.camel.Exchange
 import org.apache.camel.Message
 import java.util.List
 
 require 'ruby/route_builder'
+require 'ruby/control_channel_processor'
 
-describe ControlChannelProcessor, "when initializing a new instance" do
-  it "should puke if the ctor is passed null context" do
-    lambda {
-      ControlChannelProcessor.new nil, nil
-    }.should raise_error(java.lang.IllegalArgumentException)
-  end
-
-  it "should puke if the ctor is passed null evaluator" do
-    lambda {
-      ControlChannelProcessor.new CamelContext.new, nil
-    }.should raise_error(java.lang.IllegalArgumentException)
-  end
-end
-
-describe ControlChannelProcessor,
-  "when stopping and starting a subordinate context via the control channel" do
+describe Axiom::DefaultProcessingNode,
+  "when interacting with a subordinate context via the control channel" do
 
   [:start, :stop].each do |instruction|
     it "should #{instruction} the camel context when the relevant header is supplied" do
@@ -60,7 +46,8 @@ describe ControlChannelProcessor,
       mock_channel = Message.new
       mock_channel.stubs(:getHeader).returns "test", instruction.to_s
 
-      processor = processor_for context
+      processor = Axiom::DefaultProcessingNode.new
+      processor.camel_context = context
       2.times { processor.process(stubbed_exchange mock_channel) }
     end
   end
@@ -73,8 +60,8 @@ describe ControlChannelProcessor,
     mock_channel.stubs(:getHeader).returns "configure"
     mock_channel.stubs(:getBody).returns Axiom::SimpleRouteBuilder.new {}
 
-    config = Axiom::RouteBuilderConfigurator.new
-    processor = ControlChannelProcessor.new context, config
+    processor = Axiom::DefaultProcessingNode.new
+    processor.camel_context = context
     processor.process(stubbed_exchange mock_channel)
   end
 

@@ -32,15 +32,16 @@ import org.apache.camel.Exchange
 require 'ruby/route_builder'
 require 'ruby/route_builder_configurator'
 
-describe Axiom::SimpleRouteBuilder, "configuring routes using a user defined block of java DSL code" do
+describe Axiom::SimpleRouteBuilder,
+  "when configuring routes using a user defined block of java DSL code" do
 
-  it "should puke the the supplied block is nil" do
+  it "should puke if the block is missing" do
     lambda do
       Axiom::SimpleRouteBuilder.new
     end.should raise_error
   end
 
-  it "should execute the routing instructions in the context of the builder" do
+  it "should execute the block's routing instructions in the context of the builder object instance" do
     route_builder = Axiom::SimpleRouteBuilder.new do
         from("direct:start").to("mock:result")
     end
@@ -49,7 +50,8 @@ describe Axiom::SimpleRouteBuilder, "configuring routes using a user defined blo
 
 end
 
-describe Axiom::SimpleRouteBuilder, "adding headers dynamically with the DSL wrapper method" do
+describe Axiom::SimpleRouteBuilder,
+  "when adding headers dynamically with the DSL wrapper method" do
 
   it "should generate a processor instance for calls to set_header" do
     Axiom::SimpleRouteBuilder.new{}.add_header({}).class.should == Axiom::Processor

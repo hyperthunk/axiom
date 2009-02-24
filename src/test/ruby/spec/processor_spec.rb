@@ -27,17 +27,20 @@
 
 require 'ruby/processor'
 
-describe Axiom::Processor do
+describe Axiom::Processor, "when initializing a new instance" do
 
   it "should puke if the expected block is missing" do
     lambda { Axiom::Processor.new }.should raise_error
   end
+  
+end
+
+describe Axiom::Processor,
+  "when processing a user defined instructions against an exchange" do
 
   it "should call the supplied block to perform processing" do
-    # NB: this is really ugly, maybe there's a better way???
-    block_called = false
-    Axiom::Processor.new {|_| block_called = true }.process nil
-    block_called.should be_true
+    thing = stub()
+    Axiom::Processor.new {|_| thing }.process.should eql(thing)
   end
 
   it "should pass the exchange instance to the processing block" do

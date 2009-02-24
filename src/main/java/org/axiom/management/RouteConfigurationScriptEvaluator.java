@@ -33,14 +33,14 @@ import org.apache.camel.Processor;
 
 /**
  *  Provides a means to configure a jruby routing script
- *  and obtain a  {@link org.apache.camel.builder.RouteBuilder}.
+ *  and obtain a {@link org.apache.camel.builder.RouteBuilder}.
  */
 public interface RouteConfigurationScriptEvaluator {
     /**
-     * Runs the provided script source to obtain a
+     * Runs the provided body (ruby script source) to obtain a
      * {@link org.apache.camel.builder.RouteBuilder}.
-     * @param scriptSource
+     * @param body
      * @return
      */
-    RouteBuilder configure(final String scriptSource);
+    RouteBuilder configure(final String body);
 }

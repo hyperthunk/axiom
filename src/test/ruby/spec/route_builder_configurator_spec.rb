@@ -37,7 +37,7 @@ describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
     route_builder.configure.should == 'ok'
   end
 
-  it "should evaluate the supplied script source and configure a builder" do
+  it "should evaluate ruby source code and configure a builder instance" do
     config = Axiom::RouteBuilderConfigurator.new
     route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
     check_basic_route route_builder

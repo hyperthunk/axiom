@@ -37,7 +37,7 @@
         http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.1.0.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd">
 
     <!-- let Spring do its IoC stuff in this package -->
-    <context:component-scan base-package="com.bt.axiom"/>
+    <context:component-scan base-package="com.bt.axiom" />
 
     <!-- declare a camel context that scans for classes that is RouteBuilder
          in the package org.apache.camel.example.server -->
@@ -47,20 +47,15 @@
         <camel:jmxAgent id="agent" createConnector="true" />
     </camel:camelContext>
 
-    <lang:jruby id="script-evaluator"
+    <lang:jruby id="route-builder-dsl-evaluator"
         script-source="classpath:ruby/route_builder_configurator.rb"
         script-interfaces="org.axiom.management.RouteConfigurationScriptEvaluator">
     </lang:jruby>
 
-    <bean id="control-channel-processor"
-          scope="singleton"
-          class="org.axiom.management.ControlChannelProcessor">
-        <!-- some IDE integration may not recognise that
-            'camel' is a valid bean name - just ignore this for now -->
-        <constructor-arg ref="camel" type="org.apache.camel.CamelContext" />
-        <constructor-arg ref="script-evaluator"
-            type="org.axiom.management.RouteConfigurationScriptEvaluator" />
-    </bean>
+    <lang:jruby id="control-channel-default-processor"
+        script-source="classpath:ruby/control_channel_processor.rb"
+        script-interfaces="org.apache.camel.Processor">
+    </lang:jruby>
 
     <!-- lets configure the ActiveMQ JMS broker server to listen on TCP 61616 -->
     <!--<broker:broker useJmx="false" persistent="false" brokerName="localhost">
