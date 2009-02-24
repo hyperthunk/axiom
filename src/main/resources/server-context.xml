@@ -49,11 +49,18 @@
         <camel:jmxAgent id="agent" createConnector="true" />
     </camel:camelContext>
 
-    
+    <bean scope="singleton"
+          class="org.axiom.configuration.ExternalConfigurationSourceFactory"
+          id="configuration-factory" />
+
+    <bean id="config"
+      factory-bean="configuration-factory"
+      factory-method="createConfiguration"/>
 
     <lang:jruby id="route-builder-dsl-evaluator"
         script-source="classpath:ruby/route_builder_configurator.rb"
         script-interfaces="org.axiom.configuration.RouteConfigurationScriptEvaluator">
+        <lang:property name="properties" ref="config"/>
     </lang:jruby>
 
     <lang:jruby id="control-channel-default-processor"

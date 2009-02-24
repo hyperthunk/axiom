@@ -40,27 +40,48 @@ import static java.lang.String.format;
 
 /**
  * Factory for creating {@link org.apache.commons.configuration.Configuration}
- * instances. Loads System and (configurable) default properties, and allows
- * the user to provide a list of external properties files
+ * instances. Consumers can specify additional, external configurations by
+ * setting the 'axiom.configuration.externals' property either as a system
+ * property or in the default configuration (as passed to the constructor).
  *
+ * This should contain either a single path or a list delimiter using the
+ * operating system specific path separator char.
  */
 public class ExternalConfigurationSourceFactory {
 
     private final Log log = LogFactory.getLog(getClass());
     private final String defaultConfigurationSourcePath;
-    private static final String AXIOM_CONFIGURATION_EXTERNALS =
+
+    /**
+     * The system/default property which, if set, is used to locate
+     * and load additional external properties when creating a new instance.
+     */
+    protected static final String AXIOM_CONFIGURATION_EXTERNALS =
         "axiom.configuration.externals";
-    protected static final String DEFAULT_PROPERTIES_LOG_MSG =
+
+    private static final String DEFAULT_PROPERTIES_LOG_MSG =
         "Configuring default properties in %s";
 
+    /**
+     * Initializes this with the default axiom properties.
+     */
     public ExternalConfigurationSourceFactory() {
         this("axiom.properties");
     }
 
+    /**
+     * Initializes this with the default properties located in
+     * the file at defaultConfigurationSourcePath
+     * @param defaultConfigurationSourcePath The path to the default properties
+     */
     public ExternalConfigurationSourceFactory(String defaultConfigurationSourcePath) {
         this.defaultConfigurationSourcePath = defaultConfigurationSourcePath;
     }
 
+    /**
+     * Creates a new {@link org.apache.commons.configuration.Configuration} instance.
+     * @return
+     */
     public Configuration createConfiguration() {
         try {
             CompositeConfiguration config = new CompositeConfiguration();
