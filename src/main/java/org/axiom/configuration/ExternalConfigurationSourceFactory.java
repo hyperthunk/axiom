@@ -31,30 +31,60 @@
 package org.axiom.configuration;
 
 import org.apache.commons.configuration.*;
+import static org.apache.commons.lang.StringUtils.split;
+import org.apache.commons.logging.Log;
+import org.apache.commons.logging.LogFactory;
 
+import static java.io.File.pathSeparator;
+import static java.lang.String.format;
+
+/**
+ * Factory for creating {@link org.apache.commons.configuration.Configuration}
+ * instances. Loads System and (configurable) default properties, and allows
+ * the user to provide a list of external properties files
+ *
+ */
 public class ExternalConfigurationSourceFactory {
 
+    private final Log log = LogFactory.getLog(getClass());
     private final String defaultConfigurationSourcePath;
+    private static final String AXIOM_CONFIGURATION_EXTERNALS =
+        "axiom.configuration.externals";
+    protected static final String DEFAULT_PROPERTIES_LOG_MSG =
+        "Configuring default properties in %s";
 
     public ExternalConfigurationSourceFactory() {
         this("axiom.properties");
     }
 
     public ExternalConfigurationSourceFactory(String defaultConfigurationSourcePath) {
-        //To change body of created methods use File | Settings | File Templates.
         this.defaultConfigurationSourcePath = defaultConfigurationSourcePath;
     }
 
     public Configuration createConfiguration() {
         try {
             CompositeConfiguration config = new CompositeConfiguration();
+            log.info("Configuring system properties");
             config.addConfiguration(new SystemConfiguration());
+            log.info(format(DEFAULT_PROPERTIES_LOG_MSG, defaultConfigurationSourcePath));
             config.addConfiguration(new PropertiesConfiguration(defaultConfigurationSourcePath));
-            //TODO: loop through the additional (external) properties and add them
+            configureAdditionalExternalProperties(config);
             return config;
         } catch (ConfigurationException e) {
-            //TODO: logging
             throw new RuntimeException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    private void configureAdditionalExternalProperties(CompositeConfiguration config) throws ConfigurationException {
+        final String paths = config.getString(AXIOM_CONFIGURATION_EXTERNALS);
+        log.info("Configuring additional (external) configuration elements");
+        if (paths != null) {
+            for (final String path :
+                    split(paths, pathSeparator)) {
+                log.info(String.format("Configuring external properties in %s", path));
+                //TODO: support for other properties formats (xml, for instance)
+                config.addConfiguration(new PropertiesConfiguration(path));
+            }
         }
     }
 }

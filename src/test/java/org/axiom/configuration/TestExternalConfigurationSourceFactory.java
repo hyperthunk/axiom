@@ -35,7 +35,13 @@ import org.junit.runners.JUnit4;
 import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import org.apache.commons.configuration.*;
+import org.apache.commons.io.FilenameUtils;
+import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang.StringUtils;
 import static org.jmock.Expectations.equal;
+
+import java.io.File;
+import java.util.ArrayList;
 
 @RunWith(JUnit4.class)
 public class TestExternalConfigurationSourceFactory {
@@ -48,10 +54,32 @@ public class TestExternalConfigurationSourceFactory {
         final ExternalConfigurationSourceFactory factory =
             new ExternalConfigurationSourceFactory("axiom.test.properties");
         //axiom.test.properties contains axiom.control.channel.in=direct:start
-        final Configuration config = factory.createConfiguration();
 
+        final Configuration config = factory.createConfiguration();
         final String expectedValue = "direct:control-channel";
         assertThat(String.valueOf(config.getProperty(key)),
             equal(expectedValue));
+    }
+
+    @Test
+    public void cascadingConfigurationAddsExternalPropertiesInCascadingOrder() throws ConfigurationException {
+        final String sysKey = "axiom.configuration.externals";
+        System.setProperty(sysKey,
+                StringUtils.join(new Object[]{
+                        "yet.another.axiom.properties",
+                        "another.axiom.properties"
+                }, File.pathSeparator));
+
+        final ExternalConfigurationSourceFactory factory =
+            new ExternalConfigurationSourceFactory("axiom.test.properties");
+        
+        final Configuration config = factory.createConfiguration();
+        final String expectedValue = "yet-another-foo";
+        assertThat(config.getString("axiom.test.foo"), equal(expectedValue));
+    }
+
+    @Test(expected = RuntimeException.class)
+    public void configurationExceptionsResultInFatalRuntimeErrors() {
+        new ExternalConfigurationSourceFactory("no-such-file-name").createConfiguration();
     }
 }
