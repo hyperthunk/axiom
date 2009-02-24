@@ -37,7 +37,9 @@
         http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.1.0.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd">
 
     <!-- let Spring do its IoC stuff in this package -->
+    <!--
     <context:component-scan base-package="com.bt.axiom" />
+    -->
 
     <!-- declare a camel context that scans for classes that is RouteBuilder
          in the package org.apache.camel.example.server -->
@@ -47,13 +49,15 @@
         <camel:jmxAgent id="agent" createConnector="true" />
     </camel:camelContext>
 
+    
+
     <lang:jruby id="route-builder-dsl-evaluator"
         script-source="classpath:ruby/route_builder_configurator.rb"
-        script-interfaces="org.axiom.management.RouteConfigurationScriptEvaluator">
+        script-interfaces="org.axiom.configuration.RouteConfigurationScriptEvaluator">
     </lang:jruby>
 
     <lang:jruby id="control-channel-default-processor"
-        script-source="classpath:ruby/control_channel_processor.rb"
+        script-source="classpath:/ruby/default_processing_node.rb"
         script-interfaces="org.apache.camel.Processor">
     </lang:jruby>
 

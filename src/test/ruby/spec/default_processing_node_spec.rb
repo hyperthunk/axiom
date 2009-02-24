@@ -25,33 +25,44 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+import org.apache.camel.CamelContext
+import org.apache.camel.Exchange
+import org.apache.camel.Message
+import java.util.List
+
 require 'ruby/route_builder'
-require 'ruby/configuration'
+require 'ruby/default_processing_node'
 
-module Axiom
+describe Axiom::DefaultProcessingNode,
+  "when interacting with a subordinate context via the control channel" do
 
-  # provides a mechanism for evaluating a script (source) in the
-  # context of the current JRuby runtime (which is nigh on impossible to
-  # get out of spring otherwise - creating a second runtime is semantically
-  # incorrect), and having the result evaluated as a block passed to RouteBuider
-  class RouteBuilderConfigurator
-    include org.axiom.configuration.RouteConfigurationScriptEvaluator
-    include Axiom::Configuration
+  [:start, :stop].each do |instruction|
+    it "should #{instruction} the camel context when the relevant header is supplied" do
+      context = CamelContext.new
+      context.expects(instruction).once
 
-    # convenience hook for script writers
-    #
-    def route &block
-      Axiom::SimpleRouteBuilder.new &block
-    end
+      # first message is a dud, second one says stop...
+      # same stub will do for both cases, as well as for the header values
+      mock_channel = Message.new
+      mock_channel.stubs(:getHeader).returns "test", instruction.to_s
 
-    # configures the supplied script source in the context of a RouteBuilder instance
-    #
-    def configure(body)
-      eval body
+      processor = Axiom::DefaultProcessingNode.new
+      processor.camel_context = context
+      2.times { processor.process(stubbed_exchange mock_channel) }
     end
   end
 
-end
+  it "should configure the camel context when routes are supplied" do
+    context = CamelContext.new
+    context.expects(:addRoutes).once.with{ |x| x.is_a? List }
 
-# This return value (for the script) is a hook for spring-framework integration
-Axiom::RouteBuilderConfigurator.new
+    mock_channel = Message.new
+    mock_channel.stubs(:getHeader).returns "configure"
+    mock_channel.stubs(:getBody).returns Axiom::SimpleRouteBuilder.new {}
+
+    processor = Axiom::DefaultProcessingNode.new
+    processor.camel_context = context
+    processor.process(stubbed_exchange mock_channel)
+  end
+
+end

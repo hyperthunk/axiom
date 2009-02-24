@@ -26,10 +26,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.axiom.management;
+package org.axiom.configuration;
 
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.Processor;
 
 /**
  *  Provides a means to configure a jruby routing script

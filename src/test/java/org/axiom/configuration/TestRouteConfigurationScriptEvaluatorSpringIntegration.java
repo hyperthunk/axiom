@@ -27,9 +27,9 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.axiom.management;
+package org.axiom.configuration;
 
-import org.axiom.management.RouteConfigurationScriptEvaluator;
+import org.axiom.configuration.RouteConfigurationScriptEvaluator;
 import org.junit.Test;
 import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
