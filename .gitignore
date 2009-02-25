@@ -12,3 +12,4 @@ ebin/
 *.iws
 *.iml
 target/*
+axiom-core/target/*
