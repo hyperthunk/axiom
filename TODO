@@ -6,9 +6,9 @@
 * - declare a Configuration bean which is made by calling the factory method in the above source/factory bean/class
 * - write a BootstrapRouteLoader class (in java) which loads configuration (using the above) and creates a route builder
  - write a ControlChannel class (in java) which takes a route loader and starts up the control channel
- - write a ContextConfigurationEndpoint (or similar) and have this exposed in the bootstrap.rb routes
-   - this will allow us to configure multiple camel contexts per jvm
-   - this will (also) allow us to host camel contexts elsewhere and route instructions to them via and exchange over the network*
+* - write a ContextConfigurationEndpoint (or similar) and have this exposed in the bootstrap.rb routes
+*   - this will allow us to configure multiple camel contexts per jvm
+*   - this will (also) allow us to host camel contexts elsewhere and route instructions to them via and exchange over the network*
  - pull out a parent pom.xml and move the current sources into project 'axiom', integration tests into 'axiom-integration-test'
  - add an 'axiom-server' child project and in it:
    - create a default entry point so the jar is executable
