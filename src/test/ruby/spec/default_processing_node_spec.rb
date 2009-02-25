@@ -47,7 +47,7 @@ describe Axiom::DefaultProcessingNode,
       mock_channel.stubs(:getHeader).returns "test", instruction.to_s
 
       processor = Axiom::DefaultProcessingNode.new
-      processor.camel_context = context
+      processor.context = context
       2.times { processor.process(stubbed_exchange mock_channel) }
     end
   end
@@ -61,7 +61,7 @@ describe Axiom::DefaultProcessingNode,
     mock_channel.stubs(:getBody).returns Axiom::SimpleRouteBuilder.new {}
 
     processor = Axiom::DefaultProcessingNode.new
-    processor.camel_context = context
+    processor.context = context
     processor.process(stubbed_exchange mock_channel)
   end
 

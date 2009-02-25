@@ -115,7 +115,6 @@ public class TestAxiomComponent {
             allowing(mockConfig).getString(AxiomComponent.CONTEXT_PROCESSOR_BEANID);
             will(returnValue(PROCESSOR));
 
-            //NEW>>>>>>
             never(registry).lookup(with(any(String.class)), with(equal(CamelContext.class)));
 
             allowing(registry).lookup(PROCESSOR, ContextProcessingNode.class);
@@ -131,7 +130,7 @@ public class TestAxiomComponent {
     @Test
     public void itShouldLookupTheProcessingNodeInTheRegistry() throws Exception {
         final CamelContext mockTargetContext = mockContext;
-        final String beanId = "axiom.control." + PROCESSOR + ".default";
+        final String beanId = "axiom.control.processor.default";
 
         mockery.checking(new Expectations() {{
             allowing(mockContext).getRegistry();will(returnValue(registry));
