@@ -32,11 +32,10 @@ package org.axiom.service;
 
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.notNull;
-import org.apache.commons.lang.StringUtils;
 import static org.apache.commons.lang.StringUtils.startsWithIgnoreCase;
 import static org.apache.commons.lang.StringUtils.substringAfter;
-import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.readFileToString;
+import org.apache.camel.builder.RouteBuilder;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ClassPathResource;
 import org.axiom.configuration.RouteConfigurationScriptEvaluator;
@@ -44,25 +43,27 @@ import org.axiom.configuration.RouteConfigurationScriptEvaluator;
 import java.io.File;
 import java.io.IOException;
 
-public class BootstrapRouteLoader {
-    
-    private final Configuration configuration;
+class BootstrapRouteLoader {
+
     protected static final String SCRIPT_URI_PROPERTY_KEY = "axiom.bootstrap.script.url";
     protected static final String DEFAULT_SCRIPT_URI = "classpath:default-bootstrap.rb";
-    private final RouteConfigurationScriptEvaluator scriptCodeEvaluator;
+
+    private final Configuration configuration;
+    private final RouteConfigurationScriptEvaluator scriptEvaluator;
 
     public BootstrapRouteLoader(final Configuration configuration,
-            final RouteConfigurationScriptEvaluator routeConfigurationScriptEvaluator) {
+            final RouteConfigurationScriptEvaluator scriptEvaluator) {
         notNull(configuration, "Null configuration is not allowed.");
-        scriptCodeEvaluator = routeConfigurationScriptEvaluator;
+        notNull(scriptEvaluator, "Null evaluator is not allowed.");
+        this.scriptEvaluator = scriptEvaluator;
         this.configuration = configuration;
     }
 
-    public void load() {
+    public RouteBuilder load() {
         try {
             final String bootstrapUri = normalizedScriptUri();
             final String bootstrapCode = readFileToString(new File(bootstrapUri));
-            scriptCodeEvaluator.configure(bootstrapCode);
+            return scriptEvaluator.configure(bootstrapCode);
         } catch (IOException e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
