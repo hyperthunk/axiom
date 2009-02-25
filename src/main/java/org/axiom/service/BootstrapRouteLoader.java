@@ -32,19 +32,49 @@ package org.axiom.service;
 
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.notNull;
+import org.apache.commons.lang.StringUtils;
+import static org.apache.commons.lang.StringUtils.startsWithIgnoreCase;
+import static org.apache.commons.lang.StringUtils.substringAfter;
+import org.apache.commons.io.FileUtils;
+import static org.apache.commons.io.FileUtils.readFileToString;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
+import org.axiom.configuration.RouteConfigurationScriptEvaluator;
+
+import java.io.File;
+import java.io.IOException;
 
 public class BootstrapRouteLoader {
     
     private final Configuration configuration;
     protected static final String SCRIPT_URI_PROPERTY_KEY = "axiom.bootstrap.script.url";
     protected static final String DEFAULT_SCRIPT_URI = "classpath:default-bootstrap.rb";
+    private final RouteConfigurationScriptEvaluator scriptCodeEvaluator;
 
-    public BootstrapRouteLoader(Configuration configuration) {
+    public BootstrapRouteLoader(final Configuration configuration,
+            final RouteConfigurationScriptEvaluator routeConfigurationScriptEvaluator) {
         notNull(configuration, "Null configuration is not allowed.");
+        scriptCodeEvaluator = routeConfigurationScriptEvaluator;
         this.configuration = configuration;
     }
 
     public void load() {
-        configuration.getString(SCRIPT_URI_PROPERTY_KEY, DEFAULT_SCRIPT_URI);
+        try {
+            final String bootstrapUri = normalizedScriptUri();
+            final String bootstrapCode = readFileToString(new File(bootstrapUri));
+            scriptCodeEvaluator.configure(bootstrapCode);
+        } catch (IOException e) {
+            throw new LifecycleException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    private String normalizedScriptUri() throws IOException {
+        final String uri = configuration.getString(SCRIPT_URI_PROPERTY_KEY, DEFAULT_SCRIPT_URI);
+        if (startsWithIgnoreCase(uri, "classpath:")) {
+            Resource resource =
+                new ClassPathResource(substringAfter(uri, "classpath:"));
+            return resource.getFile().getAbsolutePath();
+        }
+        return uri;
     }
 }

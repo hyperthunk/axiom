@@ -31,31 +31,68 @@
 package org.axiom.service;
 
 import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
 import org.junit.Test;
+import org.junit.Before;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.FileUtils;
 import org.jmock.Mockery;
 import org.jmock.Expectations;
 import org.jmock.integration.junit4.JMock;
+import org.springframework.core.io.ClassPathResource;
+import org.axiom.configuration.RouteConfigurationScriptEvaluator;
+
+import java.io.IOException;
 
 @RunWith(JMock.class)
 public class TestBootstrapRouteLoader {
 
     private Mockery mockery = new Mockery();
+    private Configuration config;
+    private RouteConfigurationScriptEvaluator evaluator;
+
+    @Before
+    public void beforeEach() throws Exception {
+        config = mockery.mock(Configuration.class);
+        evaluator = mockery.mock(RouteConfigurationScriptEvaluator.class);
+    }
 
     @Test(expected=IllegalArgumentException.class)
     public void itShouldPukeWhenInitializedWithMissingConfiguration() {
-        new BootstrapRouteLoader(null);
+        new BootstrapRouteLoader(null, evaluator);
     }
 
     @Test
     public void itShouldPullThePathToTheControlChannelBootstrapScript() {
-        final Configuration config = mockery.mock(Configuration.class);
         mockery.checking(new Expectations() {{
             one(config).getString("axiom.bootstrap.script.url", "classpath:default-bootstrap.rb");
             will(returnValue("classpath:test-boot.rb"));
+            allowing(evaluator);
         }});
+        new BootstrapRouteLoader(config, evaluator).load();
+    }
 
-        new BootstrapRouteLoader(config).load();
+    @Test(expected=LifecycleException.class)
+    public void itShouldPukeIfTheSuppliedFileDoesNotExitAtTheGivenUri() {
+        mockery.checking(new Expectations() {{
+            one(config).getString(with(any(String.class)), with(any(String.class)));
+            will(returnValue("no-such-file.rb"));
+            allowing(evaluator);
+        }});
+        new BootstrapRouteLoader(config, evaluator).load();
+    }
+
+    @Test
+    public void itShouldPassTheLoadedScriptToTheScriptEvaluator() throws IOException {
+        final String bootstrapCode = FileUtils.readFileToString(
+            new ClassPathResource("test-boot.rb").getFile()
+        );
+
+        mockery.checking(new Expectations() {{
+            allowing(config).getString(with(any(String.class)), with(any(String.class)));
+            will(returnValue("classpath:test-boot.rb"));
+
+            one(evaluator).configure(bootstrapCode);
+        }});
+        new BootstrapRouteLoader(config, evaluator).load();
     }
 }
