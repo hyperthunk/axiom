@@ -1,4 +1,3 @@
-
 The axiom project is built using maven2, and requires Java >= 1.5 to compile. In
 order to run the jtestr tests on os-x, it seems to be necessary that you use
 Java 1.6. I've therefore made this the default source and JDK level in the pom
@@ -6,12 +5,12 @@ build section - you can probably change these without great issue on other platf
 
 Install:
 
-You should be able to accomplish a local install by running the command:
+You should be able to accomplish a local maven install by running the command:
 
     $ mvn clean install
 
-Note that you may need to edit your personal ~/.m2/settings.xml file in order to
-access some of the repositories in which dependencies are being installed. 
+For installing the binaries and/or running axiom, please see the USAGE_GUIDE that
+sits alongside this document.
 
 Testing:
 
@@ -23,14 +22,29 @@ the following command:
 
     $ mvn org.jtestr:jtestr:server
 
-Notes:
+Platforms:
 
-Installing on OSX
+All development of axiom takes place on linux and os-x (which is bsd based) and
+therefore should work in both those environments. We'll try and get around to 
+testing things on windows at some point too. 
 
-There are some *special* problems when installing on OSX, not the least of which 
+Other Notes:
+
+Surefire/Test Reports:
+
+The jtestr maven plugin we're currently using doesn't generate surefire reports 
+for the rspec test runs. The alternative approach (using the maven-antrun plugin
+instead) is somewhat prone to classpath issues, so we're going to live with this
+for the time being.
+
+Installing on OS-X:
+
+There are some minor issues when installing on OSX, not the least of which 
 is that Java 1.6 is still not the default JDK on Leopard, therefore you should 
 probably take some additional steps to ensure that both maven and its plugins
-use the correct JDK (1.6).
+use the correct JDK (1.6). I seem to recall that one of the plugins we're using
+requires maven >= 2.0.9 so I recommend using at least that (or the latest version)
+and checking your maven version if you run into build problems.
 
 One way to do this is by exporting the following environment variables into the 
 bash session in which you're launching maven:
