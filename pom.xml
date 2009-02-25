@@ -1,23 +1,228 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
-	<!-- properties -->
-	<properties>
+
+    <!-- properties -->
+    <properties>
         <axiom.version>0.0.2</axiom.version>
+        <ant.version>1.7.1</ant.version>
+        <asm.version>2.2.3</asm.version>
+        <jdk.version>1.6</jdk.version>
+        <!--<cxf.version>2.1.3</cxf.version>-->
+        <junit.version>4.5</junit.version>
+        <jmock.version>2.5.1</jmock.version>
+        <jtestr.version>0.3.1</jtestr.version>
+        <camel.version>1.5.0</camel.version>
+        <activemq.version>4.1.1</activemq.version>
+        <spring.version>2.5.6</spring.version>
+        <spring.jruby.version>1.0</spring.jruby.version>
     </properties>
-	<!-- descriptors -->
+
+    <!-- descriptors -->
     <groupId>org.axiom</groupId>
     <artifactId>axiom-complete</artifactId>
     <packaging>pom</packaging>
     <name>Axiom Complete Pom</name>
     <version>${axiom.version}</version>
-	<!-- child modules -->
+
+    <!-- child modules -->
     <modules>
         <module>axiom-core</module>
     </modules>
-    <!-- common dependencies -->    
+
+    <!-- common dependencies -->
     <dependencies>
+
+        <!-- springframework -->
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-core</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+
+        <!-- commons magic -->
+        <dependency>
+            <groupId>commons-lang</groupId>
+            <artifactId>commons-lang</artifactId>
+            <version>2.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-logging</groupId>
+            <artifactId>commons-logging</artifactId>
+            <version>1.1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-configuration</groupId>
+            <artifactId>commons-configuration</artifactId>
+            <version>1.5</version>
+            <!--
+                this dependency pulls in the wrong version of xerces by default
+            -->
+            <exclusions>
+                <exclusion>
+                    <groupId>xerces</groupId>
+                    <artifactId>xerces</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>1.4</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-cli</groupId>
+            <artifactId>commons-cli</artifactId>
+            <version>1.1</version>
+        </dependency>
+
+        <!-- a lot of crap depends in order to get spring the jruby it wants -->
+        <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>asm</groupId>
+            <artifactId>asm-commons</artifactId>
+            <version>${asm.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.jruby</groupId>
+            <artifactId>jruby</artifactId>
+            <version>${spring.jruby.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>joda-time</groupId>
+            <artifactId>joda-time</artifactId>
+            <version>1.6</version>
+        </dependency>
+
+        <!-- test scoped dependencies -->
+        <dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>${junit.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock</artifactId>
+            <version>${jmock.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock-junit4</artifactId>
+            <version>${jmock.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>ant</groupId>
+                    <artifactId>ant</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.jmock</groupId>
+            <artifactId>jmock-legacy</artifactId>
+            <version>${jmock.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-test</artifactId>
+            <version>${spring.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.jtestr</groupId>
+            <artifactId>jtestr</artifactId>
+            <version>${jtestr.version}</version>
+            <scope>test</scope>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.testng</groupId>
+                    <artifactId>testng</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
+    <build>
+        <pluginManagement>
+            <plugins>
+                <plugin>
+                    <artifactId>maven-compiler-plugin</artifactId>
+                    <configuration>
+                        <source>${jdk.version}</source>
+                        <target>${jdk.version}</target>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <groupId>org.jtestr</groupId>
+                    <artifactId>jtestr</artifactId>
+                    <version>${jtestr.version}</version>
+                    <configuration>
+                        <failOnError>true</failOnError>
+                        <tests>src/test/ruby/spec</tests>
+                        <logging>DEBUG</logging>
+                        <outputLevel>VERBOSE</outputLevel>
+                    </configuration>
+                    <dependencies>
+                        <dependency>
+                            <groupId>org.jtestr</groupId>
+                            <artifactId>jtestr</artifactId>
+                            <version>${jtestr.version}</version>
+                            <scope>test</scope>
+                            <exclusions>
+                                <exclusion>
+                                    <groupId>org.testng</groupId>
+                                    <artifactId>testng</artifactId>
+                                </exclusion>
+                            </exclusions>
+                        </dependency>
+                    </dependencies>
+                    <executions>
+                        <execution>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                <!--
+                <plugin>
+                    <artifactId>maven-assembly-plugin</artifactId>
+                    <configuration>
+                        <descriptorRefs>
+                            <descriptorRef>jar-with-dependencies</descriptorRef>
+                        </descriptorRefs>
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>make-assembly</id>
+                            <phase>package</phase>
+                            <goals>
+                                <goal>attached</goal>
+                            </goals>
+                        </execution>
+                    </executions>
+                </plugin>
+                -->
+            </plugins>
+        </pluginManagement>
+    </build>
 </project>
