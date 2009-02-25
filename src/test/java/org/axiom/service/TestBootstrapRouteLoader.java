@@ -81,7 +81,8 @@ public class TestBootstrapRouteLoader {
     @Test
     public void itShouldPullThePathToTheControlChannelBootstrapScript() {
         mockery.checking(new Expectations() {{
-            one(config).getString("axiom.bootstrap.script.url", "classpath:default-bootstrap.rb");
+            one(config).getString(BootstrapRouteLoader.SCRIPT_URI_PROPERTY_KEY,
+                "classpath:default-bootstrap.rb");
             will(returnValue(CP_BOOT_SCRIPT));
             allowing(evaluator);
         }});

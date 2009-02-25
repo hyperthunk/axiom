@@ -47,7 +47,7 @@ route {
     to('bean:route-builder-dsl-evaluator/configure').proceed
 
   from(control_channel).
-    processRef(config >> 'axiom.control.channel.nodes.default').
+    processRef(config >> 'axiom.control.processor.id').
       proceed.choice.
         when(header("command").isEqualTo("shutdown")).
           to(config >> 'axiom.control.channel.shutdown').

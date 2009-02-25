@@ -35,21 +35,47 @@ import org.apache.camel.impl.ProcessorEndpoint;
 import org.apache.camel.Endpoint;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.commons.configuration.Configuration;
+import static org.apache.commons.lang.StringUtils.startsWithIgnoreCase;
+import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 
 import java.util.Map;
 
 public class AxiomComponent extends DefaultComponent<Exchange> {
+
+    private static final String AXIOM_HOST = "axiom:host";
+    public static final String CONTEXT_PROCESSOR_BEANID = "axiom.control.processor.id";
     protected static final String NO_REGISTERED_CONTEXT = "Not org.apache.camel.CamelContext registered under the name %s";
 
+    private Configuration config;
+
     @Override
-    protected Endpoint<Exchange> createEndpoint(String uri, String remaining, Map parameters) throws Exception {
-        final CamelContext targetContext =
-            getCamelContext().getRegistry().lookup(remaining, CamelContext.class);
-        if (targetContext == null) {
-            throw new IllegalArgumentException(
-                String.format(NO_REGISTERED_CONTEXT, targetContext));
+    protected ProcessorEndpoint createEndpoint(String uri, String remaining, Map parameters) throws Exception {
+        final CamelContext targetContext;
+        if (equalsIgnoreCase(uri, AXIOM_HOST)) {
+            targetContext = getCamelContext();
+        } else {
+            targetContext = lookup(remaining, CamelContext.class);
+            if (targetContext == null) {
+                throw new IllegalArgumentException(
+                    String.format(NO_REGISTERED_CONTEXT, targetContext));
+            }
         }
-        return null;
+        final ContextProcessingNode processor = lookupProcessingNode();
+        processor.setContext(targetContext);
+        return new ProcessorEndpoint(uri, this, processor);
     }
 
+    private ContextProcessingNode lookupProcessingNode() {
+        return lookup(config.getString(CONTEXT_PROCESSOR_BEANID), ContextProcessingNode.class);
+    }
+
+    public Configuration getConfiguration() {
+        return config;
+    }
+
+    public void setConfiguration(Configuration config) {
+        this.config = config;
+    }
 }

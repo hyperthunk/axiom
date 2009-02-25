@@ -33,9 +33,11 @@ module Axiom
   # axiom control channel, allowing start/stop/configuration
   # of the other <i>managed</i> camel contexts.
   class DefaultProcessingNode
-    include org.apache.camel.Processor
+    include org.axiom.integration.camel.ContextProcessingNode
 
-    attr_accessor :camel_context
+    attr_accessor :context
+    alias getContext context
+    alias setContext context=
 
     def process(exchange)
       in_channel = exchange.getIn
@@ -43,9 +45,9 @@ module Axiom
       return unless [:start, :stop, :configure].include? command
       
       if command == :configure
-        @camel_context.addRoutes(additional_routes in_channel)
+        @context.addRoutes(additional_routes in_channel)
       else
-        @camel_context.send command
+        @context.send command
       end
     end
 

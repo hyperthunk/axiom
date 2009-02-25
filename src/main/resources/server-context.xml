@@ -63,10 +63,12 @@
         <lang:property name="properties" ref="config"/>
     </lang:jruby>
 
-    <lang:jruby id="control-channel-default-processor"
+    <!-- axiom.control.processor.default -->
+    <lang:jruby
+        scope="prototype"
+        id="axiom.control.processor.default"
         script-source="classpath:/ruby/default_processing_node.rb"
-        script-interfaces="org.apache.camel.Processor">
-    </lang:jruby>
+        script-interfaces="org.apache.camel.Processor" />
 
     <!-- lets configure the ActiveMQ JMS broker server to listen on TCP 61616 -->
     <!--<broker:broker useJmx="false" persistent="false" brokerName="localhost">
