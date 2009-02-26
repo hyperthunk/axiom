@@ -28,17 +28,17 @@
 require 'axiom/core/route_builder_configurator'
 require 'axiom/core/route_builder'
 
-describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
+describe Axiom::Core::RouteBuilderConfigurator, "when configuring routes" do
 
   it "should return a route builder instance, passing the supplied block" do
     theBlock = lambda { 'ok' }
-    config = Axiom::RouteBuilderConfigurator.new
+    config = Axiom::Core::RouteBuilderConfigurator.new
     route_builder = config.route &theBlock
     route_builder.configure.should == 'ok'
   end
 
   it "should evaluate ruby source code and configure a builder instance" do
-    config = Axiom::RouteBuilderConfigurator.new
+    config = Axiom::Core::RouteBuilderConfigurator.new
     route_builder = config.configure 'route { from("direct:start").to("mock:result") }'
     check_basic_route route_builder
   end

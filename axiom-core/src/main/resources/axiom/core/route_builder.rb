@@ -29,29 +29,31 @@ require 'axiom/core/functor'
 require 'axiom/core/processor'
 
 module Axiom
+  module Core
 
-  # wraps the camel RouteBuilder and evaluates a block of
-  # route configuration code in the instance context (thereby
-  # providing a convenient and simpilfied syntax for defining
-  # RouteBuilder instances without messy java noise)
-  class SimpleRouteBuilder < org.apache.camel.builder.RouteBuilder
-    include Axiom::Functor
+    # wraps the camel RouteBuilder and evaluates a block of
+    # route configuration code in the instance context (thereby
+    # providing a convenient and simpilfied syntax for defining
+    # RouteBuilder instances without messy java noise)
+    class SimpleRouteBuilder < org.apache.camel.builder.RouteBuilder
+      include Functor
 
-    # adds all the header k=>v pairs from the supplied hash
-    # to the current route
+      # adds all the header k=>v pairs from the supplied hash
+      # to the current route
 
-    def add_header hash
-      Axiom::Processor.new do |exchange|
-        out_channel = exchange.out
-        hash.each { |k, v| out_channel.set_header k, v }
+      def add_header hash
+        Processor.new do |exchange|
+          out_channel = exchange.out
+          hash.each { |k, v| out_channel.set_header k, v }
+        end
+      end
+
+      # see the javadoc for org.apache.camel.RouteBuilder
+
+      def configure
+        instance_eval &self
       end
     end
 
-    # see the javadoc for org.apache.camel.RouteBuilder
-
-    def configure
-      instance_eval &self
-    end
   end
-
 end

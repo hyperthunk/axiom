@@ -32,17 +32,17 @@ import org.apache.camel.Exchange
 require 'axiom/core/route_builder'
 require 'axiom/core/route_builder_configurator'
 
-describe Axiom::SimpleRouteBuilder,
+describe Axiom::Core::SimpleRouteBuilder,
   "when configuring routes using a user defined block of java DSL code" do
 
   it "should puke if the block is missing" do
     lambda do
-      Axiom::SimpleRouteBuilder.new
+      Axiom::Core::SimpleRouteBuilder.new
     end.should raise_error
   end
 
   it "should execute the block's routing instructions in the context of the builder object instance" do
-    route_builder = Axiom::SimpleRouteBuilder.new do
+    route_builder = Axiom::Core::SimpleRouteBuilder.new do
         from("direct:start").to("mock:result")
     end
     check_basic_route route_builder
@@ -50,16 +50,17 @@ describe Axiom::SimpleRouteBuilder,
 
 end
 
-describe Axiom::SimpleRouteBuilder,
+describe Axiom::Core::SimpleRouteBuilder,
   "when adding headers dynamically with the DSL wrapper method" do
 
   it "should generate a processor instance for calls to set_header" do
-    Axiom::SimpleRouteBuilder.new{}.add_header({}).class.should == Axiom::Processor
+    Axiom::Core::SimpleRouteBuilder.new{}.add_header({}).
+        class.should == Axiom::Core::Processor
   end
 
   it "should not puke if the supplied header values are nil" do
     lambda do
-      Axiom::SimpleRouteBuilder.new{}.add_header(nil)
+      Axiom::Core::SimpleRouteBuilder.new{}.add_header(nil)
     end.should_not raise_error
   end
 
@@ -77,7 +78,7 @@ describe Axiom::SimpleRouteBuilder,
       mock_message.expects(:set_header).with(k,v).at_least_once
     end
 
-    processor = Axiom::SimpleRouteBuilder.new{}.add_header(new_headers)
+    processor = Axiom::Core::SimpleRouteBuilder.new{}.add_header(new_headers)
     processor.process(ex)
   end
 

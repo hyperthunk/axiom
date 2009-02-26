@@ -27,9 +27,9 @@
 
 require 'axiom/core/configuration'
 
-describe Axiom::Configuration, "when accessing configuration data in DSL code" do
+describe Axiom::Core::Configuration, "when accessing configuration data in DSL code" do
 
-  include Axiom::Configuration
+  include Axiom::Core::Configuration
 
   before :each do
     org.apache.commons.configuration.Configuration.

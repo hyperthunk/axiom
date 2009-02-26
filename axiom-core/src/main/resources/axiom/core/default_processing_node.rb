@@ -28,41 +28,43 @@
 require 'axiom/core/processor'
 
 module Axiom
+  module Core
 
-  # Implements the default processing strategy for the
-  # axiom control channel, allowing start/stop/configuration
-  # of the other <i>managed</i> camel contexts.
-  class DefaultProcessingNode
-    include org.axiom.integration.camel.ContextProcessingNode
+    # Implements the default processing strategy for the
+    # axiom control channel, allowing start/stop/configuration
+    # of the other <i>managed</i> camel contexts.
+    class DefaultProcessingNode
+      include org.axiom.integration.camel.ContextProcessingNode
 
-    attr_accessor :context
-    alias getContext context
-    alias setContext context=
+      attr_accessor :context
+      alias getContext context
+      alias setContext context=
 
-    def process(exchange)
-      in_channel = exchange.getIn
-      command = in_channel.getHeader("command").to_s.downcase.to_sym
-      return unless [:start, :stop, :configure].include? command
-      
-      if command == :configure
-        @context.addRoutes(additional_routes in_channel)
-      else
-        @context.send command
+      def process(exchange)
+        in_channel = exchange.getIn
+        command = in_channel.getHeader("command").to_s.downcase.to_sym
+        return unless [:start, :stop, :configure].include? command
+
+        if command == :configure
+          @context.addRoutes(additional_routes in_channel)
+        else
+          @context.send command
+        end
       end
-    end
 
-    private
+      private
 
-    def additional_routes in_channel
-      # this next line looks odd in ruby, but ensures that we act as a
-      # good citizen in terms of being a data type channel for route builders 
-      builder = in_channel.getBody(org.apache.camel.builder.RouteBuilder.class);
-      builder.route_list
+      def additional_routes in_channel
+        # this next line looks odd in ruby, but ensures that we act as a
+        # good citizen in terms of being a data type channel for route builders
+        builder = in_channel.getBody(org.apache.camel.builder.RouteBuilder.class);
+        builder.route_list
+      end
+
     end
 
   end
-  
 end
 
 # this return vaule of the script is to aid with spring integration
-Axiom::DefaultProcessingNode.new
+Axiom::Core::DefaultProcessingNode.new

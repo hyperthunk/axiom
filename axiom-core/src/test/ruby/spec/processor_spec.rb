@@ -27,25 +27,25 @@
 
 require 'axiom/core/processor'
 
-describe Axiom::Processor, "when initializing a new instance" do
+describe Axiom::Core::Processor, "when initializing a new instance" do
 
   it "should puke if the expected block is missing" do
-    lambda { Axiom::Processor.new }.should raise_error
+    lambda { Axiom::Core::Processor.new }.should raise_error
   end
   
 end
 
-describe Axiom::Processor,
+describe Axiom::Core::Processor,
   "when processing a user defined instructions against an exchange" do
 
   it "should call the supplied block to perform processing" do
     thing = stub()
-    Axiom::Processor.new {|_| thing }.process.should eql(thing)
+    Axiom::Core::Processor.new {|_| thing }.process.should eql(thing)
   end
 
   it "should pass the exchange instance to the processing block" do
     mock_exchange = org.apache.camel.Exchange.new
-    Axiom::Processor.new { |exchange|
+    Axiom::Core::Processor.new { |exchange|
       exchange.should === mock_exchange
     }.process mock_exchange
   end

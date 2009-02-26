@@ -33,7 +33,7 @@ import java.util.List
 require 'axiom/core/route_builder'
 require 'axiom/core/default_processing_node'
 
-describe Axiom::DefaultProcessingNode,
+describe Axiom::Core::DefaultProcessingNode,
   "when interacting with a subordinate context via the control channel" do
 
   [:start, :stop].each do |instruction|
@@ -46,7 +46,7 @@ describe Axiom::DefaultProcessingNode,
       mock_channel = Message.new
       mock_channel.stubs(:getHeader).returns "test", instruction.to_s
 
-      processor = Axiom::DefaultProcessingNode.new
+      processor = Axiom::Core::DefaultProcessingNode.new
       processor.context = context
       2.times { processor.process(stubbed_exchange mock_channel) }
     end
@@ -58,9 +58,9 @@ describe Axiom::DefaultProcessingNode,
 
     mock_channel = Message.new
     mock_channel.stubs(:getHeader).returns "configure"
-    mock_channel.stubs(:getBody).returns Axiom::SimpleRouteBuilder.new {}
+    mock_channel.stubs(:getBody).returns Axiom::Core::SimpleRouteBuilder.new {}
 
-    processor = Axiom::DefaultProcessingNode.new
+    processor = Axiom::Core::DefaultProcessingNode.new
     processor.context = context
     processor.process(stubbed_exchange mock_channel)
   end
