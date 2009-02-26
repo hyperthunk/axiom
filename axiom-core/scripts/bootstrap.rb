@@ -40,16 +40,16 @@ route {
     inOut.to(control_channel)
 
   intercept(xpath('/config[count(routes) > 0]')).
-    to(config >> 'axiom.control.channel.nodes.xml2code')
+    to(config >> 'axiom.core.control.processors.xml2code')
     process(add_header "payload-classifier" => 'code').proceed
 
   intercept(header('payload-classifier').isEqualTo('code')).
-    to('bean:route-builder-dsl-evaluator/configure').proceed
+    to(config >> 'axiom.core.control.processors.evaluator').proceed
 
   from(control_channel).
-    processRef(config >> 'axiom.control.processor.id').
+    processRef(config >> 'axiom.core.control.processors.id').
       proceed.choice.
         when(header("command").isEqualTo("shutdown")).
-          to(config >> 'axiom.control.channel.shutdown').
+          to(config >> 'axiom.core.control.channel.shutdown').
         otherwise.stop # stops the routing, not the server itself!
 }

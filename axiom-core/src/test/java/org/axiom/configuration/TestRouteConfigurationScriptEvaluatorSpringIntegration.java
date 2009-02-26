@@ -29,21 +29,20 @@
 
 package org.axiom.configuration;
 
-import org.axiom.configuration.RouteConfigurationScriptEvaluator;
+import static junit.framework.Assert.assertTrue;
+import org.apache.camel.builder.RouteBuilder;
+import static org.apache.commons.io.FileUtils.*;
+import static org.hamcrest.CoreMatchers.*;
+import static org.junit.Assert.*;
 import org.junit.Test;
-import static org.junit.Assert.assertThat;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
-import org.springframework.core.io.ClassPathResource;
-import static org.hamcrest.CoreMatchers.instanceOf;
-import org.apache.camel.builder.RouteBuilder;
-import static org.apache.commons.io.FileUtils.readFileToString;
-import static junit.framework.Assert.assertTrue;
 
 import java.io.IOException;
 

@@ -24,32 +24,31 @@
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
  */
 
 package org.axiom.service;
 
-import org.junit.runner.RunWith;
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertThat;
-import org.apache.commons.configuration.Configuration;
-import org.apache.commons.io.FileUtils;
-import static org.apache.commons.io.FileUtils.readFileToString;
+import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
-import org.jmock.Mockery;
-import org.jmock.Expectations;
-import org.jmock.api.Action;
-import org.jmock.internal.ExpectationBuilder;
-import org.jmock.internal.ExpectationCollector;
-import org.jmock.integration.junit4.JMock;
-import org.springframework.core.io.ClassPathResource;
+import org.apache.commons.configuration.Configuration;
+import static org.apache.commons.io.FileUtils.*;
 import org.axiom.configuration.RouteConfigurationScriptEvaluator;
-import static org.hamcrest.CoreMatchers.instanceOf;
+import org.jmock.Expectations;
+import static org.jmock.Expectations.*;
+import org.jmock.Mockery;
+import org.jmock.lib.legacy.ClassImposteriser;
+import org.jmock.integration.junit4.JMock;
+import static org.junit.Assert.*;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.core.io.ClassPathResource;
 
-import java.io.IOException;
 import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 @RunWith(JMock.class)
 public class TestBootstrapRouteLoader {
@@ -57,15 +56,19 @@ public class TestBootstrapRouteLoader {
     private Mockery mockery;
     private Configuration config;
     private RouteConfigurationScriptEvaluator evaluator;
+    private RouteBuilder builder;
 
     protected static final String TEST_BOOT_SCRIPT = "test-boot.rb";
     protected static final String CP_BOOT_SCRIPT = String.format("classpath:%s", TEST_BOOT_SCRIPT);
 
     @Before
     public void beforeEach() throws Exception {
-        mockery = new Mockery();
+        mockery = new Mockery() {{
+            setImposteriser(ClassImposteriser.INSTANCE);
+        }};
         config = mockery.mock(Configuration.class);
         evaluator = mockery.mock(RouteConfigurationScriptEvaluator.class);
+        builder = mockery.mock(RouteBuilder.class);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -84,7 +87,9 @@ public class TestBootstrapRouteLoader {
             one(config).getString(BootstrapRouteLoader.SCRIPT_URI_PROPERTY_KEY,
                 "classpath:default-bootstrap.rb");
             will(returnValue(CP_BOOT_SCRIPT));
-            allowing(evaluator);
+            allowing(evaluator).configure(with(any(String.class)));
+            will(returnValue(builder));
+            allowing(builder);
         }});
         load();
     }
@@ -113,14 +118,14 @@ public class TestBootstrapRouteLoader {
         load();
     }
 
-    private RouteBuilder load() {
-        return new BootstrapRouteLoader(config, evaluator).load();
-    }
-
     @Test
     public void itShouldReturnTheRouteBuilderGeneratedByTheEvaluator() {
+        final Collection<Route> routes = new ArrayList<Route>();
         final RouteBuilder routeBuilder = new RouteBuilder() {
             @Override public void configure() throws Exception {}
+            @Override public List<Route> getRouteList() throws Exception {
+                return (List<Route>) routes;
+            }
         };
 
         mockery.checking(new Expectations() {{
@@ -131,6 +136,10 @@ public class TestBootstrapRouteLoader {
             will(returnValue(routeBuilder));
         }});
 
-        assertThat(load(), instanceOf(RouteBuilder.class));
+        assertThat(load(), same(routes));
+    }
+
+    private List<Route> load() {
+        return new BootstrapRouteLoader(config, evaluator).load();
     }
 }

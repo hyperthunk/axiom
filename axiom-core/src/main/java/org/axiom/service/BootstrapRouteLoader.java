@@ -24,26 +24,24 @@
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
  */
 
 package org.axiom.service;
 
+import org.apache.camel.Route;
 import org.apache.commons.configuration.Configuration;
-import static org.apache.commons.lang.Validate.notNull;
-import static org.apache.commons.lang.StringUtils.startsWithIgnoreCase;
-import static org.apache.commons.lang.StringUtils.substringAfter;
-import static org.apache.commons.io.FileUtils.readFileToString;
-import org.apache.camel.builder.RouteBuilder;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.ClassPathResource;
+import static org.apache.commons.io.FileUtils.*;
+import static org.apache.commons.lang.StringUtils.*;
+import static org.apache.commons.lang.Validate.*;
 import org.axiom.configuration.RouteConfigurationScriptEvaluator;
+import org.springframework.core.io.ClassPathResource;
+import org.springframework.core.io.Resource;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-class BootstrapRouteLoader {
+class BootstrapRouteLoader implements RouteLoader {
 
     protected static final String SCRIPT_URI_PROPERTY_KEY = "axiom.bootstrap.script.url";
     protected static final String DEFAULT_SCRIPT_URI = "classpath:default-bootstrap.rb";
@@ -59,12 +57,12 @@ class BootstrapRouteLoader {
         this.configuration = configuration;
     }
 
-    public RouteBuilder load() {
+    public List<Route> load() {
         try {
             final String bootstrapUri = normalizedScriptUri();
             final String bootstrapCode = readFileToString(new File(bootstrapUri));
-            return scriptEvaluator.configure(bootstrapCode);
-        } catch (IOException e) {
+            return scriptEvaluator.configure(bootstrapCode).getRouteList();
+        } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
     }
