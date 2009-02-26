@@ -25,33 +25,25 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'ruby/route_builder'
-require 'ruby/configuration'
-
 module Axiom
+  
+  module Configuration
 
-  # provides a mechanism for evaluating a script (source) in the
-  # context of the current JRuby runtime (which is nigh on impossible to
-  # get out of spring otherwise - creating a second runtime is semantically
-  # incorrect), and having the result evaluated as a block passed to RouteBuider
-  class RouteBuilderConfigurator
-    include org.axiom.configuration.RouteConfigurationScriptEvaluator
-    include Axiom::Configuration
+    attr_accessor :properties
+    alias setProperties properties=
 
-    # convenience hook for script writers
-    #
-    def route &block
-      Axiom::SimpleRouteBuilder.new &block
+    def [] key
+      key = key.to_s
+      # fail "no configuration exists for key #{key}" unless @properties.containsKey key
+      @properties.getString key
     end
 
-    # configures the supplied script source in the context of a RouteBuilder instance
-    #
-    def configure(body)
-      eval body
+    alias_method :>>, :[]
+
+    def config
+      self
     end
+
   end
 
 end
-
-# This return value (for the script) is a hook for spring-framework integration
-Axiom::RouteBuilderConfigurator.new

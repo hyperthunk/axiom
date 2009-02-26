@@ -25,7 +25,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'ruby/configuration'
+require 'axiom/core/configuration'
 
 describe Axiom::Configuration, "when accessing configuration data in DSL code" do
 

@@ -25,8 +25,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'ruby/route_builder_configurator'
-require 'ruby/route_builder'
+require 'axiom/core/route_builder_configurator'
+require 'axiom/core/route_builder'
 
 describe Axiom::RouteBuilderConfigurator, "when configuring routes" do
 

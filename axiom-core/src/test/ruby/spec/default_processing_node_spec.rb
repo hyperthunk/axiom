@@ -30,8 +30,8 @@ import org.apache.camel.Exchange
 import org.apache.camel.Message
 import java.util.List
 
-require 'ruby/route_builder'
-require 'ruby/default_processing_node'
+require 'axiom/core/route_builder'
+require 'axiom/core/default_processing_node'
 
 describe Axiom::DefaultProcessingNode,
   "when interacting with a subordinate context via the control channel" do

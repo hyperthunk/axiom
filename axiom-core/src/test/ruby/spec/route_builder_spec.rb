@@ -29,8 +29,8 @@ import org.apache.camel.builder.RouteBuilder
 import org.apache.commons.configuration.Configuration
 import org.apache.camel.Exchange
 
-require 'ruby/route_builder'
-require 'ruby/route_builder_configurator'
+require 'axiom/core/route_builder'
+require 'axiom/core/route_builder_configurator'
 
 describe Axiom::SimpleRouteBuilder,
   "when configuring routes using a user defined block of java DSL code" do

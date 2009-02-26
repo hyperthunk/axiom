@@ -25,25 +25,16 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'axiom/core/functor'
+
 module Axiom
-  
-  module Configuration
 
-    attr_accessor :properties
-    alias setProperties properties=
-
-    def [] key
-      key = key.to_s
-      # fail "no configuration exists for key #{key}" unless @properties.containsKey key
-      @properties.getString key
-    end
-
-    alias_method :>>, :[]
-
-    def config
-      self
-    end
-
+  # implements a simple camel processor that
+  # delegates to a block for defered execution
+  class Processor
+    include org.apache.camel.Processor
+    include Axiom::Functor
+    alias process __call__
   end
 
-end
+end  

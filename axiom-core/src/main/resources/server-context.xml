@@ -58,7 +58,7 @@
       factory-method="createConfiguration"/>
 
     <lang:jruby id="axiomCoreControlCodeEvaluator"
-        script-source="classpath:ruby/route_builder_configurator.rb"
+        script-source="classpath:axiom/core/route_builder_configurator.rb"
         script-interfaces="org.axiom.configuration.RouteConfigurationScriptEvaluator">
         <lang:property name="properties" ref="axiomCoreConfiguration"/>
     </lang:jruby>
@@ -67,7 +67,7 @@
     <lang:jruby
         scope="prototype"
         id="axiomDefaultControlProcessor"
-        script-source="classpath:/ruby/default_processing_node.rb"
+        script-source="classpath:/axiom/core/default_processing_node.rb"
         script-interfaces="org.apache.camel.Processor" />
 
     <!-- lets configure the ActiveMQ JMS broker server to listen on TCP 61616 -->

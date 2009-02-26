@@ -25,7 +25,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'ruby/processor'
+require 'axiom/core/processor'
 
 describe Axiom::Processor, "when initializing a new instance" do
 

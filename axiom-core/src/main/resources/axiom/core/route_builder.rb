@@ -25,8 +25,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'ruby/functor'
-require 'ruby/processor'
+require 'axiom/core/functor'
+require 'axiom/core/processor'
 
 module Axiom
 
