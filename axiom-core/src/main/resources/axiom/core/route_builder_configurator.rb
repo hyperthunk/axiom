@@ -27,6 +27,7 @@
 
 require 'axiom/core/route_builder'
 require 'axiom/core/configuration'
+require 'axiom/plugins'
 
 module Axiom
   module Core
@@ -38,6 +39,7 @@ module Axiom
     class RouteBuilderConfigurator
       include org.axiom.configuration.RouteConfigurationScriptEvaluator
       include Configuration
+      include Axiom::Plugins
 
       # convenience hook for script writers
       def route &block
@@ -48,6 +50,7 @@ module Axiom
       def configure(script_body)
         eval script_body
       end
+
     end
 
   end

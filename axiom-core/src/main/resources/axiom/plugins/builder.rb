@@ -67,7 +67,7 @@ module Axiom
     end
 
     def fail_properties args
-      raise ArgumentError.new "Only named args supported: supplied #{args}"
+      raise ArgumentError.new("Only named args supported: supplied #{args}")
     end
 
   end
