@@ -33,6 +33,7 @@ import org.apache.camel.ProducerTemplate;
 import org.apache.camel.Processor;
 import org.apache.camel.Exchange;
 import org.apache.camel.builder.RouteBuilder;
+import static org.apache.camel.builder.xml.XPathBuilder.xpath;
 import org.apache.camel.component.mock.MockEndpoint;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
@@ -77,6 +78,9 @@ public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
                 from("direct:start").
                     filter(body().contains("stuff")).
                 to("mock:result");
+
+                from("x").intercept(xpath("/foo/bar[count(child::*) > 0]")).
+                    tryBlock().filter().xpath("*");
             }
         };
         camelContext.addRoutes(builder.getRouteList());

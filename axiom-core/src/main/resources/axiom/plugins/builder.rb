@@ -1,4 +1,3 @@
-# Copyright (c) 2009, Tim Watson
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -25,33 +24,44 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'axiom/core/route_builder'
-require 'axiom/core/configuration'
-
 module Axiom
-  module Core
+  module Plugins
 
-    # provides a mechanism for evaluating a script (source) in the
-    # context of the current JRuby runtime (which is nigh on impossible to
-    # get out of spring otherwise - creating a second runtime is semantically
-    # incorrect), and having the result evaluated as a block passed to RouteBuider
-    class RouteBuilderConfigurator
-      include org.axiom.configuration.RouteConfigurationScriptEvaluator
-      include Configuration
+    def self.plugin name, &block
+      self.send :define_method, name, &block
+    end
 
-      # convenience hook for script writers
-      def route &block
-        SimpleRouteBuilder.new &block
+    def plugin name, &block
+      Axiom::Plugins.plugin name, &block
+    end
+
+    # TODO: implement load_plugin to do a *sensible* classpath search and require...
+
+    def register_plugin name, clazz
+      fail_registration(clazz) unless clazz.respond_to? :new
+      plugin(name) { |*args| clazz.send(:new, *args) }
+    end
+
+    def lookup_plugin name, plugin_id
+      plugin(name) do |*args|
+        fail_properties(args) unless args.size <= 1
+        thing = context.registry.lookup plugin_id
+        (args.first || {}).each do |k,v|
+          property = "#{k}=".to_sym
+          thing.send(property, v) if thing.respond_to? property # TODO: fail instead!?
+        end
       end
+    end
 
-      # configures the supplied script source in the context of a RouteBuilder instance
-      def configure(script_body)
-        eval script_body
-      end
+    private
+
+    def fail_registration(clazz)
+      fail "Cannot register class #{clazz} as a plugin because it has no public constructor!"
+    end
+
+    def fail_properties(args)
+      raise ArgumentError.new "Only named args supported: supplied #{args}"
     end
 
   end
 end
-
-# This return value (for the script) is a hook for spring-framework integration
-Axiom::Core::RouteBuilderConfigurator.new
