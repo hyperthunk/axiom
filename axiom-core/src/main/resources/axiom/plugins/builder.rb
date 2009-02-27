@@ -1,3 +1,4 @@
+# Copyright (c) 2009, Tim Watson
 # All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without modification,
@@ -23,6 +24,7 @@
 # LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
+
 
 module Axiom
   module Plugins
