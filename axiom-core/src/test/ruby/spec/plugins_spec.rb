@@ -29,7 +29,20 @@ require 'axiom'
 
 import org.apache.camel.Predicate
 
-describe Axiom::Plugins, "when adding plugins via the registry" do
+describe Axiom::Plugins, "when binding a block of code to a (named) plugin method" do
+
+  include Axiom::Plugins
+
+  it "should define the given method on the current invocation target with the supplied block" do
+    plugin(:myplugin) { 1 }
+
+    self.should respond_to(:myplugin)
+    myplugin.should eql(1)
+  end
+
+end
+
+describe Axiom::Plugins, "when adding plugins via a registry" do
 
   include Axiom::Plugins
 
@@ -48,27 +61,50 @@ describe Axiom::Plugins, "when adding plugins via the registry" do
   end
 
   it "should fail if you try and pass positional arguments to the generated method" do
-    this = self
-    [:context, :registry, :lookup].each { |m| this.stubs(m).returns this }
-
+    immitate_lookups
     lookup_plugin :self_hosted!, 'anyid'
+    
     lambda do
       self_hosted! :this_should_go_bang
     end.should raise_error
   end
 
-  it "should fail if you try and pass more than one argument (for another reason)"
+  it "should fail if you try and pass more than one argument (for another reason)" do
+    immitate_lookups
+    lookup_plugin :another_self_hosted, 'anotherId'
 
-  it "should fail if you try and set an unsupported named argument (property)"
+    lambda do
+      another_self_hosted({:name => 'foo'}, 456)
+    end.should raise_error
+  end
 
-  it "should set all supplied named arguments on the resulting object/plugin"
+  it "should fail if you try to set an unsupported property" do
+    immitate_lookups :foo, :bar
+    lookup_plugin :foobar_no_baz, 'ignoredId'
+    
+    lambda do
+      foobar_no_baz :foo => 'foo', :bar => 'bar', :baz => 'should go bang'
+    end.should raise_error
+  end
+
+  it "should set all supplied named arguments on the resulting object/plugin" do
+    immitate_lookups :foo, :bar
+    lookup_plugin :set_property_test, 'ignoredAgain'
+
+    self.expects(:foo=).with 'foo'
+    self.expects(:bar=).with 'bar'
+    set_property_test :foo => 'foo', :bar => 'bar'
+  end
 
 end
-
 
 describe Axiom::Plugins, "when registering an existing class as a plugin" do
 
   include Axiom::Plugins
+
+  it "should puke if the second argument is nil" do
+    lambda { register_plugin :plugin2, nil }.should raise_error
+  end
 
   it "should pull the ctor method from the supplied class and pass to 'plugin'" do
     register_plugin :sample, org.axiom.SamplePlugin

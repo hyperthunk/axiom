@@ -41,3 +41,9 @@ helper_for /control channel/i do
   end
 end
 
+helper_for /plugins/ do
+  def immitate_lookups *additional_methods
+    ((additional_methods || []) +
+    [:context, :registry, :lookup]).each { |m| self.stubs(m).returns self }
+  end
+end

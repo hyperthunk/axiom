@@ -48,18 +48,23 @@ module Axiom
         thing = context.registry.lookup plugin_id
         (args.first || {}).each do |k,v|
           property = "#{k}=".to_sym
-          thing.send(property, v) if thing.respond_to? property # TODO: fail instead!?
+          fail_property_assignment property, thing unless thing.respond_to? property
+          thing.send(property, v)
         end
       end
     end
 
     private
 
-    def fail_registration(clazz)
+    def fail_property_assignment property, thing
+      fail "Property #{property} is not supported by #{thing}."
+    end
+
+    def fail_registration clazz
       fail "Cannot register class #{clazz} as a plugin because it has no public constructor!"
     end
 
-    def fail_properties(args)
+    def fail_properties args
       raise ArgumentError.new "Only named args supported: supplied #{args}"
     end
 
