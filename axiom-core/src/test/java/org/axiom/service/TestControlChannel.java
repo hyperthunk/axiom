@@ -31,6 +31,11 @@ package org.axiom.service;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.processor.interceptor.Tracer;
+import org.apache.camel.processor.LoggingLevel;
+import org.apache.camel.spi.Registry;
+import org.apache.camel.spi.InterceptStrategy;
+import org.apache.commons.configuration.Configuration;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -49,6 +54,9 @@ public class TestControlChannel {
     private CamelContext context;
     private RouteLoader loader;
     private RouteBuilder builder;
+    private Tracer tracer;
+    private Configuration config;
+    private Registry registry;
 
     @Before
     public void beforeEach() {
@@ -58,11 +66,19 @@ public class TestControlChannel {
         context = mockery.mock(CamelContext.class);
         loader = mockery.mock(RouteLoader.class);
         builder = mockery.mock(RouteBuilder.class);
+        tracer = mockery.mock(Tracer.class);
+        config = mockery.mock(Configuration.class);
+        registry = mockery.mock(Registry.class);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void itShouldPukeIfTheSuppliedContextIsNull() {
-        new ControlChannel(null);
+        new ControlChannel(null, tracer);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void itShouldPukeIfTheSuppliedTracerIsNull() {
+        new ControlChannel(context, null);
     }
 
     @Test(expected=IllegalArgumentException.class)
@@ -103,4 +119,79 @@ public class TestControlChannel {
         new ControlChannel(context).load(loader);
     }
 
+    @Test
+    public void itShouldPullTheConfigurationDataFromTheContextRegistry() {
+        mockery.checking(new Expectations() {{
+            stubConfigurationData();
+            allowing(config);
+            allowing(context);
+        }});
+
+        new ControlChannel(context).configure();
+    }
+
+    @Test
+    public void itShouldNotExplicitlySetupTracingWhenDisabledInConfigurationSettings() {
+        stubConfigurationData().enableTracing(false);
+        mockery.checking(new Expectations() {{
+            never(context).addInterceptStrategy((InterceptStrategy) with(anything()));
+            allowing(registry);
+        }});
+
+        new ControlChannel(context).configure();
+    }
+
+    @Test
+    public void itShouldAddTracerWhenTracingIsEnabled() {
+        final Tracer tracer = new Tracer();
+        stubConfigurationData().
+            enableTracing().
+            stubTraceLevel("error");
+        mockery.checking(new Expectations() {{
+            one(context).addInterceptStrategy(tracer);
+            allowing(registry);
+        }});
+
+        new ControlChannel(context, tracer).configure();
+    }
+
+    @Test
+    public void itShouldRetrieveAndSetTheLoggingLevelForTracing() {
+        stubConfigurationData().
+            enableTracing().
+            stubTraceLevel("error");
+        mockery.checking(new Expectations() {{
+            one(tracer).setLogLevel(LoggingLevel.ERROR);
+            allowing(context);
+            allowing(registry);
+        }});
+
+        new ControlChannel(context, tracer).configure();
+    }    
+
+    private TestControlChannel stubConfigurationData() {
+        mockery.checking(new Expectations() {{
+            allowing(context).getRegistry();will(returnValue(registry));
+            allowing(registry).lookup(ControlChannel.CONFIG_BEAN_ID, Configuration.class);
+            will(returnValue(config));
+        }});
+        return this;
+    }
+
+    private TestControlChannel enableTracing() {return enableTracing(true);}
+
+    private TestControlChannel enableTracing(final boolean setting) {
+        mockery.checking(new Expectations() {{
+            allowing(config).getBoolean(ControlChannel.TRACE_ENABLED_KEY, true);
+            will(returnValue(setting));
+        }});
+        return this;
+    }
+
+    private void stubTraceLevel(final String level) {
+        mockery.checking(new Expectations() {{
+            allowing(config).getString(ControlChannel.TRACE_LEVEL_STRING, "INFO");
+            will(returnValue(level));
+        }});
+    }
 }

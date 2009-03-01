@@ -29,13 +29,28 @@
 package org.axiom.service;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.processor.LoggingLevel;
+import org.apache.camel.processor.interceptor.Tracer;
+import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 
 public class ControlChannel {
+
+    static final String TRACE_ENABLED_KEY = "axiom.core.configuration.trace.enabled";
+    static final String CONFIG_BEAN_ID = "axiom.core.configuration.id";
+
     private final CamelContext context;
+    private final Tracer tracer;
+    static final String TRACE_LEVEL_STRING = "axiom.core.configuration.trace.level";
 
     public ControlChannel(final CamelContext context) {
+        this(context, new Tracer());
+    }
+
+    public ControlChannel(final CamelContext context, final Tracer tracer) {
         notNull(context, "Camel context cannot be null.");
+        notNull(tracer, "Tracer cannot be null.");
+        this.tracer = tracer;
         this.context = context;
     }
 
@@ -46,5 +61,25 @@ public class ControlChannel {
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
+    }
+
+    public void configure() {
+        Configuration config =
+            context.getRegistry().lookup(CONFIG_BEAN_ID, Configuration.class);
+        setupTrace(config);
+        
+    }
+
+    private void setupTrace(final Configuration config) {
+        final boolean traceEnabled = config.getBoolean(TRACE_ENABLED_KEY, true);
+        if (traceEnabled) {
+            tracer.setLogLevel(getTraceLevel(config));
+            context.addInterceptStrategy(tracer);
+        }
+    }
+
+    private LoggingLevel getTraceLevel(final Configuration config) {
+        final String level = config.getString(TRACE_LEVEL_STRING, "INFO").toUpperCase();
+        return LoggingLevel.valueOf(level);
     }
 }

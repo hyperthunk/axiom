@@ -1,36 +1,29 @@
-
-* - create an ExternalizedConfigurationSource that reads the default properties and system properties in
-*   - see http://commons.apache.org/configuration/apidocs/index.html for details
-* - make the above class search for additional configuration sources in the axiom.configuration.paths=list:of:paths and load them
-* - embed the ExternalizedConfigurationSource in the spring application context  
-* - declare a Configuration bean which is made by calling the factory method in the above source/factory bean/class
-* - write a BootstrapRouteLoader class (in java) which loads configuration (using the above) and creates a route builder
- - write a ControlChannel class (in java) which takes a route loader and starts up the control channel
-* - write a ContextConfigurationEndpoint (or similar) and have this exposed in the bootstrap.rb routes
-*   - this will allow us to configure multiple camel contexts per jvm
-*   - this will (also) allow us to host camel contexts elsewhere and route instructions to them via and exchange over the network*
- - pull out a parent pom.xml and move the current sources into project 'axiom', integration tests into 'axiom-integration-test'
- - add an 'axiom-server' child project and in it:
+ - axiom-core
+  - create a mechanism for adding the endorsed plugins directory to the $LOAD_PATH
+   - decided on generalized boot handler (configurable) so looking into that next
+  - deal with route/rule specifications coming in off the wire
+   - write xlst for xml2code
+    - think about whether transformations should go the other way!?
+  - think about whether route/rule data should be transient or persistent
+   - discover whether (or not) camel route related objects can easily be accessed and/or serialized
+    - if they are (both easy to access/find in the runtime object graph
+     - if they can be serialized without much hassle - we should put this in for completeness
+     - otherwise it is a prioritization that doesn' need to take place in the first few weeks of Beta.
+ - axiom-server
+   - add an 'axiom-server' child project and in it:
    - create a default entry point so the jar is executable
    - wire the main method with commons-cli so that argument handling is well tested
    - have the main method work out the args and start a ControlChannel using a BootstrapRouteLoader
    - write an axiom mojo so you can run `mvn axiom:deploy axiom:run`
- 
-
- * routing configuration upgrades to external (jvm) contexts
-
- # in the axiom routing send the control channel messages over the wire 
- 
- route {
-   from(config >> 'axiom.control.channel.commands').
-   to('jms:configUpgradesTopic?concurrentConsumers=1')
- }
-
- # on another node, listen for these and use embedded axiom to maintain your routes at runtime
-
- route {
-   from('jms:configUpgradesTopic').to('axiom:configuration-manager')i
-   # or
-   from('jms:configUpgradesTopic').to('bean:axiom-configuration-manager/update')
- }
-
+ - add an 'axiom-client' project
+   - decide on how
+    - a jar and Main.java that just wrap around a jruby script is probably the most consistent approach
+   - just talk to the server using http
+   - convert commands into either camel objects for serialization, or by hand
+ - misc
+  - get maven-assembly-plugin set up to create a proper (usable) bundle of jars and scripts
+  - set up profiles so you can build and package (for distribution) individual components
+  - find somewhere to host binaries for downloading, perhaps sourceforge. 
+  - get maven build generating javadoc
+  - start writing some documentation on github/wiki
+  - set up an axiom blog
