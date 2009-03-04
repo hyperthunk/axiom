@@ -35,16 +35,16 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
 import static org.apache.commons.collections.TransformerUtils.*;
 import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
 import org.jmock.Expectations;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
 
 @SuppressWarnings({"SuspiciousToArrayCall"})
 public abstract class SpecSupport extends Expectations {
 
-    private static final Log log = LogFactory.getLog(SpecSupport.class);
+    private final static Logger log = LoggerFactory.getLogger(SpecSupport.class);
 
     protected SpecSupport justIgnore(final Object... things) {
         for (final Object o : things) allowing(o);
@@ -62,7 +62,8 @@ public abstract class SpecSupport extends Expectations {
                         MessageFormat.format("Expected {0} equal to {1} but was {2}.",
                             propertyName, expectedValue, obj));
                 }
-                log.debug("Object {0} satisfied propertyValueContract{propertyName={1}, expectedValue={2}}.");
+                log.debug("Object {0} satisfied propertyValueContract{propertyName={1}, expectedValue={2}}.",
+                    new Object[] {obj, propertyName, expectedValue});
             }
         };
     };

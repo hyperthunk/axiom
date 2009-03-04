@@ -32,11 +32,10 @@ package org.axiom.configuration;
 
 import org.apache.commons.configuration.*;
 import static org.apache.commons.lang.StringUtils.split;
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static java.io.File.pathSeparator;
-import static java.lang.String.format;
 
 /**
  * Factory for creating {@link org.apache.commons.configuration.Configuration}
@@ -49,7 +48,8 @@ import static java.lang.String.format;
  */
 public class ExternalConfigurationSourceFactory {
 
-    private final Log log = LogFactory.getLog(getClass());
+    private final static Logger log =
+        LoggerFactory.getLogger(ExternalConfigurationSourceFactory.class);
     private final String defaultConfigurationSourcePath;
 
     /**
@@ -60,7 +60,7 @@ public class ExternalConfigurationSourceFactory {
         "axiom.configuration.externals";
 
     private static final String DEFAULT_PROPERTIES_LOG_MSG =
-        "Configuring default properties in %s";
+        "Configuring default properties in {}.";
 
     /**
      * Initializes this with the default axiom properties.
@@ -85,9 +85,9 @@ public class ExternalConfigurationSourceFactory {
     public Configuration createConfiguration() {
         try {
             CompositeConfiguration config = new CompositeConfiguration();
-            log.info("Configuring system properties");
+            log.info("Configuring system properties...");
             config.addConfiguration(new SystemConfiguration());
-            log.info(format(DEFAULT_PROPERTIES_LOG_MSG, defaultConfigurationSourcePath));
+            log.info(DEFAULT_PROPERTIES_LOG_MSG, defaultConfigurationSourcePath);
             config.addConfiguration(new PropertiesConfiguration(defaultConfigurationSourcePath));
             configureAdditionalExternalProperties(config);
             return config;
@@ -99,11 +99,11 @@ public class ExternalConfigurationSourceFactory {
 
     private void configureAdditionalExternalProperties(CompositeConfiguration config) throws ConfigurationException {
         final String paths = config.getString(AXIOM_CONFIGURATION_EXTERNALS);
-        log.info("Configuring additional (external) configuration elements");
+        log.info("Configuring additional (external) configuration elements...");
         if (paths != null) {
             for (final String path :
                     split(paths, pathSeparator)) {
-                log.info(String.format("Configuring external properties in %s", path));
+                log.info("Configuring external properties in {}.", path);
                 //TODO: support for other properties formats (xml, for instance)
                 config.addConfiguration(new PropertiesConfiguration(path));
             }
