@@ -35,6 +35,7 @@ import org.apache.camel.processor.LoggingLevel;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.SpecSupport;
+import static org.axiom.service.TraceBuilder.*;
 import org.junit.runner.RunWith;
 
 @RunWith(JDaveRunner.class)
@@ -54,21 +55,31 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
 
         public void itShouldSetTheLogLevelToTheProvidedValue() {
             fakeLogLevelToError();
-            ignoring(config);
-            checking(this);
+            ignoreFurtherCalls();
 
             specify(builder.build(),
                 satisfies(propertyValueContract("logLevel", setTo(LoggingLevel.ERROR))));
         }
 
-        public void itShouldSetTheTraceInterceptorsToTheProvidedValue() {
+        public void itShouldSetInterceptorTracingToTheConfiguredValue() {
             fakeLogLevelToError();
-            allowing(config).getBoolean(TraceBuilder.TRACE_INTERCEPTORS_KEY);
-            will(returnValue(true));
-            checking(this);
+            fakeInterceptorTraceOn();
+            ignoreFurtherCalls();
 
             specify(builder.build(),
                 satisfies(propertyValueContract("traceInterceptors", setTo(true))));
+        }
+
+        //traceExceptions
+        public void itShouldSetExceptionTracingToTheConfiguredValue() {
+            fakeLogLevelToError();
+            fakeInterceptorTraceOn();
+            allowing(config).getBoolean(TRACE_EXCEPTIONS_KEY);
+            will(returnValue(true));
+            ignoreFurtherCalls();
+
+            specify(builder.build(),
+                satisfies(propertyValueContract("traceExceptions", setTo(true))));
         }
 
         public void itShouldPukeIfTheConfigurationInstanceIsMissing() {
@@ -77,7 +88,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
                     new TraceBuilder(null, tracer);
                 }
             },
-            should.raise(IllegalArgumentException.class, TraceBuilder.MISSING_CONFIG_MSG));
+            should.raise(IllegalArgumentException.class, MISSING_CONFIG_MSG));
         }
 
         public void itShouldPukeIfTheTracerInstanceIsMissing() {
@@ -86,13 +97,24 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
                     new TraceBuilder(config, null);
                 }
             },
-            should.raise(IllegalArgumentException.class, TraceBuilder.MISSING_TRACER_MSG));
+            should.raise(IllegalArgumentException.class, MISSING_TRACER_MSG));
+        }
+
+        private void ignoreFurtherCalls() {
+            ignoring(config);
+            checking(this);
+        }
+
+        private void fakeInterceptorTraceOn() {
+            allowing(config).getBoolean(TRACE_INTERCEPTORS_KEY);
+            will(returnValue(true));
         }
 
         private void fakeLogLevelToError() {
-            allowing(config).getString(TraceBuilder.TRACE_LEVEL_KEY);
+            allowing(config).getString(TRACE_LEVEL_KEY);
             will(returnValue("error"));
         }
+
     }
-    
+
 }

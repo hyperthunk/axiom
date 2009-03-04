@@ -39,7 +39,7 @@ import org.jmock.Expectations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
+import static java.text.MessageFormat.*;
 
 @SuppressWarnings({"SuspiciousToArrayCall"})
 public abstract class SpecSupport extends Expectations {
@@ -59,10 +59,10 @@ public abstract class SpecSupport extends Expectations {
                     new BeanToPropertyValueTransformer(propertyName);
                 if (!ObjectUtils.equals(transformer.transform(obj), expectedValue)) {
                     throw new ExpectationFailedException(
-                        MessageFormat.format("Expected {0} equal to {1} but was {2}.",
+                        format("Expected {0} equal to {1} but was {2}.",
                             propertyName, expectedValue, obj));
                 }
-                log.debug("Object {0} satisfied propertyValueContract{propertyName={1}, expectedValue={2}}.",
+                log.debug("Object {} satisfied propertyValueContract[propertyName={}, expectedValue={}].",
                     new Object[] {obj, propertyName, expectedValue});
             }
         };
