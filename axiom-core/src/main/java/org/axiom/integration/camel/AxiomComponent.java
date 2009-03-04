@@ -30,14 +30,11 @@
 
 package org.axiom.integration.camel;
 
-import org.apache.camel.impl.DefaultComponent;
-import org.apache.camel.impl.ProcessorEndpoint;
-import org.apache.camel.Endpoint;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
+import org.apache.camel.impl.DefaultComponent;
+import org.apache.camel.impl.ProcessorEndpoint;
 import org.apache.commons.configuration.Configuration;
-import static org.apache.commons.lang.StringUtils.startsWithIgnoreCase;
 import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
 
 import java.util.Map;

@@ -43,8 +43,9 @@ describe Axiom::Core::Configuration, "when accessing configuration data in DSL c
   end
 
   it "should treat symbols as strings when looking up keys" do
-    @properties.expects(:getString).with('config_item').once.returns 'ok'
-    (config >> :config_item).should eql('ok')
+    value = :config_item
+    @properties.expects(:getString).with(value.to_s).once.returns 'ok'
+    (config >> value).should eql('ok')
   end
 
   ['axiom.control.routes.direct.start',

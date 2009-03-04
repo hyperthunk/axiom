@@ -92,6 +92,7 @@ public class ExternalConfigurationSourceFactory {
             configureAdditionalExternalProperties(config);
             return config;
         } catch (ConfigurationException e) {
+            log.error(e.getLocalizedMessage());
             throw new RuntimeException(e.getLocalizedMessage(), e);
         }
     }

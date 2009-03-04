@@ -36,12 +36,10 @@ import static org.apache.commons.lang.Validate.*;
 
 public class ControlChannel {
 
-    static final String TRACE_ENABLED_KEY = "axiom.core.configuration.trace.enabled";
     static final String CONFIG_BEAN_ID = "axiom.core.configuration.id";
 
     private final CamelContext context;
     private final Tracer tracer;
-    static final String TRACE_LEVEL_STRING = "axiom.core.configuration.trace.level";
 
     public ControlChannel(final CamelContext context) {
         this(context, new Tracer());
@@ -71,15 +69,17 @@ public class ControlChannel {
     }
 
     private void setupTrace(final Configuration config) {
-        final boolean traceEnabled = config.getBoolean(TRACE_ENABLED_KEY, true);
+        final boolean traceEnabled = config.getBoolean(TraceBuilder.TRACE_ENABLED_KEY, true);
         if (traceEnabled) {
             tracer.setLogLevel(getTraceLevel(config));
+            tracer.setTraceInterceptors(config.getBoolean(TraceBuilder.TRACE_INTERCEPTORS_KEY, false));
+            //tracer.getFormatter().setShowBody(true);
             context.addInterceptStrategy(tracer);
         }
     }
 
     private LoggingLevel getTraceLevel(final Configuration config) {
-        final String level = config.getString(TRACE_LEVEL_STRING, "INFO").toUpperCase();
+        final String level = config.getString(TraceBuilder.TRACE_LEVEL_KEY, "INFO").toUpperCase();
         return LoggingLevel.valueOf(level);
     }
 }

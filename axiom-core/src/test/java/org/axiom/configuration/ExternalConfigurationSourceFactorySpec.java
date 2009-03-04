@@ -24,29 +24,68 @@
  * HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
  * LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
- *
  */
 
 package org.axiom.configuration;
 
-import org.junit.runner.RunWith;
-import org.junit.runners.JUnit4;
-import org.junit.Test;
-import static org.junit.Assert.assertThat;
-import org.apache.commons.configuration.*;
-import org.apache.commons.io.FilenameUtils;
-import org.apache.commons.io.FileUtils;
+import jdave.Block;
+import jdave.Specification;
+import jdave.junit4.JDaveRunner;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.configuration.ConfigurationException;
 import org.apache.commons.lang.StringUtils;
-import static org.jmock.Expectations.equal;
+import org.axiom.SpecSupport;
+import org.junit.runner.RunWith;
 
 import java.io.File;
-import java.util.ArrayList;
 
-@RunWith(JUnit4.class)
-public class TestExternalConfigurationSourceFactory {
+@RunWith(JDaveRunner.class)
+public class ExternalConfigurationSourceFactorySpec
+    extends Specification<ExternalConfigurationSourceFactory> {
 
-    @Test
+    public class WhenComposingMultipleConfigurationSources extends SpecSupport {
+
+        private ExternalConfigurationSourceFactory factory;
+
+        public ExternalConfigurationSourceFactory create() {
+            return factory =
+                new ExternalConfigurationSourceFactory("axiom.test.properties");
+        }
+
+        public void cascadingConfigurationSetupPrefersSystemConfig() throws ConfigurationException {
+            final String key = "axiom.control.channel.in";
+            System.setProperty(key, "direct:control-channel");
+            //axiom.test.properties contains axiom.control.channel.in=direct:start
+
+            final Configuration config = factory.createConfiguration();
+            final String expectedValue = "direct:control-channel";
+            specify(config.getProperty(key), should.equal(expectedValue));
+        }
+
+        public void cascadingConfigurationAddsExternalPropertiesInCascadingOrder() throws ConfigurationException {
+            final String sysKey = "axiom.configuration.externals";
+            System.setProperty(sysKey,
+                StringUtils.join(new Object[]{
+                    "yet.another.axiom.properties",
+                    "another.axiom.properties"
+                }, File.pathSeparator));
+
+            final Configuration config = factory.createConfiguration();
+            final String expectedValue = "yet-another-foo";
+            specify(config.getString("axiom.test.foo"), equal(expectedValue));
+        }
+
+        public void configurationExceptionsResultInFatalRuntimeErrors() throws Exception{
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    new ExternalConfigurationSourceFactory("no-such-file-name").createConfiguration();
+                }
+            }, should.raise(RuntimeException.class));
+        }
+
+    }
+
+    /*@Test
     public void cascadingConfigurationSetupPrefersSystemConfig() throws ConfigurationException {
         final String key = "axiom.control.channel.in";
         System.setProperty(key, "direct:control-channel");
@@ -81,5 +120,5 @@ public class TestExternalConfigurationSourceFactory {
     @Test(expected = RuntimeException.class)
     public void configurationExceptionsResultInFatalRuntimeErrors() {
         new ExternalConfigurationSourceFactory("no-such-file-name").createConfiguration();
-    }
+    }*/
 }

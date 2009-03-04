@@ -47,3 +47,11 @@ helper_for /plugins/ do
     [:context, :registry, :lookup]).each { |m| self.stubs(m).returns self }
   end
 end
+
+helper_for /trace configuration/ do
+  def target_property conf
+    p = conf.lookup
+    p[0,1].upcase!
+    p
+  end
+end
