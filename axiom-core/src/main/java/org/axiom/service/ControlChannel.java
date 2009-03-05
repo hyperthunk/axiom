@@ -29,7 +29,6 @@
 package org.axiom.service;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.processor.LoggingLevel;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
@@ -42,7 +41,7 @@ public class ControlChannel {
     private final Tracer tracer;
 
     public ControlChannel(final CamelContext context) {
-        this(context, new Tracer());
+        this(context, getTracer(context));
     }
 
     public ControlChannel(final CamelContext context, final Tracer tracer) {
@@ -50,6 +49,15 @@ public class ControlChannel {
         notNull(tracer, "Tracer cannot be null.");
         this.tracer = tracer;
         this.context = context;
+    }
+
+    private static Tracer getTracer(final CamelContext context) {
+        Tracer tracer = Tracer.getTracer(context);
+        if (tracer == null) {
+            return new Tracer();
+        } else {
+            return tracer;
+        }
     }
 
     public void load(final RouteLoader loader) {
@@ -64,22 +72,15 @@ public class ControlChannel {
     public void configure() {
         Configuration config =
             context.getRegistry().lookup(CONFIG_BEAN_ID, Configuration.class);
-        setupTrace(config);
-        
+        TraceBuilder builder = new TraceBuilder(config, tracer);
+        context.addInterceptStrategy(builder.build());
     }
 
-    private void setupTrace(final Configuration config) {
-        final boolean traceEnabled = config.getBoolean(TraceBuilder.TRACE_ENABLED_KEY, true);
-        if (traceEnabled) {
-            tracer.setLogLevel(getTraceLevel(config));
-            tracer.setTraceInterceptors(config.getBoolean(TraceBuilder.TRACE_INTERCEPTORS_KEY, false));
-            //tracer.getFormatter().setShowBody(true);
-            context.addInterceptStrategy(tracer);
-        }
+    public CamelContext getContext() {
+        return context;
     }
 
-    private LoggingLevel getTraceLevel(final Configuration config) {
-        final String level = config.getString(TraceBuilder.TRACE_LEVEL_KEY, "INFO").toUpperCase();
-        return LoggingLevel.valueOf(level);
+    public Tracer getTracer() {
+        return tracer;
     }
 }

@@ -28,17 +28,28 @@
 
 package org.axiom.service;
 
-import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.camel.processor.LoggingLevel;
+import org.apache.camel.processor.interceptor.TraceFormatter;
+import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang.Validate.*;
+
+import static java.text.MessageFormat.*;
 
 public class TraceBuilder {
 
-    protected static final String TRACE_INTERCEPTORS_KEY = "axiom.core.configuration.trace.include.interceptors";
-    protected static final String TRACE_EXCEPTIONS_KEY = "axiom.core.configuration.trace.include.exceptions";
-    protected static final String TRACE_ENABLED_KEY = "axiom.core.configuration.trace.enabled";
-    protected static final String TRACE_LEVEL_KEY = "axiom.core.configuration.trace.logLevel";
+    private static final String TRACE_CONFIG_ROOT = "axiom.core.configuration.trace.";
+    protected static final String TRACE_INTERCEPTORS_KEY = format("{0}include.interceptors", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_EXCEPTIONS_KEY = format("{0}include.exceptions", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_ENABLED_KEY = format("{0}enabled", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_LEVEL_KEY = format("{0}logLevel", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_NAME_KEY = format("{0}logName", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_BREADCRUMB_LENGTH = format("{0}format.breadCrumbLength", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_SHOW_BREADCRUMBS = format("{0}format.showBreadCrumb", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_SHOW_EXCHANGE_PROPS = format("{0}format.showProperties", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_SHOW_EXCHANGE_HDRS = format("{0}format.showHeaders", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_SHOW_EXCHANGE_BODY_TYPE = format("{0}format.showBodyType", TRACE_CONFIG_ROOT);
+    protected static final String TRACE_SHOW_EXCHANGE_BODY = format("{0}format.showBody", TRACE_CONFIG_ROOT);
 
     private final Configuration config;
     private final Tracer tracer;
@@ -59,10 +70,26 @@ public class TraceBuilder {
     }
 
     public Tracer build() {
-        tracer.setLogLevel(getTraceLevel());
-        tracer.setTraceInterceptors(config.getBoolean(TraceBuilder.TRACE_INTERCEPTORS_KEY));
-        tracer.setTraceExceptions(config.getBoolean(TraceBuilder.TRACE_EXCEPTIONS_KEY));
+        tracer.setEnabled(config.getBoolean(TRACE_ENABLED_KEY));
+        if (tracer.isEnabled()) {
+            tracer.setLogLevel(getTraceLevel());
+            final String logName = config.getString(TRACE_NAME_KEY, null);
+            if (logName != null) {
+                tracer.setLogName(logName);
+            }
+            tracer.setTraceInterceptors(config.getBoolean(TRACE_INTERCEPTORS_KEY));
+            tracer.setTraceExceptions(config.getBoolean(TRACE_EXCEPTIONS_KEY));
+            configureTraceFormat(tracer.getFormatter());
+        }
         return tracer;
+    }
+
+    private void configureTraceFormat(final TraceFormatter formatter) {
+        formatter.setShowBreadCrumb(config.getBoolean(TRACE_SHOW_BREADCRUMBS));
+        formatter.setShowProperties(config.getBoolean(TRACE_SHOW_EXCHANGE_PROPS));
+        formatter.setShowHeaders(config.getBoolean(TRACE_SHOW_EXCHANGE_HDRS));
+        formatter.setShowBodyType(config.getBoolean(TRACE_SHOW_EXCHANGE_BODY_TYPE));
+        formatter.setShowBody(config.getBoolean(TRACE_SHOW_EXCHANGE_BODY));
     }
 
     private LoggingLevel getTraceLevel() {

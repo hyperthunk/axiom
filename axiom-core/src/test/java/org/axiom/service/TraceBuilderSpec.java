@@ -46,14 +46,48 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
         private Configuration config;
         private Tracer tracer;
         private TraceBuilder builder;
-        
+
         public TraceBuilder create() {
             config = mock(Configuration.class);
             tracer = new Tracer();
             return builder = new TraceBuilder(config, tracer);
         }
 
+        public void itShouldOnlySetupTracingWhenItIsEnabled() {
+            Tracer trace = mock(Tracer.class);
+            allowing(config).getBoolean(TRACE_ENABLED_KEY);
+            will(returnValue(false));
+            fakeLogLevelToError();
+            one(trace).setEnabled(false);
+            allowing(trace).isEnabled();will(returnValue(false));
+            never(trace);
+            ignoreFurtherCalls();
+
+            new TraceBuilder(config, trace).build();
+        }
+
+        public void itShouldSetTheLogNameToTheProvidedValue() {
+            final String logname = stubTracerConfig();
+            ignoreFurtherCalls();
+
+            specify(builder.build(),
+                satisfies(propertyValueContract("logName", setTo(logname))));
+        }
+
+        public void itShouldNotSetTheLogNameIfItIsUndefined() {
+            Tracer trace = mock(Tracer.class);
+            enableTrace();
+            fakeLogLevelToError();
+            fakeLogName(null);
+            never(trace).setLogName(with(any(String.class)));
+            allowing(trace);
+            ignoreFurtherCalls();
+
+            new TraceBuilder(config, trace).build();
+        }
+
         public void itShouldSetTheLogLevelToTheProvidedValue() {
+            enableTrace();
             fakeLogLevelToError();
             ignoreFurtherCalls();
 
@@ -62,6 +96,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
         }
 
         public void itShouldSetInterceptorTracingToTheConfiguredValue() {
+            enableTrace();
             fakeLogLevelToError();
             fakeInterceptorTraceOn();
             ignoreFurtherCalls();
@@ -70,8 +105,56 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
                 satisfies(propertyValueContract("traceInterceptors", setTo(true))));
         }
 
-        //traceExceptions
+        public void itShouldConfigureTheFormatterToShowBreadcrumbs() {
+            stubTracerConfig();
+            formatShowBreadCrumbs();
+            ignoreFurtherCalls();
+
+            specify(builder.build().getFormatter().isShowBreadCrumb(), equal(true));
+        }
+
+        public void itShouldConfigureTheFormatterToShowExchangeProperties() {
+            stubTracerConfig();
+            formatShowBreadCrumbs();
+            allowing(config).getBoolean(TraceBuilder.TRACE_SHOW_EXCHANGE_PROPS);
+            will(returnValue(false));
+            ignoreFurtherCalls();
+
+            specify(builder.build().getFormatter().isShowProperties(), equal(false));
+        }
+
+        public void itShouldConfigureTheFormatterToShowExchangeHeaders() {
+            stubTracerConfig();
+            formatShowBreadCrumbs();
+            allowing(config).getBoolean(TraceBuilder.TRACE_SHOW_EXCHANGE_PROPS);
+            will(returnValue(false));
+            ignoreFurtherCalls();
+
+            specify(builder.build().getFormatter().isShowHeaders(), equal(false));
+        }
+
+        public void itShouldConfigureTheFormatterToShowBodyType() {
+            stubTracerConfig();
+            formatShowBreadCrumbs();
+            allowing(config).getBoolean(TraceBuilder.TRACE_SHOW_EXCHANGE_BODY_TYPE);
+            will(returnValue(false));
+            ignoreFurtherCalls();
+
+            specify(builder.build().getFormatter().isShowBodyType(), equal(false));
+        }
+
+        public void itShouldConfigureTheFormatterToShowBodyContent() {
+            stubTracerConfig();
+            formatShowBreadCrumbs();
+            allowing(config).getBoolean(TraceBuilder.TRACE_SHOW_EXCHANGE_BODY);
+            will(returnValue(false));
+            ignoreFurtherCalls();
+
+            specify(builder.build().getFormatter().isShowBody(), equal(false));
+        }
+
         public void itShouldSetExceptionTracingToTheConfiguredValue() {
+            enableTrace();
             fakeLogLevelToError();
             fakeInterceptorTraceOn();
             allowing(config).getBoolean(TRACE_EXCEPTIONS_KEY);
@@ -98,6 +181,30 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
                 }
             },
             should.raise(IllegalArgumentException.class, MISSING_TRACER_MSG));
+        }
+
+        private void formatShowBreadCrumbs() {
+            allowing(config).getBoolean(TRACE_SHOW_BREADCRUMBS);
+            will(returnValue(true));
+        }
+
+        private String stubTracerConfig() {
+            enableTrace();
+            fakeLogLevelToError();
+            final String logname = "foobar";
+            fakeLogName(logname);
+            return logname;
+        }
+
+        private void fakeLogName(final String logname) {
+            allowing(config).getString(TRACE_NAME_KEY, null);
+            will(returnValue(logname));
+        }
+
+        private void enableTrace() {
+            allowing(config).getBoolean(TRACE_ENABLED_KEY);
+            will(returnValue(true));
+            //tracer.setEnabled(true);
         }
 
         private void ignoreFurtherCalls() {
