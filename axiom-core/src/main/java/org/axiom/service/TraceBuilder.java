@@ -65,10 +65,6 @@ public class TraceBuilder {
         this.tracer = tracer;
     }
 
-    public TraceBuilder(final Configuration config) {
-        this(config, new Tracer());
-    }
-
     public Tracer build() {
         tracer.setEnabled(config.getBoolean(TRACE_ENABLED_KEY));
         if (tracer.isEnabled()) {

@@ -37,7 +37,7 @@ module Axiom
       Axiom::Plugins.plugin name, &block
     end
 
-    # TODO: implement load_plugin to do a *sensible* classpath search and require...
+    alias load_plugin require
 
     def register_plugin name, clazz
       fail_registration(clazz) unless clazz.respond_to? :new

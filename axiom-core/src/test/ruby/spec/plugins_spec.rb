@@ -98,7 +98,7 @@ describe Axiom::Plugins, "when adding plugins via a registry" do
 
 end
 
-describe Axiom::Plugins, "when registering an existing class as a plugin" do
+describe Axiom::Plugins, "when registering a specific type as a plugin" do
 
   include Axiom::Plugins
 
