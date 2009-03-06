@@ -1,4 +1,3 @@
-
 Introduction
 -------------
 
@@ -34,8 +33,8 @@ design using well trodden techniques.
 Status
 -------
 
-Axiom is in the Alpha::Prototyping stage and is not yet fit for purpose 
-(and certainly isn't ready for use in a real environment, test or otherwise). 
+Axiom-core is in the Alpha/Prototyping stage but is under active development. We hope
+to get to beta status by the end of March 2009.  
 
 Getting Started
 ----------------
