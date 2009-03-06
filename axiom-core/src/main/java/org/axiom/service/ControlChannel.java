@@ -32,7 +32,7 @@ import org.apache.camel.CamelContext;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
-import org.axiom.configuration.ExternalConfigurationSourceFactory;
+import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -87,12 +87,16 @@ public class ControlChannel implements ManagedComponent {
      * {@inheritDoc}
      */
     @Override public void start() throws LifecycleException {
-        log.info("Starting control channel.");
-        Configuration config =
-            ExternalConfigurationSourceFactory.getRegisteredInstance(context);
-        log.info("Configuring tracer for {}.", context);
-        TraceBuilder builder = new TraceBuilder(config, tracer);
-        context.addInterceptStrategy(builder.build());
+        try {
+            log.info("Starting control channel.");
+            Configuration config = getRegisteredInstance(context);
+            log.info("Configuring tracer for {}.", context);
+            TraceBuilder builder = new TraceBuilder(config, tracer);
+            context.addInterceptStrategy(builder.build());
+            context.start();
+        } catch (Exception e) {
+            throw new LifecycleException(e.getLocalizedMessage(), e);
+        }
     }
 
     /**

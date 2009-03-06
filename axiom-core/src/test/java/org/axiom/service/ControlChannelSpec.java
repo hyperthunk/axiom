@@ -33,9 +33,11 @@ import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.CamelContext;
 import org.apache.camel.Route;
+import org.apache.camel.CamelException;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.camel.spi.Registry;
+import org.apache.camel.spi.InterceptStrategy;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.SpecSupport;
 import org.junit.runner.RunWith;
@@ -43,14 +45,15 @@ import org.junit.runner.RunWith;
 import java.util.ArrayList;
 import java.util.Collection;
 
+@SuppressWarnings({"ThrowableInstanceNeverThrown", "unchecked"})
 @RunWith(JDaveRunner.class)
 public class ControlChannelSpec extends Specification<ControlChannel> {
 
-    private CamelContext context;
-    private RouteLoader loader;
-    private Tracer tracer;
-    private Configuration config;
-    private Registry registry;
+    private CamelContext mockContext = mock(CamelContext.class);
+    private RouteLoader loader = mock(RouteLoader.class);
+    private Tracer tracer = mock(Tracer.class);
+    private Configuration config = dummy(Configuration.class);
+    private Registry registry = mock(Registry.class);
     private ControlChannel channel;
 
     public class WhenInitializingNewInstances extends SpecSupport {
@@ -76,15 +79,13 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
     public class WhenLoadingRoutesAndAddingThenToTheChannel extends SpecSupport {
 
         public ControlChannel create() {
-            context = mock(CamelContext.class);
-            loader = mock(RouteLoader.class);
-            return new ControlChannel(context, dummy(Tracer.class, "dummy-trace"));
+            return new ControlChannel(mockContext, dummy(Tracer.class, "dummy-trace"));
         }
 
         public void itShouldPukeIfTheSuppliedLoaderIsNull() {
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    new ControlChannel(context).load(null);
+                    new ControlChannel(mockContext).load(null);
                 }
             }, should.raise(IllegalArgumentException.class));            
         }
@@ -92,31 +93,31 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldLoadTheBuildlerUsingTheSuppliedLoader() {
             one(loader).load();
             will(returnValue(null));
-            justIgnore(context);
+            justIgnore(mockContext);
             checking(this);
 
-            new ControlChannel(context).load(loader);
+            new ControlChannel(mockContext).load(loader);
         }
 
         public void itShouldPassTheLoadedRoutesToTheSuppliedContext() throws Exception {
             final Collection<Route> routes = new ArrayList<Route>();
             allowing(loader).load();
             will(returnValue(routes));
-            one(context).addRoutes(routes);
+            one(mockContext).addRoutes(routes);
             checking(this);
 
-            new ControlChannel(context).load(loader);
+            new ControlChannel(mockContext).load(loader);
         }
 
         public void itShouldWrapCheckedExceptionsWithRuntime() throws Exception {
             allowing(loader);
-            one(context).addRoutes((Collection<Route>) with(anything()));
+            one(mockContext).addRoutes((Collection<Route>) with(anything()));
             will(throwException(new Exception()));
             checking(this);
 
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    new ControlChannel(context).load(loader);
+                    new ControlChannel(mockContext).load(loader);
                 }
             }, should.raise(LifecycleException.class));
         }
@@ -126,11 +127,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
     public class WhenConfiguringTheChannel extends SpecSupport {
 
         public ControlChannel create() {
-            context = mock(CamelContext.class);
-            tracer = mock(Tracer.class);
-            config = dummy(Configuration.class);
-            registry = mock(Registry.class);
-            return channel = new ControlChannel(context, tracer);
+            return channel = new ControlChannel(mockContext, tracer);
         }
 
         public void itShouldAttemptObtainingTracerInstanceFromTheContextInitially() {
@@ -148,17 +145,70 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         @SuppressWarnings({"unchecked"})
         public void itShouldConfigureTheTracerBasedOnSuppliedProperties() {
-            stubConfiguration(context, registry, config);
+            stubConfiguration(mockContext, registry, config);
             ignoring(tracer).setEnabled(with(any(Boolean.class)));
 
             one(tracer).isEnabled();
             will(returnValue(false));
 
-            justIgnore(tracer, context);
+            justIgnore(tracer, mockContext);
             checking(this);
 
             channel.start();
         }
         
+    }
+
+    public class WhenStartingTheChannel extends SpecSupport {
+
+        public ControlChannel create() {
+            mockContext = mock(CamelContext.class, "startable-cc");
+            registry = mock(Registry.class, "mocked-reg");
+            return channel = new ControlChannel(mockContext, tracer);
+        }
+
+        public void itShouldWrapAnyRegistryLookupExceptions() {
+            allowing(mockContext).getRegistry();
+            will(returnValue(registry));
+            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
+            will(throwException(new RuntimeException()));
+            checking(this);
+            
+            specify(new Block() {
+                @Override public void run() throws Throwable { channel.start(); }
+            }, should.raise(LifecycleException.class));
+        }
+
+        public void itShouldWrapAnyStartupExceptions() throws Exception {
+            stubConfiguration(mockContext, registry, config);
+            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
+            will(returnValue(config));
+            justIgnore(registry, config, tracer);
+
+            allowing(mockContext).addInterceptStrategy((InterceptStrategy) with(anything()));
+            allowing(mockContext).start();
+            will(throwException(new CamelException()));
+            checking(this);
+
+            specify(new Block() {
+                @Override public void run() throws Throwable { channel.start(); }
+            }, should.raise(LifecycleException.class));
+        }
+
+        public void itShouldConfigureTheTracerBasedOnSuppliedProperties() throws Throwable {
+            stubConfiguration(mockContext, registry, config);
+            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
+            will(returnValue(config));
+            justIgnore(registry, config, tracer);
+
+            allowing(mockContext).addInterceptStrategy((InterceptStrategy) with(anything()));
+            one(mockContext).start();
+            checking(this);
+
+            specify(new Block() {
+                @Override public void run() throws Throwable { channel.start(); }
+            }, must.not().raiseAnyException());
+        }
+
     }
 }
