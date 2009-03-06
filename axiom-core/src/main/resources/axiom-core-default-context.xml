@@ -55,12 +55,16 @@
 
     <bean id="axiomCoreConfiguration"
       factory-bean="axiomCoreConfigurationFactory"
-      factory-method="createConfiguration"/>
+      factory-method="createConfiguration" />
+
+    <lang:jruby id="axiomCoreScriptEvaluator"
+        script-source="classpath:axiom/core/evaluator.rb"
+        script-interfaces="org.axiom.integration.jruby.JRubyScriptEvaluator" />
 
     <lang:jruby id="axiomCoreControlCodeEvaluator"
         script-source="classpath:axiom/core/route_builder_configurator.rb"
-        script-interfaces="org.axiom.configuration.RouteConfigurationScriptEvaluator">
-        <lang:property name="properties" ref="axiomCoreConfiguration"/>
+        script-interfaces="org.axiom.integration.camel.RouteConfigurationScriptEvaluator">
+        <lang:property name="properties" ref="axiomCoreConfiguration" />
     </lang:jruby>
 
     <!-- axiom.control.processor.default -->

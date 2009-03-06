@@ -35,6 +35,9 @@ import org.apache.commons.collections.Predicate;
 import org.apache.commons.collections.Transformer;
 import static org.apache.commons.collections.TransformerUtils.*;
 import org.apache.commons.lang.ObjectUtils;
+import org.apache.commons.configuration.Configuration;
+import org.apache.camel.CamelContext;
+import org.apache.camel.spi.Registry;
 import org.jmock.Expectations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +52,15 @@ public abstract class SpecSupport extends Expectations {
     protected SpecSupport justIgnore(final Object... things) {
         for (final Object o : things) allowing(o);
         return this;
+    }
+
+    protected void stubConfiguration(final CamelContext context,
+            final Registry registry, final Configuration config) {
+        allowing(context).getRegistry();
+        will(returnValue(registry));
+        allowing(registry).lookup(with(any(String.class)),
+            with(equal(Configuration.class)));
+        will(returnValue(config));
     }
 
     public static IContract propertyValueContract(final String propertyName, final Object expectedValue) {

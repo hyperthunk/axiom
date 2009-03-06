@@ -43,15 +43,17 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 
 import java.io.IOException;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:/server-context.xml"})
+@ContextConfiguration(locations = {"classpath:/axiom-core-default-context.xml"})
 public class TestRouteConfigurationScriptEvaluatorSpringIntegration implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
-    @Autowired RouteConfigurationScriptEvaluator scriptEvaluator;
+    @Autowired
+    RouteConfigurationScriptEvaluator scriptEvaluator;
 
     @Override
     public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {

@@ -38,6 +38,7 @@ import org.apache.camel.component.mock.MockEndpoint;
 import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -47,7 +48,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = {"classpath:/server-context.xml"})
+@ContextConfiguration(locations = {"classpath:/axiom-core-default-context.xml"})
 public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
@@ -68,6 +69,7 @@ public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
         assertNotNull(camelContext);
     }
 
+    @Ignore //TODO: move this into the axiom-integration module and re-enable
     @Test
     public void addingAdditionalEndpointOnDefinedRoute() throws Exception {
         //TODO: refactor this to use our components later on

@@ -33,7 +33,7 @@ import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.io.FileUtils.*;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
-import org.axiom.configuration.RouteConfigurationScriptEvaluator;
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 

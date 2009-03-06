@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2009, Tim Watson
 # All rights reserved.
 #
@@ -26,12 +25,9 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-log4j.rootLogger=INFO, out
+class Evaluator
+  include org.axiom.integration.jruby.JRubyScriptEvaluator
+  alias evaluate eval
+end
 
-log4j.logger.org.axiom=DEBUG
-log4j.logger.org.apache.camel=INFO
-log4j.logger.org.springframework=INFO
-
-log4j.appender.out=org.apache.log4j.ConsoleAppender
-log4j.appender.out.layout=org.apache.log4j.PatternLayout
-log4j.appender.out.layout.ConversionPattern=%d %p [%t] [%c] %m%n
+Evaluator.new

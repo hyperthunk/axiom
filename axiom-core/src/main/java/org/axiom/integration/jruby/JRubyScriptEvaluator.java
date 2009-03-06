@@ -26,20 +26,24 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.axiom.configuration;
-
-import org.apache.camel.builder.RouteBuilder;
+package org.axiom.integration.jruby;
 
 /**
- *  Provides a means to configure a jruby routing script
- *  and obtain a {@link org.apache.camel.builder.RouteBuilder}.
+ * TODO: document this as internal use only - can't make it non-public
  */
-public interface RouteConfigurationScriptEvaluator {
+public interface JRubyScriptEvaluator {
+
     /**
-     * Runs the provided body (ruby script source) to obtain a
-     * {@link org.apache.camel.builder.RouteBuilder}.
-     * @param body
-     * @return
+     * The property name used to identify the service id (JNDI uri or Spring Bean name)
+     * for the default registered instance (or prototype) or this type.
      */
-    RouteBuilder configure(final String body);
+    public static final String PROVIDER_BEAN_ID = "axiom.core.script.evaluator.id";
+
+    /**
+     * Runs ruby's 'eval' method on the supplied string.
+     * @param source the ruby source code to evaluate
+     * @return probably whatever was last on ruby's stack :-)
+     */
+    Object evaluate(final String source);
+
 }

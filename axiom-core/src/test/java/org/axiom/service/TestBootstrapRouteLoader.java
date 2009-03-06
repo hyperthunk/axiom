@@ -32,7 +32,7 @@ import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.io.FileUtils.*;
-import org.axiom.configuration.RouteConfigurationScriptEvaluator;
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.jmock.Expectations;
 import static org.jmock.Expectations.*;
 import org.jmock.Mockery;

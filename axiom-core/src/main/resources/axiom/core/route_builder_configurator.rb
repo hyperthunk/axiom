@@ -37,7 +37,7 @@ module Axiom
     # get out of spring otherwise - creating a second runtime is semantically
     # incorrect), and having the result evaluated as a block passed to RouteBuider
     class RouteBuilderConfigurator
-      include org.axiom.configuration.RouteConfigurationScriptEvaluator
+      include org.axiom.integration.camel.RouteConfigurationScriptEvaluator
       include Configuration
       include Axiom::Plugins
 

@@ -148,10 +148,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         @SuppressWarnings({"unchecked"})
         public void itShouldConfigureTheTracerBasedOnSuppliedProperties() {
-            allowing(context).getRegistry();
-            will(returnValue(registry));
-            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
-            will(returnValue(config));
+            stubConfiguration(context, registry, config);
             ignoring(tracer).setEnabled(with(any(Boolean.class)));
 
             one(tracer).isEnabled();
@@ -162,6 +159,6 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
             channel.configure();
         }
-
+        
     }
 }

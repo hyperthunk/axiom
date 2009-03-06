@@ -29,57 +29,47 @@
 package org.axiom.service;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
-import org.axiom.configuration.ExternalConfigurationSourceFactory;
+import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
+import org.axiom.integration.jruby.JRubyScriptEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ControlChannel {
+import static java.lang.String.format;
 
+public class ScriptingEnvironment {
+
+    public static final String ENDORSED_PLUGINS_FOLDER_PROPERTY = "axiom.plugins.endorsed.uri";
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Configuration configuration;
     private final CamelContext context;
-    private final Tracer tracer;
 
-    public ControlChannel(final CamelContext context) {
-        this(context, getTracer(context));
+    public ScriptingEnvironment(final CamelContext context) {
+        this(context, getRegisteredInstance(context));
     }
 
-    public ControlChannel(final CamelContext context, final Tracer tracer) {
+    public ScriptingEnvironment(final CamelContext context, final Configuration configuration) {
         notNull(context, "Camel context cannot be null.");
-        notNull(tracer, "Tracer cannot be null.");
-        this.tracer = tracer;
         this.context = context;
+        this.configuration = configuration;
     }
 
-    private static Tracer getTracer(final CamelContext context) {
-        Tracer tracer = Tracer.getTracer(context);
-        if (tracer == null) {
-            return new Tracer();
-        } else {
-            return tracer;
-        }
+    public void start() throws LifecycleException {
+        final JRubyScriptEvaluator evaluator = lookupEvaluatorService();
+        //bootstrap plugins directory onto the $LOAD_PATH
+        final String pluginUris = configuration.getString(ENDORSED_PLUGINS_FOLDER_PROPERTY);
+        log.info("Adding {} to the jruby LOAD_PATH.", pluginUris);
+        final String scriptFragment =
+            format("'%s'.split(File.PATH_SEPARATOR).each { |path| " +
+                "$LOAD_PATH.unshift path unless $LOAD_PATH.include? path }", pluginUris);
+        evaluator.evaluate(scriptFragment);
     }
 
-    public void load(final RouteLoader loader) {
-        notNull(loader, "Route loader cannot be null.");
-        try {
-            context.addRoutes(loader.load());
-        } catch (Exception e) {
-            throw new LifecycleException(e.getLocalizedMessage(), e);
-        }
-    }
-
-    public void configure() {
-        Configuration config =
-            ExternalConfigurationSourceFactory.getRegisteredInstance(context);
-        TraceBuilder builder = new TraceBuilder(config, tracer);
-        context.addInterceptStrategy(builder.build());
-    }
-
-    public CamelContext getContext() {
-        return context;
-    }
-
-    public Tracer getTracer() {
-        return tracer;
+    private JRubyScriptEvaluator lookupEvaluatorService() {
+        final String evalServiceId =
+            configuration.getString(JRubyScriptEvaluator.PROVIDER_BEAN_ID);
+        return context.getRegistry().lookup(evalServiceId, JRubyScriptEvaluator.class);
     }
 }
