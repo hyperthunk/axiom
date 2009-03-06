@@ -32,14 +32,16 @@ import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Route;
 import org.apache.camel.CamelException;
+import org.apache.camel.Route;
+import org.apache.camel.AlreadyStoppedException;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.processor.interceptor.Tracer;
-import org.apache.camel.spi.Registry;
 import org.apache.camel.spi.InterceptStrategy;
+import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.SpecSupport;
+import org.jmock.Mockery;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -159,6 +161,17 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         
     }
 
+    protected void stubReadyToRunContext(final Mockery mockery) throws Exception {
+        mockery.checking(new SpecSupport() {{
+            stubConfiguration(mockContext, registry, config);
+            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
+            will(returnValue(config));
+            justIgnore(registry, config, tracer);
+
+            allowing(mockContext).addInterceptStrategy((InterceptStrategy) with(anything()));
+        }});
+    }
+
     public class WhenStartingTheChannel extends SpecSupport {
 
         public ControlChannel create() {
@@ -180,12 +193,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldWrapAnyStartupExceptions() throws Exception {
-            stubConfiguration(mockContext, registry, config);
-            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
-            will(returnValue(config));
-            justIgnore(registry, config, tracer);
-
-            allowing(mockContext).addInterceptStrategy((InterceptStrategy) with(anything()));
+            stubReadyToRunContext(mockery());
             allowing(mockContext).start();
             will(throwException(new CamelException()));
             checking(this);
@@ -195,13 +203,8 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             }, should.raise(LifecycleException.class));
         }
 
-        public void itShouldConfigureTheTracerBasedOnSuppliedProperties() throws Throwable {
-            stubConfiguration(mockContext, registry, config);
-            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
-            will(returnValue(config));
-            justIgnore(registry, config, tracer);
-
-            allowing(mockContext).addInterceptStrategy((InterceptStrategy) with(anything()));
+        public void itShouldStartTheCamelContext() throws Throwable {
+            stubReadyToRunContext(mockery());
             one(mockContext).start();
             checking(this);
 
@@ -210,5 +213,34 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             }, must.not().raiseAnyException());
         }
 
+    }
+
+    public class WhenStoppingTheCamelContext extends SpecSupport {
+
+        public ControlChannel create() {
+            mockContext = mock(CamelContext.class, "mock-context");
+            registry = mock(Registry.class, "mock-registry");
+            return channel = new ControlChannel(mockContext, tracer);
+        }
+
+        public void itShouldStopTheUnderlyingContext() throws Exception {
+            one(mockContext).stop();
+            checking(this);
+
+            channel.stop();
+        }
+
+        public void itShouldWrapAnyUnderlyingExceptions() throws Exception {
+            one(mockContext).stop();
+            will(throwException(new AlreadyStoppedException()));
+            checking(this);
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    channel.stop();
+                }
+            }, should.raise(LifecycleException.class));
+        }
+        
     }
 }

@@ -25,9 +25,20 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-class Evaluator
-  include org.axiom.integration.jruby.JRubyScriptEvaluator
-  alias evaluate eval
+import org.axiom.integration.jruby.JRubyScriptEvaluator
+
+module Axiom
+  module Core
+    class Evaluator
+      include JRubyScriptEvaluator
+
+      def evaluate(source)
+        # NB: a simple `alias evaluate eval` might've worked?
+        eval source
+      end
+
+    end
+  end
 end
 
-Evaluator.new
+Axiom::Core::Evaluator.new

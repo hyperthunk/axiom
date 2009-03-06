@@ -86,14 +86,14 @@ public class ControlChannel implements ManagedComponent {
     /**
      * {@inheritDoc}
      */
-    @Override public void start() throws LifecycleException {
+    @Override public void start() {
         try {
             log.info("Starting control channel.");
-            Configuration config = getRegisteredInstance(context);
-            log.info("Configuring tracer for {}.", context);
+            Configuration config = getRegisteredInstance(getContext());
+            log.info("Configuring tracer for {}.", getContext());
             TraceBuilder builder = new TraceBuilder(config, tracer);
-            context.addInterceptStrategy(builder.build());
-            context.start();
+            getContext().addInterceptStrategy(builder.build());
+            getContext().start();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
@@ -102,8 +102,13 @@ public class ControlChannel implements ManagedComponent {
     /**
      * {@inheritDoc}
      */    
-    @Override public void stop() throws LifecycleException {
+    @Override public void stop() {
         log.info("Stopping control channel.");
+        try {
+            getContext().stop();
+        } catch (Exception e) {
+            throw new LifecycleException(e.getLocalizedMessage(), e);
+        }
     }
 
     /**

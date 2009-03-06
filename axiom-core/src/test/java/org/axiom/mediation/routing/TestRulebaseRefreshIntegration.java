@@ -29,16 +29,15 @@
 package org.axiom.mediation.routing;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.ProducerTemplate;
-import org.apache.camel.Processor;
 import org.apache.camel.Exchange;
+import org.apache.camel.Processor;
+import org.apache.camel.ProducerTemplate;
 import org.apache.camel.builder.RouteBuilder;
-import static org.apache.camel.builder.xml.XPathBuilder.xpath;
+import static org.apache.camel.builder.xml.XPathBuilder.*;
 import org.apache.camel.component.mock.MockEndpoint;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 import org.junit.Before;
 import org.junit.Test;
-import org.junit.Ignore;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +68,7 @@ public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
         assertNotNull(camelContext);
     }
 
-    @Ignore //TODO: move this into the axiom-integration module and re-enable
+    //@Ignore //TODO: move this into the axiom-integration module and re-enable
     @Test
     public void addingAdditionalEndpointOnDefinedRoute() throws Exception {
         //TODO: refactor this to use our components later on
