@@ -55,7 +55,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
 
         public void itShouldOnlySetupTracingWhenItIsEnabled() {
             Tracer trace = mock(Tracer.class);
-            allowing(config).getBoolean(TRACE_ENABLED_KEY);
+            allowing(config).getBoolean(TRACE_ENABLED);
             will(returnValue(false));
             fakeLogLevelToError();
             one(trace).setEnabled(false);
@@ -157,7 +157,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             enableTrace();
             fakeLogLevelToError();
             fakeInterceptorTraceOn();
-            allowing(config).getBoolean(TRACE_EXCEPTIONS_KEY);
+            allowing(config).getBoolean(TRACE_EXCEPTIONS);
             will(returnValue(true));
             ignoreFurtherCalls();
 
@@ -197,12 +197,12 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
         }
 
         private void fakeLogName(final String logname) {
-            allowing(config).getString(TRACE_NAME_KEY, null);
+            allowing(config).getString(TRACE_NAME, null);
             will(returnValue(logname));
         }
 
         private void enableTrace() {
-            allowing(config).getBoolean(TRACE_ENABLED_KEY);
+            allowing(config).getBoolean(TRACE_ENABLED);
             will(returnValue(true));
             //tracer.setEnabled(true);
         }
@@ -213,12 +213,12 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
         }
 
         private void fakeInterceptorTraceOn() {
-            allowing(config).getBoolean(TRACE_INTERCEPTORS_KEY);
+            allowing(config).getBoolean(TRACE_INTERCEPTORS);
             will(returnValue(true));
         }
 
         private void fakeLogLevelToError() {
-            allowing(config).getString(TRACE_LEVEL_KEY);
+            allowing(config).getString(TRACE_LEVEL);
             will(returnValue("error"));
         }
 

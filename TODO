@@ -1,7 +1,5 @@
  - axiom-core
-  - go through all the CONSTANTS that point to properties and give them a naming convention (_PROPERTY) 
-  - create a mechanism for adding the endorsed plugins directory to the $LOAD_PATH
-   - decided on generalized boot handler (configurable) so looking into that next
+  - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire
    - write xlst for xml2code
     - think about whether transformations should go the other way!?

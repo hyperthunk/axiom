@@ -157,7 +157,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             justIgnore(tracer, context);
             checking(this);
 
-            channel.configure();
+            channel.start();
         }
         
     }

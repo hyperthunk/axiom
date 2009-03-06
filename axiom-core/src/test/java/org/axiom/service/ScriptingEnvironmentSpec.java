@@ -63,9 +63,9 @@ public class ScriptingEnvironmentSpec
 
         public void itShouldLookupTheConfigurationAndEvaluatorBeansInTheSuppliedCamelContext() {
             stubEvalBeanId();
-            one(registry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);
-            will(returnValue(dummy(JRubyScriptEvaluator.class)));
-            
+            one(config).getString(ENDORSED_PLUGINS, null);
+            will(returnValue(null));
+
             justIgnore(config, registry);
             checking(this);
 
@@ -78,7 +78,7 @@ public class ScriptingEnvironmentSpec
                     File.pathSeparator);
 
             stubEvalBeanId();
-            allowing(config).getString(ENDORSED_PLUGINS_FOLDER_PROPERTY);
+            allowing(config).getString(ENDORSED_PLUGINS, null);
             will(returnValue(pluginPaths));
 
             allowing(registry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);

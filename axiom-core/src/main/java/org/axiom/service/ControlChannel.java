@@ -33,9 +33,19 @@ import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.configuration.ExternalConfigurationSourceFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class ControlChannel {
+/**
+ * Provides a managed message channel that can be used to
+ * control {@link CamelContext}s. The control channel is itself
+ * managed by a private {@link CamelContext}, which is in turn
+ * configured using JRuby scripts and/or by passing Camel Spring
+ * XML to one of the uris exposed as a consumer.
+ */
+public class ControlChannel implements ManagedComponent {
 
+    private final Logger log = LoggerFactory.getLogger(getClass());
     private final CamelContext context;
     private final Tracer tracer;
 
@@ -59,6 +69,11 @@ public class ControlChannel {
         }
     }
 
+    /**
+     * Adds a set of routing/configuration rules to the control
+     * channel using the supplied {@link RouteLoader}. 
+     * @param loader
+     */
     public void load(final RouteLoader loader) {
         notNull(loader, "Route loader cannot be null.");
         try {
@@ -68,17 +83,41 @@ public class ControlChannel {
         }
     }
 
-    public void configure() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override public void start() throws LifecycleException {
+        log.info("Starting control channel.");
         Configuration config =
             ExternalConfigurationSourceFactory.getRegisteredInstance(context);
+        log.info("Configuring tracer for {}.", context);
         TraceBuilder builder = new TraceBuilder(config, tracer);
         context.addInterceptStrategy(builder.build());
     }
 
+    /**
+     * {@inheritDoc}
+     */    
+    @Override public void stop() throws LifecycleException {
+        log.info("Stopping control channel.");
+    }
+
+    /**
+     * Gets the underlying {@link CamelContext}. It is recommended that
+     * you do not interfere with this service unless you *really* know what
+     * you're doing.
+     * @return
+     */
     public CamelContext getContext() {
         return context;
     }
 
+    /**
+     * Gets the {@link Tracer} instance attached to the underlying
+     * {@link CamelContext}. This can be used to configure and enable/disable
+     * tracing dynamically at runtime.
+     * @return
+     */
     public Tracer getTracer() {
         return tracer;
     }

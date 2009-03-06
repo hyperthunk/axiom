@@ -30,17 +30,25 @@ package org.axiom.service;
 
 import org.apache.camel.CamelContext;
 import org.apache.commons.configuration.Configuration;
+import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
 import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
 import org.axiom.integration.jruby.JRubyScriptEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static java.lang.String.format;
+import static java.lang.String.*;
 
-public class ScriptingEnvironment {
+/**
+ * Provides managed access to the underlying scripting environment.
+ */
+public class ScriptingEnvironment implements ManagedComponent {
 
-    public static final String ENDORSED_PLUGINS_FOLDER_PROPERTY = "axiom.plugins.endorsed.uri";
+    /**
+     * The name of the property in which the uri (or path delimited
+     * list of uris) for endorsed plugins resides.
+     */
+    public static final String ENDORSED_PLUGINS = "axiom.plugins.endorsed.uri";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Configuration configuration;
@@ -56,15 +64,32 @@ public class ScriptingEnvironment {
         this.configuration = configuration;
     }
 
-    public void start() throws LifecycleException {
-        final JRubyScriptEvaluator evaluator = lookupEvaluatorService();
-        //bootstrap plugins directory onto the $LOAD_PATH
-        final String pluginUris = configuration.getString(ENDORSED_PLUGINS_FOLDER_PROPERTY);
-        log.info("Adding {} to the jruby LOAD_PATH.", pluginUris);
-        final String scriptFragment =
-            format("'%s'.split(File.PATH_SEPARATOR).each { |path| " +
-                "$LOAD_PATH.unshift path unless $LOAD_PATH.include? path }", pluginUris);
-        evaluator.evaluate(scriptFragment);
+    @Override public void start() throws LifecycleException {
+        log.info("Starting jruby scripting environment.");
+        final String pluginUris = configuration.getString(ENDORSED_PLUGINS, null);
+        log.debug("Plugin uris defined: [{}]", pluginUris);
+        if (isNotEmpty(pluginUris)) {
+            log.info("Adding {} to the jruby LOAD_PATH.", pluginUris);
+            final String scriptFragment =
+                format("'%s'.split(File.PATH_SEPARATOR).each { |path| " +
+                    "$LOAD_PATH.unshift path unless $LOAD_PATH.include? path }", pluginUris);
+            evaluateScriptFragment(scriptFragment);
+        }
+    }
+
+    @Override public void stop() throws LifecycleException {
+        log.info("Shutting down scripting environment.");
+    }
+
+    /**
+     * Evaluates the supplied script fragment. This is done in a global
+     * context, so you shouldn't make too many assumptions when calling it.
+     * @param scriptFragment A fragment of ruby code.
+     * @return the last value on the stack after evaluating the supplied code.
+     */
+    public Object evaluateScriptFragment(final String scriptFragment) {
+        log.debug("Evaluating script fragment: <script>{}</script>", scriptFragment);
+        return lookupEvaluatorService().evaluate(scriptFragment);
     }
 
     private JRubyScriptEvaluator lookupEvaluatorService() {

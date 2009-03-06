@@ -43,8 +43,8 @@ import java.util.List;
 
 class BootstrapRouteLoader implements RouteLoader {
 
-    protected static final String DEFAULT_SCRIPT_URI_PROPERTY_KEY = "axiom.bootstrap.script.url";
-    protected static final String DEFAULT_SCRIPT_URI = "classpath:default-bootstrap.rb";
+    protected static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
+    protected static final String DEFAULT_SCRIPT_PATH = "classpath:default-bootstrap.rb";
 
     private final Configuration configuration;
     private final RouteConfigurationScriptEvaluator scriptEvaluator;
@@ -68,7 +68,7 @@ class BootstrapRouteLoader implements RouteLoader {
     }
 
     private String normalizedScriptUri() throws IOException {
-        final String uri = configuration.getString(DEFAULT_SCRIPT_URI_PROPERTY_KEY, DEFAULT_SCRIPT_URI);
+        final String uri = configuration.getString(DEFAULT_SCRIPT_URI, DEFAULT_SCRIPT_PATH);
         if (startsWithIgnoreCase(uri, "classpath:")) {
             Resource resource =
                 new ClassPathResource(substringAfter(uri, "classpath:"));

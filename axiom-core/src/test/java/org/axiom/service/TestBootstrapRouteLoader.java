@@ -84,7 +84,7 @@ public class TestBootstrapRouteLoader {
     @Test
     public void itShouldPullThePathToTheControlChannelBootstrapScript() {
         mockery.checking(new Expectations() {{
-            one(config).getString(BootstrapRouteLoader.DEFAULT_SCRIPT_URI_PROPERTY_KEY,
+            one(config).getString(BootstrapRouteLoader.DEFAULT_SCRIPT_URI,
                 "classpath:default-bootstrap.rb");
             will(returnValue(CP_BOOT_SCRIPT));
             allowing(evaluator).configure(with(any(String.class)));
