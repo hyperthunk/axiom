@@ -42,7 +42,7 @@ import static java.lang.String.*;
 /**
  * Provides managed access to the underlying scripting environment.
  */
-public class ScriptingEnvironment implements ManagedComponent {
+public class ScriptingEnvironment {
 
     /**
      * The name of the property in which the uri (or path delimited
@@ -64,7 +64,7 @@ public class ScriptingEnvironment implements ManagedComponent {
         this.configuration = configuration;
     }
 
-    @Override public void start() throws LifecycleException {
+    public void start() {
         log.info("Starting jruby scripting environment.");
         final String pluginUris = configuration.getString(ENDORSED_PLUGINS, null);
         log.debug("Plugin uris defined: [{}]", pluginUris);
@@ -75,10 +75,6 @@ public class ScriptingEnvironment implements ManagedComponent {
                     "$LOAD_PATH.unshift path unless $LOAD_PATH.include? path }", pluginUris);
             evaluateScriptFragment(scriptFragment);
         }
-    }
-
-    @Override public void stop() throws LifecycleException {
-        log.info("Shutting down scripting environment.");
     }
 
     /**

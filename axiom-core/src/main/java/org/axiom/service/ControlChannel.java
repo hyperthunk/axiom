@@ -43,7 +43,7 @@ import org.slf4j.LoggerFactory;
  * configured using JRuby scripts and/or by passing Camel Spring
  * XML to one of the uris exposed as a consumer.
  */
-public class ControlChannel implements ManagedComponent {
+public class ControlChannel {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final CamelContext context;
@@ -83,10 +83,7 @@ public class ControlChannel implements ManagedComponent {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */
-    @Override public void start() {
+    public void start() {
         try {
             log.info("Starting control channel.");
             Configuration config = getRegisteredInstance(getContext());
@@ -99,10 +96,7 @@ public class ControlChannel implements ManagedComponent {
         }
     }
 
-    /**
-     * {@inheritDoc}
-     */    
-    @Override public void stop() {
+    public void stop() {
         log.info("Stopping control channel.");
         try {
             getContext().stop();

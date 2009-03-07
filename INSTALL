@@ -15,17 +15,22 @@ sits alongside this document.
 Testing:
 
 Some of the unit/integration tests for axiom are written using the jtestr test
-library, which in turn uses jruby. The startup time for this can be very slow,
-therefore to mitigate this problem, you can launch a background server to host
-the jruby runtime and act as a sandbox for running the tests. To do so, you run
-the following command:
+library, which in turn uses jruby. For some reason (that I've not investigated
+at length) maven seems to require that you explicitly specify the plugin should
+be run, which you can do like so:
+
+    $ mvn clean install org.jtestr:jtestr:test
+
+The startup time for this can be very slow, therefore to mitigate this problem,
+you can launch a background server to host the jruby runtime and act as a sandbox
+for running the tests. To do so, you run the following command:
 
     $ mvn org.jtestr:jtestr:server
 
 Platforms:
 
-All development of axiom takes place on linux and os-x (which is bsd based) and
-therefore should work in both those environments. We'll try and get around to 
+All development of axiom takes place on linux and os-x (which is bsd based) but
+it should work in most unix like environments. We'll try and get around to 
 testing things on windows at some point too. 
 
 Other Notes:
