@@ -58,7 +58,7 @@ public class ExternalConfigurationSourceFactory {
      * and load additional external properties when creating a new instance.
      */
     protected static final String AXIOM_CONFIGURATION_EXTERNALS = "axiom.configuration.externals";
-    public static final String CONFIG_BEAN_ID = "axiom.core.configuration.id";
+    public static final String CONFIG_BEAN_ID = "axiom.configuration.id";
 
     /**
      * Initializes this with the default axiom properties.

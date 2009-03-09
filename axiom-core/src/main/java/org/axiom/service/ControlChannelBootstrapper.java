@@ -26,24 +26,18 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.axiom.integration.jruby;
+package org.axiom.service;
 
-/**
- * TODO: document this as internal use only - can't make it non-public
- */
-public interface JRubyScriptEvaluator {
+import static org.apache.commons.lang.Validate.notNull;
 
-    /**
-     * The property name used to identify the service id (JNDI uri or Spring Bean name)
-     * for the default registered instance (or prototype) or this type.
-     */
-    public static final String PROVIDER_BEAN_ID = "axiom.script.evaluator.id";
+//TODO: migrate the algorithm to combine configuration data into its proper place...
 
-    /**
-     * Runs ruby's 'eval' method on the supplied string.
-     * @param source the ruby source code to evaluate
-     * @return probably whatever was last on ruby's stack :-)
-     */
-    Object evaluate(final String source);
+class ControlChannelBootstrapper {
 
+    protected static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
+    protected static final String DEFAULT_SCRIPT_PATH = "classpath:default-bootstrap.rb";
+
+    public void bootstrap(final ControlChannel channel) {
+        notNull(channel, "Control channel cannot be null.");
+    }
 }

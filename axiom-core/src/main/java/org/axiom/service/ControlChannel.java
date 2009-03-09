@@ -77,13 +77,18 @@ public class ControlChannel {
     public void load(final RouteLoader loader) {
         notNull(loader, "Route loader cannot be null.");
         try {
+            log.debug("Adding routes to context {}.", context.getName());
             context.addRoutes(loader.load());
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
     }
 
-    public void start() {
+    /**
+     * Activates the control channel, which will from now on behave in
+     * accordance with the routes you set up in your bootstrap script.
+     */
+    public void activate() {
         try {
             log.info("Starting control channel.");
             Configuration config = getRegisteredInstance(getContext());
@@ -96,7 +101,12 @@ public class ControlChannel {
         }
     }
 
-    public void stop() {
+    /**
+     * Closes the control channel and stops the underlying service(s) -
+     * after this call completes, all channel services are terminated
+     * and therefore the channel is effectively useless. 
+     */
+    public void destroy() {
         log.info("Stopping control channel.");
         try {
             getContext().stop();

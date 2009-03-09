@@ -64,7 +64,7 @@ public class ScriptingEnvironment {
         this.configuration = configuration;
     }
 
-    public void start() {
+    public void activate() {
         log.info("Starting jruby scripting environment.");
         final String pluginUris = configuration.getString(ENDORSED_PLUGINS, null);
         log.debug("Plugin uris defined: [{}]", pluginUris);

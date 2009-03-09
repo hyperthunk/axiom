@@ -105,6 +105,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             final Collection<Route> routes = new ArrayList<Route>();
             allowing(loader).load();
             will(returnValue(routes));
+            allowing(mockContext).getName();
             one(mockContext).addRoutes(routes);
             checking(this);
 
@@ -113,6 +114,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public void itShouldWrapCheckedExceptionsWithRuntime() throws Exception {
             allowing(loader);
+            allowing(mockContext).getName();
             one(mockContext).addRoutes((Collection<Route>) with(anything()));
             will(throwException(new Exception()));
             checking(this);
@@ -156,7 +158,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             justIgnore(tracer, mockContext);
             checking(this);
 
-            channel.start();
+            channel.activate();
         }
         
     }
@@ -188,7 +190,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             checking(this);
             
             specify(new Block() {
-                @Override public void run() throws Throwable { channel.start(); }
+                @Override public void run() throws Throwable { channel.activate(); }
             }, should.raise(LifecycleException.class));
         }
 
@@ -199,7 +201,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             checking(this);
 
             specify(new Block() {
-                @Override public void run() throws Throwable { channel.start(); }
+                @Override public void run() throws Throwable { channel.activate(); }
             }, should.raise(LifecycleException.class));
         }
 
@@ -209,7 +211,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             checking(this);
 
             specify(new Block() {
-                @Override public void run() throws Throwable { channel.start(); }
+                @Override public void run() throws Throwable { channel.activate(); }
             }, must.not().raiseAnyException());
         }
 
@@ -227,7 +229,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             one(mockContext).stop();
             checking(this);
 
-            channel.stop();
+            channel.destroy();
         }
 
         public void itShouldWrapAnyUnderlyingExceptions() throws Exception {
@@ -237,7 +239,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    channel.stop();
+                    channel.destroy();
                 }
             }, should.raise(LifecycleException.class));
         }

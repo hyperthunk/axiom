@@ -26,24 +26,32 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.axiom.integration.jruby;
+package org.axiom.service;
 
-/**
- * TODO: document this as internal use only - can't make it non-public
- */
-public interface JRubyScriptEvaluator {
+import jdave.Block;
+import jdave.Specification;
+import jdave.junit4.JDaveRunner;
+import org.axiom.SpecSupport;
+import org.junit.runner.RunWith;
 
-    /**
-     * The property name used to identify the service id (JNDI uri or Spring Bean name)
-     * for the default registered instance (or prototype) or this type.
-     */
-    public static final String PROVIDER_BEAN_ID = "axiom.script.evaluator.id";
+@RunWith(JDaveRunner.class)
+public class ControlChannelBootstrapperSpec extends Specification<ControlChannelBootstrapper> {
 
-    /**
-     * Runs ruby's 'eval' method on the supplied string.
-     * @param source the ruby source code to evaluate
-     * @return probably whatever was last on ruby's stack :-)
-     */
-    Object evaluate(final String source);
+    public class WhenLocatingTheBootstrapScriptsToLoad extends SpecSupport {
+        private ControlChannelBootstrapper bootstrapper;
+
+        public ControlChannelBootstrapper create() {
+            return bootstrapper = new ControlChannelBootstrapper();
+        }
+
+        public void itShouldPukeIfTheContextIsNull() {
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    bootstrapper.bootstrap(null);
+                }
+            }, should.raise(IllegalArgumentException.class));
+        }
+
+    }
 
 }

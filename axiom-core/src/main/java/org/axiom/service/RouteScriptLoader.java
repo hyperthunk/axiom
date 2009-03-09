@@ -29,7 +29,6 @@
 package org.axiom.service;
 
 import org.apache.camel.Route;
-import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.io.FileUtils.*;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
@@ -41,34 +40,33 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-class BootstrapRouteLoader implements RouteLoader {
+public class RouteScriptLoader implements RouteLoader {
 
-    protected static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
-    protected static final String DEFAULT_SCRIPT_PATH = "classpath:default-bootstrap.rb";
+    protected final RouteConfigurationScriptEvaluator scriptEvaluator;
+    protected final String pathToScript;
 
-    private final Configuration configuration;
-    private final RouteConfigurationScriptEvaluator scriptEvaluator;
-
-    public BootstrapRouteLoader(final Configuration configuration,
-            final RouteConfigurationScriptEvaluator scriptEvaluator) {
-        notNull(configuration, "Null configuration is not allowed.");
+    public RouteScriptLoader(final String pathToScript,
+        final RouteConfigurationScriptEvaluator scriptEvaluator) {
+        notEmpty(pathToScript, "Null or empty script path is not allowed.");
         notNull(scriptEvaluator, "Null evaluator is not allowed.");
+        this.pathToScript = pathToScript;
         this.scriptEvaluator = scriptEvaluator;
-        this.configuration = configuration;
     }
 
-    public List<Route> load() {
+    /**
+     * {@inheritDoc}
+     */
+    @Override public List<Route> load() {
         try {
-            final String bootstrapUri = normalizedScriptUri();
-            final String bootstrapCode = readFileToString(new File(bootstrapUri));
+            final String uri = normalizedScriptUri(pathToScript);
+            final String bootstrapCode = readFileToString(new File(uri));
             return scriptEvaluator.configure(bootstrapCode).getRouteList();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
     }
 
-    private String normalizedScriptUri() throws IOException {
-        final String uri = configuration.getString(DEFAULT_SCRIPT_URI, DEFAULT_SCRIPT_PATH);
+    private static String normalizedScriptUri(final String uri) throws IOException {
         if (startsWithIgnoreCase(uri, "classpath:")) {
             Resource resource =
                 new ClassPathResource(substringAfter(uri, "classpath:"));

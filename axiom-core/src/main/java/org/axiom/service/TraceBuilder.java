@@ -38,7 +38,7 @@ import static java.text.MessageFormat.*;
 
 public class TraceBuilder {
 
-    private static final String TRACE_CONFIG_ROOT = "axiom.core.configuration.trace.";
+    private static final String TRACE_CONFIG_ROOT = "axiom.configuration.trace.";
     protected static final String TRACE_INTERCEPTORS = format("{0}include.interceptors", TRACE_CONFIG_ROOT);
     protected static final String TRACE_EXCEPTIONS = format("{0}include.exceptions", TRACE_CONFIG_ROOT);
     protected static final String TRACE_ENABLED = format("{0}enabled", TRACE_CONFIG_ROOT);

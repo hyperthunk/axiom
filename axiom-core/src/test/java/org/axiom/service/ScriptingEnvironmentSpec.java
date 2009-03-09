@@ -69,7 +69,7 @@ public class ScriptingEnvironmentSpec
             justIgnore(config, registry);
             checking(this);
 
-            scriptEnv.start();
+            scriptEnv.activate();
         }
 
         public void itShouldUnshiftEachPluginDirectoryOntoTheJRubyLoadPath() {
@@ -92,7 +92,7 @@ public class ScriptingEnvironmentSpec
             will(returnValue(true));
             checking(this);
 
-            scriptEnv.start();
+            scriptEnv.activate();
         }
 
         public void itShouldPukeIfTheSuppliedContextIsNull() {
@@ -105,7 +105,7 @@ public class ScriptingEnvironmentSpec
 
         private void stubEvalBeanId() {
             stubConfiguration(mockContext, registry, config);
-            allowing(config).getString("axiom.core.script.evaluator.id");
+            allowing(config).getString(JRubyScriptEvaluator.PROVIDER_BEAN_ID);
             will(returnValue(evaluatorBeanId));
         }
     }

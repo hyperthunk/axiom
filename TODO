@@ -20,6 +20,7 @@
    - just talk to the server using http
    - convert commands into either camel objects for serialization, or by hand
  - misc
+  - get either the cobertura or emma plugins working (they currently seem to break the build)
  * - general switch from commons-logging to slf4j (API)
    - implementations might use logback, as this looks preferable to log4j
   - get maven-assembly-plugin set up to create a proper (usable) bundle of jars and scripts

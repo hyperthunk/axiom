@@ -40,16 +40,18 @@ route {
     inOut.to(control_channel)
 
   intercept(xpath('/config[count(routes) > 0]')).
-    to(config >> 'axiom.core.control.processors.xml2code')
+    to(config >> 'axiom.control.processors.xml2code')
     process(add_header "payload-classifier" => 'code').proceed
 
   intercept(header('payload-classifier').isEqualTo('code')).
-    to(config >> 'axiom.core.control.processors.evaluator').proceed
+    to(config >> 'axiom.control.processors.evaluator').proceed
 
+  # TODO: this implementation is badly broken -
+  # that processRef has no CamelContext associated with it, for example
   from(control_channel).
-    processRef(config >> 'axiom.core.control.processors.id').
+    processRef(config >> 'axiom.control.processors.id').
       proceed.choice.
         when(header("command").isEqualTo("shutdown")).
-          to(config >> 'axiom.core.control.channel.shutdown').
+          to(config >> 'axiom.control.channel.shutdown').
         otherwise.stop # stops the routing, not the server itself!
 }

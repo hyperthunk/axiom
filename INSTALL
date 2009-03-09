@@ -29,11 +29,16 @@ for running the tests. To do so, you run the following command:
 
 Platforms:
 
-All development of axiom takes place on linux and os-x (which is bsd based) but
-it should work in most unix like environments. We'll try and get around to 
-testing things on windows at some point too. 
+All development of axiom takes place on linux and osx/darwin but it should work in
+most unix like environments. Testing on windows will take place prior to RC1.
 
 Other Notes:
+
+Code Coverage:
+
+Running the cobertura maven plugin seems to eroeously cause test failures in the build.
+To date I've been using code coverage in my IDE and leaving it out of the build, but
+getting this in place is on our 'TODO' list
 
 Surefire/Test Reports:
 
@@ -51,8 +56,8 @@ use the correct JDK (1.6). I seem to recall that one of the plugins we're using
 requires maven >= 2.0.9 so I recommend using at least that (or the latest version)
 and checking your maven version if you run into build problems.
 
-One way to do this is by exporting the following environment variables into the 
-bash session in which you're launching maven:
+The following environment variables will need to be exported into the bash session
+in which you're launching maven:
 
 export JAVA_HOME=/System/Library/Frameworks/JavaVM.framework/Versions/1.6/Home
 export JAVA_VERSION=1.6
