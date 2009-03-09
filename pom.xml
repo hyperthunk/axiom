@@ -57,7 +57,7 @@
     <!-- child modules -->
     <modules>
         <module>axiom-core</module>
-        <module>axiom-integration</module>
+        <module>axiom-integration-test</module>
     </modules>
     <!-- repositories - might be better to strip these out later on -->
     <repositories>
