@@ -51,10 +51,10 @@
 
     <bean scope="singleton"
           class="org.axiom.configuration.ExternalConfigurationSourceFactory"
-          id="axiomCoreConfigurationFactory" />
+          id="axiom.configuration.factory" />
 
-    <bean id="axiomCoreConfiguration"
-      factory-bean="axiomCoreConfigurationFactory"
+    <bean id="axiom.configuration"
+      factory-bean="axiom.configuration.factory"
       factory-method="createConfiguration" />
 
     <lang:jruby id="axiomCoreScriptEvaluator"
@@ -64,7 +64,7 @@
     <lang:jruby id="axiomCoreControlCodeEvaluator"
         script-source="classpath:axiom/core/route_builder_configurator.rb"
         script-interfaces="org.axiom.integration.camel.RouteConfigurationScriptEvaluator">
-        <lang:property name="properties" ref="axiomCoreConfiguration" />
+        <lang:property name="properties" ref="axiom.configuration" />
     </lang:jruby>
 
     <!-- axiom.control.processor.default -->

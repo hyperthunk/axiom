@@ -55,7 +55,7 @@ public class ScriptingEnvironment {
     private final CamelContext context;
 
     public ScriptingEnvironment(final CamelContext context) {
-        this(context, getRegisteredInstance(context));
+        this(context, getRegisteredConfiguration(context));
     }
 
     public ScriptingEnvironment(final CamelContext context, final Configuration configuration) {

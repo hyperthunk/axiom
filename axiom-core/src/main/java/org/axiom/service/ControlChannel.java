@@ -91,7 +91,7 @@ public class ControlChannel {
     public void activate() {
         try {
             log.info("Starting control channel.");
-            Configuration config = getRegisteredInstance(getContext());
+            Configuration config = getRegisteredConfiguration(getContext());
             log.info("Configuring tracer for {}.", getContext());
             TraceBuilder builder = new TraceBuilder(config, tracer);
             getContext().addInterceptStrategy(builder.build());

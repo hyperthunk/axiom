@@ -29,9 +29,11 @@
 package org.axiom.configuration;
 
 import org.apache.camel.CamelContext;
+import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.*;
 import static org.apache.commons.lang.StringUtils.*;
-import static org.apache.commons.lang.Validate.notNull;
+import static org.apache.commons.lang.Validate.*;
+import org.axiom.service.LifecycleException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -49,7 +51,7 @@ import static java.io.File.*;
 public class ExternalConfigurationSourceFactory {
 
     private final Logger log =
-        LoggerFactory.getLogger(ExternalConfigurationSourceFactory.class);
+        LoggerFactory.getLogger(getClass());
 
     private final String defaultConfigurationSourcePath;
 
@@ -58,7 +60,12 @@ public class ExternalConfigurationSourceFactory {
      * and load additional external properties when creating a new instance.
      */
     protected static final String AXIOM_CONFIGURATION_EXTERNALS = "axiom.configuration.externals";
-    public static final String CONFIG_BEAN_ID = "axiom.configuration.id";
+
+    /**
+     * The bean id of the registered composite configuration instance
+     * for the host context (Spring, JNDI, etc).
+     */
+    public static final String CONFIG_BEAN_ID = "axiom.configuration";
 
     /**
      * Initializes this with the default axiom properties.
@@ -84,9 +91,55 @@ public class ExternalConfigurationSourceFactory {
      * @return A registered {@link org.apache.commons.configuration.Configuration} instance
      * or {@code null } if no registered instance is found.
      */
-    public static Configuration getRegisteredInstance(final CamelContext context) {
+    public static Configuration getRegisteredConfiguration(final CamelContext context) {
         notNull(context, "Camel context cannot be null.");
         return context.getRegistry().lookup(CONFIG_BEAN_ID, Configuration.class);
+    }
+
+    /**
+     * Get the registered {@link org.apache.commons.configuration.Configuration}
+     * instance from the supplied {@link Registry}.
+     * @param registry The {@link Registry} in which the
+     * {@link org.apache.commons.configuration.Configuration} instance is registered.
+     * @return A registered {@link org.apache.commons.configuration.Configuration} instance
+     * or {@code null } if no registered instance is found.
+     */
+    public static Configuration getRegisteredConfiguration(final Registry registry) {
+        notNull(registry, "Registry cannot be null.");
+        return registry.lookup(CONFIG_BEAN_ID, Configuration.class);
+    }
+
+    /**
+     * As {@link ExternalConfigurationSourceFactory#getRegisteredConfiguration},
+     * but throws {@link LifecycleException} if the configuration instance is not
+     * properly registered in the supplied context.
+     * @param registry The {@link Registry} in which the
+     * {@link org.apache.commons.configuration.Configuration} instance is registered.
+     * @return A registered {@link org.apache.commons.configuration.Configuration} instance
+     * or {@code null } if no registered instance is found.
+     */    
+    public static Configuration requireRegisteredConfiguration(final Registry registry) {
+        Configuration config = getRegisteredConfiguration(registry);
+        if (config == null) {
+            throw new LifecycleException(java.text.MessageFormat.format(
+                "Context Registry is incorrectly configured: bean for id {0} is not present.",
+                ExternalConfigurationSourceFactory.CONFIG_BEAN_ID
+            ));
+        }
+        return config;
+    }
+
+    /**
+     * As {@link ExternalConfigurationSourceFactory#getRegisteredConfiguration},
+     * but throws {@link LifecycleException} if the configuration instance is not
+     * properly registered in the supplied context.
+     * @param context The {@link org.apache.camel.CamelContext} in which the
+     * {@link org.apache.commons.configuration.Configuration} instance is registered.
+     * @return A registered {@link org.apache.commons.configuration.Configuration} instance
+     * or {@code null } if no registered instance is found.
+     */
+    public static Configuration requireRegisteredConfiguration(final CamelContext context) {
+        return requireRegisteredConfiguration(context.getRegistry());
     }
 
     /**
@@ -94,7 +147,7 @@ public class ExternalConfigurationSourceFactory {
      * The returned {@link org.apache.commons.configuration.Configuration} is composed
      * of system properties, external (user defined) properties as defined by the
      * list of path locations in the {@code axiom.configuration.externals } system property
-     * and default properties as defined by axiom-core. 
+     * and default properties as defined by axiom-core.
      * @return A composite configuration of system properties, user supplied properties and
      * axiom's own internal and default properties.
      */

@@ -96,6 +96,8 @@ public class ExternalConfigurationSourceFactorySpec
 
     }
 
+    //TODO: re-introduce these???
+
     /*@Test
     public void cascadingConfigurationSetupPrefersSystemConfig() throws ConfigurationException {
         final String key = "axiom.control.channel.in";

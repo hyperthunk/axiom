@@ -28,16 +28,47 @@
 
 package org.axiom.service;
 
-import static org.apache.commons.lang.Validate.notNull;
+import org.apache.camel.spi.Registry;
+import org.apache.commons.configuration.Configuration;
+import static org.apache.commons.lang.Validate.*;
+import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
+import static org.axiom.integration.camel.RouteConfigurationScriptEvaluator.*;
 
-//TODO: migrate the algorithm to combine configuration data into its proper place...
+/**
+ * Provides a means of bootstrapping a {@link ControlChannel} with its
+ * own set of routes and (optionally) bootstrapping a set of routes for
+ * each of its managed (target) components also. 
+ */
+public class ControlChannelBootstrapper {
 
-class ControlChannelBootstrapper {
+    /**
+     * The property key against which the uri/path of the (default) bootstrap
+     * route script is set. This is set (again, by default)
+     */
+    public static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
 
-    protected static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
-    protected static final String DEFAULT_SCRIPT_PATH = "classpath:default-bootstrap.rb";
-
+    /**
+     * Bootstraps the supplied {@link ControlChannel}. The bootstrap script uri
+     * property is first retrieved from the configuration store, and the script
+     * evaluated directly. If one of the {@code axiom.bootstrap.extended.script.urls} or
+     * {@code axiom.bootstrap.extended.script.url} properties is set, then these
+     * scripts are evaluated next.
+     *
+     * @param channel The {@link ControlChannel} to bootstrap.
+     */
     public void bootstrap(final ControlChannel channel) {
         notNull(channel, "Control channel cannot be null.");
+        final Registry registry = channel.getContext().getRegistry();
+        final Configuration config = requireRegisteredConfiguration(registry);
+
+        RouteConfigurationScriptEvaluator evaluator =
+            registry.lookup(config.getString(PROVIDER_BEAN_ID),
+                RouteConfigurationScriptEvaluator.class);
+
+        RouteScriptLoader loader =
+            new RouteScriptLoader(config.getString(DEFAULT_SCRIPT_URI), evaluator);
+        channel.load(loader);
     }
+
 }
