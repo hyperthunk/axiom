@@ -34,6 +34,10 @@ import static org.apache.commons.lang.Validate.*;
 import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import static org.axiom.integration.camel.RouteConfigurationScriptEvaluator.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Iterator;
 
 /**
  * Provides a means of bootstrapping a {@link ControlChannel} with its
@@ -44,20 +48,37 @@ public class ControlChannelBootstrapper {
 
     /**
      * The property key against which the uri/path of the (default) bootstrap
-     * route script is set. This is set (again, by default)
+     * route script is set. This is set (again, by default) by combining it with
+     * the value of the {@code axiom.bootstrap.startup.mode} property, such that
+     * 
      */
     public static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
 
     /**
+     * The property key prefix with which custom (user defined) bootstrap extension
+     * scripts can be defined. Setting a system (or file based) property such as
+     * {@code axiom.bootstrap.extended.script.uri=/path/to/extension.rb} will result
+     * in the script at this location being evaluated and its routes added to the
+     * control channel. The final part/name of the property key is arbitrary and can
+     * be set to anything you like (allowing for multiple extensions to be registered
+     * concurrently).
+     */
+    public static final String EXTENDED_SCRIPTS_PREFIX = "axiom.bootstrap.extended.script";
+
+    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    /**
      * Bootstraps the supplied {@link ControlChannel}. The bootstrap script uri
      * property is first retrieved from the configuration store, and the script
-     * evaluated directly. If one of the {@code axiom.bootstrap.extended.script.urls} or
-     * {@code axiom.bootstrap.extended.script.url} properties is set, then these
-     * scripts are evaluated next.
+     * evaluated directly. If one of the {@code axiom.bootstrap.extended.script.url} or
+     * user defined {@code axiom.bootstrap.extended.script.&lt;name&gt;} properties is set,
+     * then these scripts are evaluated next (the user defined ones only if they
+     * represent valid file system resources).
      *
      * @param channel The {@link ControlChannel} to bootstrap.
      */
     public void bootstrap(final ControlChannel channel) {
+        log.info("Bootstrapping control channel.");
         notNull(channel, "Control channel cannot be null.");
         final Registry registry = channel.getContext().getRegistry();
         final Configuration config = requireRegisteredConfiguration(registry);
@@ -69,6 +90,12 @@ public class ControlChannelBootstrapper {
         RouteScriptLoader loader =
             new RouteScriptLoader(config.getString(DEFAULT_SCRIPT_URI), evaluator);
         channel.load(loader);
+
+        Iterator iter = config.getKeys(EXTENDED_SCRIPTS_PREFIX);
+        while (iter.hasNext())  {
+            final String entry = iter.next().toString();
+            channel.load(new RouteScriptLoader(config.getString(entry), evaluator));
+        }
     }
 
 }

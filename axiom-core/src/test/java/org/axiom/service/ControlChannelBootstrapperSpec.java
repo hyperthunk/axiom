@@ -41,11 +41,12 @@ import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.junit.runner.RunWith;
 
 import static java.text.MessageFormat.*;
+import java.util.ArrayList;
 
 @RunWith(JDaveRunner.class)
 public class ControlChannelBootstrapperSpec extends Specification<ControlChannelBootstrapper> {
 
-    public class WhenLocatingTheBootstrapScriptsToLoad extends SpecSupport {
+    public class WhenBootstrappingTheControlChannel extends SpecSupport {
 
         private CamelContext mockContext = mock(CamelContext.class);
         private Registry mockRegistry = mock(Registry.class);
@@ -86,11 +87,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
         }
 
         public void itShouldEvaluateTheConfiguredBootstrapScript() throws Throwable {
-            stubRegistry();
-            stubLookup("axiom.configuration", mockConfig);
-            stubConfig("axiom.control.processors.evaluator", codeEvaluatorBeanId);
-            stubLookup(codeEvaluatorBeanId, mockRouteBuilder);
-            stubConfig(ControlChannelBootstrapper.DEFAULT_SCRIPT_URI, "classpath:test-boot.rb");
+            stubForDefaultBootstrap();
 
             one(mockRouteBuilder).configure(with(any(String.class)));
             will(returnValue(dummy(RouteBuilder.class)));
@@ -103,6 +100,43 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
                     bootstrapper.bootstrap(channel);
                 }
             }, should.not().raiseAnyException());
+        }
+
+        public void itShouldEvaluateEachConfiguredBootstrapExtensionScript() throws Throwable {
+            stubForDefaultBootstrap();
+            one(mockRouteBuilder).configure(with(any(String.class)));
+            will(returnValue(dummy(RouteBuilder.class, "first-routebuilder-mock")));
+
+            final ArrayList<String> extensions = new ArrayList<String>() {{
+                add("axiom.bootstrap.extended.script.additions");
+                add("axiom.bootstrap.extended.script.url");
+            }};
+
+            //the tests doesn't know we're bluffing here
+            allowing(mockConfig).getKeys("axiom.bootstrap.extended.script");
+            will(returnValue(extensions.iterator()));
+            for (final String item : extensions) {
+                stubConfig(item, "classpath:test-boot.rb");
+            }
+
+            exactly(2).of(mockRouteBuilder).configure(with(any(String.class)));
+            will(returnValue(dummy(RouteBuilder.class, "second-routebuilder-mock")));
+            justIgnore(mockContext);
+            checking(this);
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    bootstrapper.bootstrap(channel);
+                }
+            }, should.not().raiseAnyException());            
+        }
+
+        private void stubForDefaultBootstrap() throws ClassNotFoundException {
+            stubRegistry();
+            stubLookup("axiom.configuration", mockConfig);
+            stubConfig("axiom.control.processors.evaluator", codeEvaluatorBeanId);
+            stubLookup(codeEvaluatorBeanId, mockRouteBuilder);
+            stubConfig(ControlChannelBootstrapper.DEFAULT_SCRIPT_URI, "classpath:test-boot.rb");
         }
 
         //TODO: make some of these stubbing utility methods available to other test classes

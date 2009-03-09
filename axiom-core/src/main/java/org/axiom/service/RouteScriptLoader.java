@@ -33,6 +33,8 @@ import static org.apache.commons.io.FileUtils.*;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 
@@ -40,10 +42,18 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * {@link RouteLoader} that takes a script from the file system
+ * (or a classpath resource) and evaluates it, generating a
+ * list of {@link Route} instances.
+ */
 public class RouteScriptLoader implements RouteLoader {
 
-    protected final RouteConfigurationScriptEvaluator scriptEvaluator;
-    protected final String pathToScript;
+    private static final String NEWLINE = System.getProperty("line.separator");
+    
+    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final RouteConfigurationScriptEvaluator scriptEvaluator;
+    private final String pathToScript;
 
     public RouteScriptLoader(final String pathToScript,
         final RouteConfigurationScriptEvaluator scriptEvaluator) {
@@ -59,17 +69,20 @@ public class RouteScriptLoader implements RouteLoader {
     @Override public List<Route> load() {
         try {
             final String uri = normalizedScriptUri(pathToScript);
+            log.info("Loading route list from {}.", uri);
             final String bootstrapCode = readFileToString(new File(uri));
+            log.debug("Applying {}:{}{}", new Object[] {uri, NEWLINE, bootstrapCode});
             return scriptEvaluator.configure(bootstrapCode).getRouteList();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
     }
 
-    private static String normalizedScriptUri(final String uri) throws IOException {
+    private String normalizedScriptUri(final String uri) throws IOException {
         if (startsWithIgnoreCase(uri, "classpath:")) {
             Resource resource =
                 new ClassPathResource(substringAfter(uri, "classpath:"));
+            log.debug("Resolved '{}' to '{}'.", uri, resource);
             return resource.getFile().getAbsolutePath();
         }
         return uri;
