@@ -1,5 +1,9 @@
  - URGENT
   - figure out what the hell is wrong with maven when it comes to integration testing
+  - find a way to either
+   - (a) pull out an integration-test module without making the IDE experience suffer considerably, or
+   - (b) use profiles and surefire-plugin config to attach some test cases to the integration-test phase
+  - move all integration tests out of the src/test/java directories for axiom-core and any other culprits  
  - axiom-core
   - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire
