@@ -53,11 +53,11 @@ describe Axiom::Plugins, "when adding plugins via a registry" do
     mock_ctx.stubs(:registry).returns mock_reg
 
     beanId = 'expectedBeanId'
-    mock_reg.expects(:lookup).with beanId
+    mock_reg.expects(:lookup).with(beanId).returns(:a_processor)
 
     # action...
     lookup_plugin :bean_me_up_scotty, beanId
-    bean_me_up_scotty
+    bean_me_up_scotty.should == :a_processor
   end
 
   it "should fail if you try and pass positional arguments to the generated method" do

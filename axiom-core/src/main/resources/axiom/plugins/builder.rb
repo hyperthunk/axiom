@@ -53,6 +53,7 @@ module Axiom
           fail_property_assignment property, thing unless thing.respond_to? property
           thing.send(property, v)
         end
+        thing
       end
     end
 
