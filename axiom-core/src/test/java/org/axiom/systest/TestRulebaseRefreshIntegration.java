@@ -28,19 +28,15 @@
 
 package org.axiom.systest;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.Exchange;
-import org.apache.camel.Processor;
-import org.apache.camel.ProducerTemplate;
+import org.apache.camel.*;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.camel.builder.xml.XPathBuilder.*;
 import org.apache.camel.component.mock.MockEndpoint;
-import static org.junit.Assert.*;
+import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.BeansException;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.test.context.ContextConfiguration;
@@ -51,7 +47,7 @@ import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
 
     ApplicationContext applicationContext;
-    @Autowired CamelContext camelContext;
+    CamelContext camelContext;
     private final Processor doNothingProcessor = new Processor() {
         @Override public void process(Exchange exchange) throws Exception {
             // deliberately ignoring exchange...
@@ -65,7 +61,7 @@ public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
 
     @Before
     public void setUp() throws Exception {
-        assertNotNull(camelContext);
+        camelContext = new SpringCamelContext(applicationContext);
     }
 
     //@Ignore //TODO: move this into an integration testing module and re-enable
