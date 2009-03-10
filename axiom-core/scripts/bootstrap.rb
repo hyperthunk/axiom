@@ -44,12 +44,12 @@ route {
     process(add_header "payload-classifier" => 'code').proceed
 
   intercept(header('payload-classifier').isEqualTo('code')).
-    to(config >> 'axiom.control.processors.evaluator').proceed
+    processRef(config >> 'axiom.control.processors.evaluator.id').proceed
 
-  # TODO: this implementation is badly broken -
+  # TODO: this implementation is badly broken - change it to use an axiom component instead
   # that processRef has no CamelContext associated with it, for example
   from(control_channel).
-    processRef(config >> 'axiom.control.processors.id').
+    processRef(config >> 'axiom.control.processors.default.id').
       proceed.choice.
         when(header("command").isEqualTo("shutdown")).
           to(config >> 'axiom.control.channel.shutdown').

@@ -46,18 +46,18 @@ import org.slf4j.LoggerFactory;
 public class ControlChannel {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-    private final CamelContext context;
+    private final CamelContext hostContext;
     private final Tracer tracer;
 
-    public ControlChannel(final CamelContext context) {
-        this(context, getTracer(context));
+    public ControlChannel(final CamelContext hostContext) {
+        this(hostContext, getTracer(hostContext));
     }
 
-    public ControlChannel(final CamelContext context, final Tracer tracer) {
-        notNull(context, "Camel context cannot be null.");
+    public ControlChannel(final CamelContext hostContext, final Tracer tracer) {
+        notNull(hostContext, "Camel context cannot be null.");
         notNull(tracer, "Tracer cannot be null.");
         this.tracer = tracer;
-        this.context = context;
+        this.hostContext = hostContext;
     }
 
     private static Tracer getTracer(final CamelContext context) {
@@ -77,8 +77,8 @@ public class ControlChannel {
     public void load(final RouteLoader loader) {
         notNull(loader, "Route loader cannot be null.");
         try {
-            log.debug("Adding routes to context {}.", context.getName());
-            context.addRoutes(loader.load());
+            log.debug("Adding routes to context {}.", hostContext.getName());
+            hostContext.addRoutes(loader.load());
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
@@ -122,7 +122,7 @@ public class ControlChannel {
      * @return
      */
     public CamelContext getContext() {
-        return context;
+        return hostContext;
     }
 
     /**

@@ -36,7 +36,7 @@ import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.SpecSupport;
 import org.axiom.integration.jruby.JRubyScriptEvaluator;
-import static org.axiom.service.ScriptingEnvironment.*;
+import org.axiom.integration.Environment;
 import static org.hamcrest.Matchers.*;
 import org.junit.runner.RunWith;
 
@@ -63,7 +63,7 @@ public class ScriptingEnvironmentSpec
 
         public void itShouldLookupTheConfigurationAndEvaluatorBeansInTheSuppliedCamelContext() {
             stubEvalBeanId();
-            one(config).getString(ENDORSED_PLUGINS, null);
+            one(config).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(null));
 
             justIgnore(config, registry);
@@ -78,7 +78,7 @@ public class ScriptingEnvironmentSpec
                     File.pathSeparator);
 
             stubEvalBeanId();
-            allowing(config).getString(ENDORSED_PLUGINS, null);
+            allowing(config).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(pluginPaths));
 
             allowing(registry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);

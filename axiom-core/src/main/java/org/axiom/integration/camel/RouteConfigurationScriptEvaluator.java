@@ -40,7 +40,7 @@ public interface RouteConfigurationScriptEvaluator {
      * The property name used to identify the service id (JNDI uri or Spring Bean name)
      * for the default registered instance (or prototype) or this type.
      */
-    public static final String PROVIDER_BEAN_ID = "axiom.control.processors.evaluator";
+    public static final String PROVIDER_BEAN_ID = "axiom.control.processors.evaluator.id";
 
     /**
      * Runs the provided body (ruby script source) to obtain a

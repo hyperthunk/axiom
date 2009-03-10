@@ -36,8 +36,8 @@ import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.SpecSupport;
-import org.axiom.configuration.ExternalConfigurationSourceFactory;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
+import org.axiom.integration.Environment;
 import org.junit.runner.RunWith;
 
 import static java.text.MessageFormat.*;
@@ -46,15 +46,15 @@ import java.util.ArrayList;
 @RunWith(JDaveRunner.class)
 public class ControlChannelBootstrapperSpec extends Specification<ControlChannelBootstrapper> {
 
-    public class WhenBootstrappingTheControlChannel extends SpecSupport {
+    private CamelContext mockContext = mock(CamelContext.class);
+    private Registry mockRegistry = mock(Registry.class);
+    private ControlChannelBootstrapper bootstrapper;
+    private ControlChannel channel = new ControlChannel(mockContext);
+    private Configuration mockConfig = mock(Configuration.class);
+    private RouteConfigurationScriptEvaluator mockRouteBuilder = mock(RouteConfigurationScriptEvaluator.class);
+    private final String codeEvaluatorBeanId = "axiomCoreControlCodeEvaluator";
 
-        private CamelContext mockContext = mock(CamelContext.class);
-        private Registry mockRegistry = mock(Registry.class);
-        private ControlChannelBootstrapper bootstrapper;
-        private ControlChannel channel = new ControlChannel(mockContext);
-        private Configuration mockConfig = mock(Configuration.class);
-        private RouteConfigurationScriptEvaluator mockRouteBuilder = mock(RouteConfigurationScriptEvaluator.class);
-        private final String codeEvaluatorBeanId = "axiomCoreControlCodeEvaluator";
+    public class WhenBootstrappingTheControlChannel extends SpecSupport {
 
         public ControlChannelBootstrapper create() {
             allowing(mockContext).getName();
@@ -83,7 +83,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
                 }
             }, should.raise(LifecycleException.class, format(
                 "Context Registry is incorrectly configured: bean for id {0} is not present.",
-                ExternalConfigurationSourceFactory.CONFIG_BEAN_ID)));
+                Environment.CONFIG_BEAN_ID)));
         }
 
         public void itShouldEvaluateTheConfiguredBootstrapScript() throws Throwable {
@@ -134,7 +134,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
         private void stubForDefaultBootstrap() throws ClassNotFoundException {
             stubRegistry();
             stubLookup("axiom.configuration", mockConfig);
-            stubConfig("axiom.control.processors.evaluator", codeEvaluatorBeanId);
+            stubConfig("axiom.control.processors.evaluator.id", codeEvaluatorBeanId);
             stubLookup(codeEvaluatorBeanId, mockRouteBuilder);
             stubConfig(ControlChannelBootstrapper.DEFAULT_SCRIPT_URI, "classpath:test-boot.rb");
         }

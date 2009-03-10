@@ -33,6 +33,7 @@ import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
 import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
+import org.axiom.integration.Environment;
 import org.axiom.integration.jruby.JRubyScriptEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,12 +44,6 @@ import static java.lang.String.*;
  * Provides managed access to the underlying scripting environment.
  */
 public class ScriptingEnvironment {
-
-    /**
-     * The name of the property in which the uri (or path delimited
-     * list of uris) for endorsed plugins resides.
-     */
-    public static final String ENDORSED_PLUGINS = "axiom.plugins.endorsed.uri";
 
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Configuration configuration;
@@ -66,8 +61,8 @@ public class ScriptingEnvironment {
 
     public void activate() {
         log.info("Starting jruby scripting environment.");
-        final String pluginUris = configuration.getString(ENDORSED_PLUGINS, null);
-        log.debug("Plugin uris defined: [{}]", pluginUris);
+        final String pluginUris = configuration.getString(Environment.ENDORSED_PLUGINS, null);
+        log.debug("Plugin uris: [{}]", pluginUris);
         if (isNotEmpty(pluginUris)) {
             log.info("Adding {} to the jruby LOAD_PATH.", pluginUris);
             final String scriptFragment =
@@ -84,7 +79,8 @@ public class ScriptingEnvironment {
      * @return the last value on the stack after evaluating the supplied code.
      */
     public Object evaluateScriptFragment(final String scriptFragment) {
-        log.debug("Evaluating script fragment: <script>{}</script>", scriptFragment);
+        log.debug("Evaluating script fragment: <script>{}{}{}</script>",
+            new Object[] {Environment.NEWLINE, scriptFragment, Environment.NEWLINE});
         return lookupEvaluatorService().evaluate(scriptFragment);
     }
 

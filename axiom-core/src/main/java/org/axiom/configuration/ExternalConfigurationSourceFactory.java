@@ -34,6 +34,7 @@ import org.apache.commons.configuration.*;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.service.LifecycleException;
+import org.axiom.integration.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -62,12 +63,6 @@ public class ExternalConfigurationSourceFactory {
     protected static final String AXIOM_CONFIGURATION_EXTERNALS = "axiom.configuration.externals";
 
     /**
-     * The bean id of the registered composite configuration instance
-     * for the host context (Spring, JNDI, etc).
-     */
-    public static final String CONFIG_BEAN_ID = "axiom.configuration";
-
-    /**
      * Initializes this with the default axiom properties.
      */
     public ExternalConfigurationSourceFactory() {
@@ -93,7 +88,7 @@ public class ExternalConfigurationSourceFactory {
      */
     public static Configuration getRegisteredConfiguration(final CamelContext context) {
         notNull(context, "Camel context cannot be null.");
-        return context.getRegistry().lookup(CONFIG_BEAN_ID, Configuration.class);
+        return context.getRegistry().lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
     }
 
     /**
@@ -106,7 +101,7 @@ public class ExternalConfigurationSourceFactory {
      */
     public static Configuration getRegisteredConfiguration(final Registry registry) {
         notNull(registry, "Registry cannot be null.");
-        return registry.lookup(CONFIG_BEAN_ID, Configuration.class);
+        return registry.lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
     }
 
     /**
@@ -123,7 +118,7 @@ public class ExternalConfigurationSourceFactory {
         if (config == null) {
             throw new LifecycleException(java.text.MessageFormat.format(
                 "Context Registry is incorrectly configured: bean for id {0} is not present.",
-                ExternalConfigurationSourceFactory.CONFIG_BEAN_ID
+                Environment.CONFIG_BEAN_ID
             ));
         }
         return config;

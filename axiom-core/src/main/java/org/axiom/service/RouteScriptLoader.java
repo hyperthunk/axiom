@@ -33,6 +33,7 @@ import static org.apache.commons.io.FileUtils.*;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
+import org.axiom.integration.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.core.io.ClassPathResource;
@@ -49,8 +50,6 @@ import java.util.List;
  */
 public class RouteScriptLoader implements RouteLoader {
 
-    private static final String NEWLINE = System.getProperty("line.separator");
-    
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final RouteConfigurationScriptEvaluator scriptEvaluator;
     private final String pathToScript;
@@ -71,7 +70,7 @@ public class RouteScriptLoader implements RouteLoader {
             final String uri = normalizedScriptUri(pathToScript);
             log.info("Loading route list from {}.", uri);
             final String bootstrapCode = readFileToString(new File(uri));
-            log.debug("Applying {}:{}{}", new Object[] {uri, NEWLINE, bootstrapCode});
+            log.debug("Applying {}:{}{}", new Object[] {uri, Environment.NEWLINE, bootstrapCode});
             return scriptEvaluator.configure(bootstrapCode).getRouteList();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);

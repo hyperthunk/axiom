@@ -1,3 +1,5 @@
+ - URGENT
+  - figure out what the hell is wrong with maven when it comes to integration testing
  - axiom-core
   - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire

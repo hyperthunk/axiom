@@ -37,7 +37,7 @@
     <groupId>com.bt</groupId>
     <artifactId>axiom-core</artifactId>
     <name>Axiom Core</name>
-    <version>${axiom.version}-SNAPSHOT</version>
+    <version>${axiom.version}</version>
     <dependencies>
         <dependency>
             <groupId>org.apache.camel</groupId>

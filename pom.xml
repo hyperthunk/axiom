@@ -57,7 +57,6 @@
     <!-- child modules -->
     <modules>
         <module>axiom-core</module>
-        <module>axiom-integration</module>
     </modules>
     <!-- repositories - might be better to strip these out later on -->
     <repositories>
@@ -183,7 +182,7 @@
             <groupId>org.jdave</groupId>
             <artifactId>jdave-junit4</artifactId>
             <version>${jdave.version}</version>
-            <scope>test</scope>
+            <scope>provided</scope>
             <exclusions>
                 <exclusion>
                     <groupId>junit</groupId>
@@ -258,6 +257,11 @@
         <pluginManagement>
             <plugins>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
+                    <artifactId>maven-idea-plugin</artifactId>
+                    <version>2.2</version>
+                </plugin>
+                <plugin>
                     <artifactId>maven-compiler-plugin</artifactId>
                     <configuration>
                         <source>${jdk.version}</source>
@@ -269,6 +273,10 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${surefire.version}</version>
                     <configuration>
+                        <!-- what the hell is up with maven's lack of integration testing support -->
+                        <!--<excludes>
+                            <exclude>**/systest/**</exclude>
+                        </excludes>-->
                         <includes>
                             <include>**/*Spec.java</include>
                             <include>**/Test*.java</include>

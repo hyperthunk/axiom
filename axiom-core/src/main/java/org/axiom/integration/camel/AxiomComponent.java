@@ -36,21 +36,21 @@ import org.apache.camel.impl.DefaultComponent;
 import org.apache.camel.impl.ProcessorEndpoint;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.StringUtils.equalsIgnoreCase;
+import org.axiom.integration.Environment;
 
 import java.util.Map;
 
 public class AxiomComponent extends DefaultComponent<Exchange> {
 
-    private static final String AXIOM_HOST = "axiom:host";
-    public static final String CONTEXT_PROCESSOR_BEANID = "axiom.control.processor.id";
-    protected static final String NO_REGISTERED_CONTEXT = "Not org.apache.camel.CamelContext registered under the name %s";
+    protected static final String NO_REGISTERED_CONTEXT =
+        "No org.apache.camel.CamelContext registered under the name %s";
 
     private Configuration config;
 
     @Override
     protected ProcessorEndpoint createEndpoint(String uri, String remaining, Map parameters) throws Exception {
         final CamelContext targetContext;
-        if (equalsIgnoreCase(uri, AXIOM_HOST)) {
+        if (equalsIgnoreCase(uri, Environment.AXIOM_HOST_URI)) {
             targetContext = getCamelContext();
         } else {
             targetContext = lookup(remaining, CamelContext.class);
@@ -65,7 +65,7 @@ public class AxiomComponent extends DefaultComponent<Exchange> {
     }
 
     private ContextProcessingNode lookupProcessingNode() {
-        return lookup(config.getString(CONTEXT_PROCESSOR_BEANID), ContextProcessingNode.class);
+        return lookup(config.getString(Environment.DEFAULT_PROCESSOR_BEAN_ID), ContextProcessingNode.class);
     }
 
     public Configuration getConfiguration() {

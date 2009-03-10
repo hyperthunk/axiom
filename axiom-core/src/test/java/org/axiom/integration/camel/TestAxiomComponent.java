@@ -30,22 +30,16 @@
 
 package org.axiom.integration.camel;
 
-import org.junit.Test;
-import org.junit.Before;
-import static org.junit.Assert.assertThat;
-import org.junit.runner.RunWith;
-import org.apache.camel.Component;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Processor;
-import org.apache.camel.Exchange;
-import org.apache.camel.impl.ProcessorEndpoint;
-import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
-import org.jmock.integration.junit4.JMock;
-import org.jmock.Mockery;
+import org.axiom.integration.Environment;
 import org.jmock.Expectations;
-import static org.hamcrest.core.IsSame.sameInstance;
+import org.jmock.Mockery;
+import org.jmock.integration.junit4.JMock;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
 
 @RunWith(JMock.class)
 public class TestAxiomComponent {
@@ -82,7 +76,7 @@ public class TestAxiomComponent {
             one(registry).lookup(contextBeanName, CamelContext.class);
             will(returnValue(mockContext));
 
-            one(mockConfig).getString(AxiomComponent.CONTEXT_PROCESSOR_BEANID);
+            one(mockConfig).getString(Environment.DEFAULT_PROCESSOR_BEAN_ID);
             will(returnValue(PROCESSOR));
 
             allowing(registry).lookup(PROCESSOR, ContextProcessingNode.class);
@@ -112,7 +106,7 @@ public class TestAxiomComponent {
         mockery.checking(new Expectations() {{
             allowing(mockContext).getRegistry();will(returnValue(registry));
 
-            allowing(mockConfig).getString(AxiomComponent.CONTEXT_PROCESSOR_BEANID);
+            allowing(mockConfig).getString(Environment.DEFAULT_PROCESSOR_BEAN_ID);
             will(returnValue(PROCESSOR));
 
             never(registry).lookup(with(any(String.class)), with(equal(CamelContext.class)));
@@ -135,7 +129,7 @@ public class TestAxiomComponent {
         mockery.checking(new Expectations() {{
             allowing(mockContext).getRegistry();will(returnValue(registry));
 
-            one(mockConfig).getString(AxiomComponent.CONTEXT_PROCESSOR_BEANID);
+            one(mockConfig).getString(Environment.DEFAULT_PROCESSOR_BEAN_ID);
             will(returnValue(beanId));
 
             one(registry).lookup(with(any(String.class)), with(any(Class.class)));
@@ -158,7 +152,7 @@ public class TestAxiomComponent {
         mockery.checking(new Expectations() {{
             allowing(mockContext).getRegistry();will(returnValue(registry));
 
-            allowing(mockConfig).getString(AxiomComponent.CONTEXT_PROCESSOR_BEANID);
+            allowing(mockConfig).getString(Environment.DEFAULT_PROCESSOR_BEAN_ID);
             will(returnValue(PROCESSOR));
 
             allowing(registry).lookup(PROCESSOR, ContextProcessingNode.class);

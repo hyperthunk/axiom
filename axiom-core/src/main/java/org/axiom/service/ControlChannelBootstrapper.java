@@ -42,7 +42,7 @@ import java.util.Iterator;
 /**
  * Provides a means of bootstrapping a {@link ControlChannel} with its
  * own set of routes and (optionally) bootstrapping a set of routes for
- * each of its managed (target) components also. 
+ * each of its managed (target) components also.
  */
 public class ControlChannelBootstrapper {
 
@@ -50,7 +50,7 @@ public class ControlChannelBootstrapper {
      * The property key against which the uri/path of the (default) bootstrap
      * route script is set. This is set (again, by default) by combining it with
      * the value of the {@code axiom.bootstrap.startup.mode} property, such that
-     * 
+     *
      */
     public static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
 
@@ -68,12 +68,9 @@ public class ControlChannelBootstrapper {
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     /**
-     * Bootstraps the supplied {@link ControlChannel}. The bootstrap script uri
-     * property is first retrieved from the configuration store, and the script
-     * evaluated directly. If one of the {@code axiom.bootstrap.extended.script.url} or
-     * user defined {@code axiom.bootstrap.extended.script.&lt;name&gt;} properties is set,
-     * then these scripts are evaluated next (the user defined ones only if they
-     * represent valid file system resources).
+     * Bootstraps the supplied {@link ControlChannel}. The value of the property {@code axiom.bootstrap.script.url} is first retrieved from the configuration store, and the script at this location is evaluated directly.
+     * If one of the {@code axiom.bootstrap.extended.script.url} or user defined {@code axiom.bootstrap.extended.script.&lt;name&gt;} properties is set,
+     * then these scripts are evaluated next (the user defined ones only if they represent valid file system resources).
      *
      * @param channel The {@link ControlChannel} to bootstrap.
      */
