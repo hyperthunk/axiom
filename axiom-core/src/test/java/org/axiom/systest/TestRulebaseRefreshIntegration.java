@@ -26,7 +26,7 @@
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.axiom.mediation.routing;
+package org.axiom.systest;
 
 import org.apache.camel.CamelContext;
 import org.apache.camel.Exchange;
@@ -68,7 +68,7 @@ public class TestRulebaseRefreshIntegration implements ApplicationContextAware {
         assertNotNull(camelContext);
     }
 
-    //@Ignore //TODO: move this into the axiom-integration module and re-enable
+    //@Ignore //TODO: move this into an integration testing module and re-enable
     @Test
     public void addingAdditionalEndpointOnDefinedRoute() throws Exception {
         //TODO: refactor this to use our components later on

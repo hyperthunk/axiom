@@ -43,7 +43,7 @@
 
     <!-- declare a camel context that scans for classes that is RouteBuilder
          in the package org.apache.camel.example.server -->
-    <camel:camelContext id="camel" autowireRouteBuilders="false" useJmx="true">
+    <camel:camelContext id="axiom.spring.default.context" autowireRouteBuilders="false" useJmx="true">
         <!-- enable JMX connector so we can connect to the server and browse mbeans -->
         <!-- Camel will log at INFO level the service URI to use for connecting with jconsole -->
         <camel:jmxAgent id="agent" createConnector="true" />
