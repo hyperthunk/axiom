@@ -47,10 +47,8 @@ import java.util.Iterator;
 public class ControlChannelBootstrapper {
 
     /**
-     * The property key against which the uri/path of the (default) bootstrap
-     * route script is set. This is set (again, by default) by combining it with
-     * the value of the {@code axiom.bootstrap.startup.mode} property, such that
-     *
+     * The property key against which the uri/path of the
+     * (default) bootstrap route script is set.
      */
     public static final String DEFAULT_SCRIPT_URI = "axiom.bootstrap.script.url";
 

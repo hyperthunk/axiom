@@ -41,6 +41,7 @@
           id="axiom.configuration.factory" />
 
     <bean id="axiom.configuration"
+      scope="singleton"
       factory-bean="axiom.configuration.factory"
       factory-method="createConfiguration" />
 

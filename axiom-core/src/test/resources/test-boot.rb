@@ -1,2 +1,3 @@
-
-route { from("direct:start").to("seda:q1") }
+route {
+  from("direct:start").to("seda:q1") 
+}

@@ -32,14 +32,13 @@ import org.apache.camel.Route;
 import java.util.Collection;
 
 /**
- * Creates a {@link org.apache.camel.builder.RouteBuilder}
- * which can be used to configure a {@link org.apache.camel.CamelContext}.
+ * Creates a collection of {@link Route} objects which can then
+ * be used to configure a {@link org.apache.camel.CamelContext}.
  */
 public interface RouteLoader {
 
     /**
-     * Loads a route builder based on whatever
-     * mechanism the underlying implementation uses. 
+     * Loads the collection of {@link Route}s.
      * @return
      */
     Collection<Route> load();

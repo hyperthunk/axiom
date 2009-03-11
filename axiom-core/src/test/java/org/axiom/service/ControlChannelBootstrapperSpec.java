@@ -31,13 +31,12 @@ package org.axiom.service;
 import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.CamelContext;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.CamelContext;
 import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
-import org.axiom.SpecSupport;
-import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.axiom.integration.Environment;
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.junit.runner.RunWith;
 
 import static java.text.MessageFormat.*;
@@ -46,17 +45,20 @@ import java.util.ArrayList;
 @RunWith(JDaveRunner.class)
 public class ControlChannelBootstrapperSpec extends Specification<ControlChannelBootstrapper> {
 
-    private CamelContext mockContext = mock(CamelContext.class);
-    private Registry mockRegistry = mock(Registry.class);
     private ControlChannelBootstrapper bootstrapper;
-    private ControlChannel channel = new ControlChannel(mockContext);
-    private Configuration mockConfig = mock(Configuration.class);
     private RouteConfigurationScriptEvaluator mockRouteBuilder = mock(RouteConfigurationScriptEvaluator.class);
     private final String codeEvaluatorBeanId = "axiomCoreControlCodeEvaluator";
 
-    public class WhenBootstrappingTheControlChannel extends SpecSupport {
+    public class WhenBootstrappingTheControlChannel extends ServiceSpecSupport {
+
+        private ControlChannel channel;
 
         public ControlChannelBootstrapper create() {
+            mockContext = mock(CamelContext.class);
+            mockRegistry = mock(Registry.class);
+            mockConfig = mock(Configuration.class);
+            channel = new ControlChannel(mockContext);
+
             allowing(mockContext).getName();
             will(returnValue("mock-context"));
             return bootstrapper = new ControlChannelBootstrapper();
@@ -131,34 +133,12 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
             }, should.not().raiseAnyException());            
         }
 
-        private void stubForDefaultBootstrap() throws ClassNotFoundException {
+        protected void stubForDefaultBootstrap() throws ClassNotFoundException {
             stubRegistry();
             stubLookup("axiom.configuration", mockConfig);
             stubConfig("axiom.control.processors.evaluator.id", codeEvaluatorBeanId);
             stubLookup(codeEvaluatorBeanId, mockRouteBuilder);
             stubConfig(ControlChannelBootstrapper.DEFAULT_SCRIPT_URI, "classpath:test-boot.rb");
-        }
-
-        //TODO: make some of these stubbing utility methods available to other test classes
-
-        private void stubConfig(final String key, final String returns) {
-            allowing(mockConfig).getString(key);
-            will(returnValue(returns));
-        }
-
-        private <T> void stubLookup(final String key, T value) throws ClassNotFoundException {
-            Class<?> clazz = value.getClass();
-            final int enhancerTagIdx = clazz.getName().indexOf("$$EnhancerByCGLIB$$");
-            if (enhancerTagIdx > 0) {
-                clazz = Class.forName(clazz.getName().substring(0, enhancerTagIdx));
-            }
-            allowing(mockRegistry).lookup(key, clazz);
-            will(returnValue(value));
-        }
-
-        private void stubRegistry() {
-            allowing(mockContext).getRegistry();
-            will(returnValue(mockRegistry));
         }
 
     }

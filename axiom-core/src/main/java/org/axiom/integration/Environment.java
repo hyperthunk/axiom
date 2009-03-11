@@ -30,6 +30,7 @@ package org.axiom.integration;
 
 import org.apache.camel.CamelContext;
 import org.apache.commons.configuration.Configuration;
+import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.*;
 import org.apache.commons.lang.StringUtils;
 
@@ -125,6 +126,21 @@ public class Environment {
             } catch (IOException e) {
                 throw new RuntimeException(e.getLocalizedMessage(), e);
             }
+        }
+    }
+
+    /**
+     * Helper for {@code FileUtils.touch} which wraps any {@link IOException}
+     * in a {@link RuntimeException}. 
+     * @param file The input file to touch.
+     * @return {@code file}
+     */
+    public static File touch(final File file) {
+        try {
+            FileUtils.touch(file);
+            return file;
+        } catch (IOException e) {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
         }
     }
 }

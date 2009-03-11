@@ -1,5 +1,6 @@
 package org.axiom.systest;
 
+import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.commons.configuration.Configuration;
@@ -7,6 +8,7 @@ import org.apache.commons.configuration.SystemConfiguration;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FilenameUtils.*;
 import org.apache.commons.lang.StringUtils;
+import org.axiom.SpecSupport;
 import org.axiom.integration.Environment;
 import org.hamcrest.*;
 import org.junit.runner.RunWith;
@@ -17,7 +19,26 @@ import java.io.IOException;
 @RunWith(JDaveRunner.class)
 public class EnvironmentSpec extends Specification<Environment> {
 
-    public class WhenInteractingWithTheFileSystem {
+    public class WhenInteractingWithTheFileSystem extends SpecSupport {
+
+        public void itShouldWrapIOExceptionsWhilstOperatingOnFiles() {
+            final File file = mock(File.class);
+            one(file).exists(); will(returnValue(false));
+            one(file).exists(); will(returnValue(true));
+            allowing(file).isDirectory(); will(returnValue(false));
+            allowing(file).canWrite(); will(returnValue(false));
+            checking(this);
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    Environment.touch(file);
+                }
+            }, should.raise(RuntimeException.class));
+        }
+
+    }
+
+    public class WhenEnsuringTheFileSystemIsProperlyConfigured {
 
         private final String endorsedPlugins =
             String.format("plugins%scustomer-plugins", File.pathSeparator);

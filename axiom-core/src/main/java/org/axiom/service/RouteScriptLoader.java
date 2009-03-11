@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.util.List;
 
 /**
- * {@link RouteLoader} that takes a script from the file system
+ * A {@link RouteLoader} that takes a script from the file system
  * (or a classpath resource) and evaluates it, generating a
  * list of {@link Route} instances.
  */
@@ -67,7 +67,7 @@ public class RouteScriptLoader implements RouteLoader {
      */
     @Override public List<Route> load() {
         try {
-            final String uri = normalizedScriptUri(pathToScript);
+            final String uri = getPathToScript();
             log.info("Loading route list from {}.", uri);
             final String bootstrapCode = readFileToString(new File(uri));
             log.debug("Applying {}:{}{}", new Object[] {uri, Environment.NEWLINE, bootstrapCode});
@@ -77,13 +77,25 @@ public class RouteScriptLoader implements RouteLoader {
         }
     }
 
-    private String normalizedScriptUri(final String uri) throws IOException {
-        if (startsWithIgnoreCase(uri, "classpath:")) {
-            Resource resource =
-                new ClassPathResource(substringAfter(uri, "classpath:"));
-            log.debug("Resolved '{}' to '{}'.", uri, resource);
-            return resource.getFile().getAbsolutePath();
+    /**
+     * Gets the path to the script to be loaded by this.
+     * @return
+     */
+    public String getPathToScript() {
+        return normalizedScriptUri(pathToScript);
+    }
+
+    private String normalizedScriptUri(final String uri) {
+        try {
+            if (startsWithIgnoreCase(uri, "classpath:")) {
+                Resource resource =
+                    new ClassPathResource(substringAfter(uri, "classpath:"));
+                log.debug("Resolved '{}' to '{}'.", uri, resource);
+                return resource.getFile().getAbsolutePath();
+            }
+            return uri;
+        } catch (IOException e) {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
         }
-        return uri;
     }
 }

@@ -30,14 +30,12 @@ package org.axiom;
 
 import jdave.ExpectationFailedException;
 import jdave.IContract;
-import org.apache.commons.beanutils.BeanToPropertyValueTransformer;
-import org.apache.commons.collections.Predicate;
-import org.apache.commons.collections.Transformer;
-import static org.apache.commons.collections.TransformerUtils.*;
-import org.apache.commons.lang.ObjectUtils;
-import org.apache.commons.configuration.Configuration;
 import org.apache.camel.CamelContext;
 import org.apache.camel.spi.Registry;
+import org.apache.commons.beanutils.BeanToPropertyValueTransformer;
+import org.apache.commons.collections.Transformer;
+import org.apache.commons.configuration.Configuration;
+import org.apache.commons.lang.ObjectUtils;
 import org.jmock.Expectations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -78,26 +76,9 @@ public abstract class SpecSupport extends Expectations {
                     new Object[] {obj, propertyName, expectedValue});
             }
         };
-    };
+    }
 
     public static Object setTo(final Object object) { return object; }
-
-    public interface ExpectedSideEffect {
-        <T extends SpecSupport> void effect(final T instance);
-    }
-
-    public static Transformer becomes(final Object constantToReturn) {
-        return constantTransformer(constantToReturn);
-    }
-
-    public static Transformer transform(final Predicate condition, final Transformer replacement) {
-        return switchTransformer(condition, replacement, nopTransformer());
-    }
-
-    public static Transformer transform(final Predicate condition, final Transformer replacement,
-            final Transformer noReplacement) {
-        return switchTransformer(condition, replacement, noReplacement);
-    }
 
     public static Transformer property(final String propertyName) {
         return new BeanToPropertyValueTransformer(propertyName);

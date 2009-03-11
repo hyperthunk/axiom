@@ -33,6 +33,7 @@ import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -84,13 +85,17 @@ public class ControlChannel {
         }
     }
 
+    public void configure(final RouteLoader routeLoader) {
+        //To change body of created methods use File | Settings | File Templates.
+    }
+
     /**
      * Activates the control channel, which will from now on behave in
      * accordance with the routes you set up in your bootstrap script.
      */
     public void activate() {
         try {
-            log.info("Starting control channel.");
+            log.info("Activating control channel.");
             Configuration config = getRegisteredConfiguration(getContext());
             log.info("Configuring tracer for {}.", getContext());
             TraceBuilder builder = new TraceBuilder(config, tracer);
@@ -104,7 +109,7 @@ public class ControlChannel {
     /**
      * Closes the control channel and stops the underlying service(s) -
      * after this call completes, all channel services are terminated
-     * and therefore the channel is effectively useless. 
+     * and therefore the channel is effectively useless.
      */
     public void destroy() {
         log.info("Stopping control channel.");
@@ -113,6 +118,13 @@ public class ControlChannel {
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
+    }
+
+    public RouteConfigurationScriptEvaluator getRouteScriptEvaluator() {
+        //TODO: reuse this elsewhere instead of duplicating this code
+        return hostContext.getRegistry().
+            lookup(RouteConfigurationScriptEvaluator.PROVIDER_BEAN_ID,
+                RouteConfigurationScriptEvaluator.class);
     }
 
     /**
