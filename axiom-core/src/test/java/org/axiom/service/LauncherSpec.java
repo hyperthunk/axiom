@@ -2,22 +2,19 @@ package org.axiom.service;
 
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.CamelContext;
-import org.apache.camel.spi.Registry;
+import static org.apache.commons.collections.CollectionUtils.*;
 import org.apache.commons.collections.Transformer;
-import static org.apache.commons.collections.CollectionUtils.collect;
-import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
-import static org.apache.commons.io.FilenameUtils.concat;
+import static org.apache.commons.io.FilenameUtils.*;
 import org.axiom.integration.Environment;
+import static org.axiom.integration.Environment.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
-import static org.axiom.integration.Environment.touch;
 import org.junit.runner.RunWith;
 
 import java.io.File;
 import java.io.IOException;
+import static java.util.Arrays.*;
 import java.util.Collection;
-import static java.util.Arrays.asList;
 
 @RunWith(JDaveRunner.class)
 public class LauncherSpec extends Specification<Launcher> {
@@ -26,14 +23,11 @@ public class LauncherSpec extends Specification<Launcher> {
 
         private Launcher launcher;
         private ControlChannelBootstrapper mockBootstrapper
-            = mock(ControlChannelBootstrapper.class);
-        private ControlChannel mockChannel = mock(ControlChannel.class);
+            = mock(mockery(), ControlChannelBootstrapper.class);
+        private ControlChannel mockChannel = mock(mockery(), ControlChannel.class);
 
         public Launcher create() {
-            mockContext = mock(CamelContext.class);
-            mockRegistry = mock(Registry.class);
-            mockConfig = mock(Configuration.class);
-
+            prepareMocks(mockery());
             return launcher = new Launcher(mockBootstrapper);
         }
 

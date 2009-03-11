@@ -32,8 +32,6 @@ import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.CamelContext;
-import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.integration.Environment;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
@@ -54,9 +52,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
         private ControlChannel channel;
 
         public ControlChannelBootstrapper create() {
-            mockContext = mock(CamelContext.class);
-            mockRegistry = mock(Registry.class);
-            mockConfig = mock(Configuration.class);
+            prepareMocks(mockery());
             channel = new ControlChannel(mockContext);
 
             allowing(mockContext).getName();

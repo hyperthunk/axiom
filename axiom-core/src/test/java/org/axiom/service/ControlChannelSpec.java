@@ -31,17 +31,9 @@ package org.axiom.service;
 import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.CamelContext;
-import org.apache.camel.CamelException;
-import org.apache.camel.Route;
-import org.apache.camel.AlreadyStoppedException;
+import org.apache.camel.*;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.processor.interceptor.Tracer;
-import org.apache.camel.spi.InterceptStrategy;
-import org.apache.camel.spi.Registry;
-import org.apache.commons.configuration.Configuration;
-import org.axiom.SpecSupport;
-import org.jmock.Mockery;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -51,15 +43,11 @@ import java.util.Collection;
 @RunWith(JDaveRunner.class)
 public class ControlChannelSpec extends Specification<ControlChannel> {
 
-    private CamelContext mockContext = mock(CamelContext.class);
     private RouteLoader loader = mock(RouteLoader.class);
-    private Tracer tracer = mock(Tracer.class);
-    private Configuration config = dummy(Configuration.class);
-    private Registry registry = mock(Registry.class);
     private ControlChannel channel;
 
-    public class WhenInitializingNewInstances extends SpecSupport {
-
+    public class WhenInitializingNewInstances extends ServiceSpecSupport {
+        
         public void itShouldPukeIfTheTracerOrContextInstanceIsMissing() {
             specify(new Block() {
                 @Override public void run() throws Throwable {
@@ -78,9 +66,18 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     }
 
-    public class WhenLoadingRoutesAndAddingThenToTheChannel extends SpecSupport {
+    public class WhenConsumingServicesViaTheChannel extends ServiceSpecSupport {
+
+        public void itShouldPerformLookupsOnBehalfOfTheConsumer() {
+
+        }
+
+    }
+
+    public class WhenLoadingRoutesAndAddingThenToTheChannel extends ServiceSpecSupport {
 
         public ControlChannel create() {
+            mockContext = mock(mockery(), CamelContext.class);
             return new ControlChannel(mockContext, dummy(Tracer.class, "dummy-trace"));
         }
 
@@ -128,18 +125,19 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     }
 
-    public class WhenConfiguringTheChannel extends SpecSupport {
+    public class WhenConfiguringTheChannel extends ServiceSpecSupport {
 
         public ControlChannel create() {
-            return channel = new ControlChannel(mockContext, tracer);
+            prepareMocks(mockery());
+            return channel = new ControlChannel(mockContext, mockTracer);
         }
 
         public void itShouldAttemptObtainingTracerInstanceFromTheContextInitially() {
             DefaultCamelContext context = new DefaultCamelContext();
-            context.addInterceptStrategy(tracer);
+            context.addInterceptStrategy(mockTracer);
             ControlChannel channel = new ControlChannel(context);
 
-            specify(channel.getTracer(), same(tracer));
+            specify(channel.getTracer(), same(mockTracer));
         }
 
         public void itShouldCreateNewTracerInstanceIfNoneIsPresent() {
@@ -149,13 +147,14 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         @SuppressWarnings({"unchecked"})
         public void itShouldConfigureTheTracerBasedOnSuppliedProperties() {
-            stubConfiguration(mockContext, registry, config);
-            ignoring(tracer).setEnabled(with(any(Boolean.class)));
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubConfig(TraceBuilder.TRACE_ENABLED, false);
+            ignoring(mockTracer).setEnabled(with(any(Boolean.class)));
 
-            one(tracer).isEnabled();
+            one(mockTracer).isEnabled();
             will(returnValue(false));
 
-            justIgnore(tracer, mockContext);
+            justIgnore(mockTracer, mockContext);
             checking(this);
 
             channel.activate();
@@ -163,29 +162,20 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         
     }
 
-    protected void stubReadyToRunContext(final Mockery mockery) throws Exception {
-        mockery.checking(new SpecSupport() {{
-            stubConfiguration(mockContext, registry, config);
-            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
-            will(returnValue(config));
-            justIgnore(registry, config, tracer);
-
-            allowing(mockContext).addInterceptStrategy((InterceptStrategy) with(anything()));
-        }});
-    }
-
-    public class WhenStartingTheChannel extends SpecSupport {
+    public class WhenStartingTheChannel extends ServiceSpecSupport {
 
         public ControlChannel create() {
-            mockContext = mock(CamelContext.class, "startable-cc");
-            registry = mock(Registry.class, "mocked-reg");
-            return channel = new ControlChannel(mockContext, tracer);
+            /*mockContext = mock(CamelContext.class, "startable-cc");
+            mockRegistry = mock(Registry.class, "mocked-reg");
+            mockTracer = mock(Tracer.class);*/
+            prepareMocks(mockery());
+            return channel = new ControlChannel(mockContext, mockTracer);
         }
 
         public void itShouldWrapAnyRegistryLookupExceptions() {
             allowing(mockContext).getRegistry();
-            will(returnValue(registry));
-            allowing(registry).lookup(with(any(String.class)), with(any(Class.class)));
+            will(returnValue(mockRegistry));
+            allowing(mockRegistry).lookup(with(any(String.class)), with(any(Class.class)));
             will(throwException(new RuntimeException()));
             checking(this);
             
@@ -217,12 +207,11 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     }
 
-    public class WhenStoppingTheCamelContext extends SpecSupport {
+    public class WhenStoppingTheCamelContext extends ServiceSpecSupport {
 
         public ControlChannel create() {
-            mockContext = mock(CamelContext.class, "mock-context");
-            registry = mock(Registry.class, "mock-registry");
-            return channel = new ControlChannel(mockContext, tracer);
+            prepareMocks(mockery());
+            return channel = new ControlChannel(mockContext, mockTracer);
         }
 
         public void itShouldStopTheUnderlyingContext() throws Exception {
