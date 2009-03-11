@@ -3,10 +3,12 @@ package org.axiom.util;
 import org.apache.commons.collections.Transformer;
 
 /**
- * Uses overriden covariant return type to make the {@link Transformer}
- * interface more friendly in practise.
+ * Represents a computation that can be applied to an input of one type,
+ * returning an output of another. Uses an overriden covariant return type to
+ * make the {@code transform} method of the commons collections {@link Transformer}
+ * interface a bit more friendly to use in practise.
  */
-public abstract class TypeMappedTransformer<TInput,TOutput> implements Transformer {
+public abstract class Computation<TInput,TOutput> implements Transformer {
 
     //If only the awful type erasure didn't prevent @Override public T transform(final T input)
     @Override public TOutput transform(final Object input) {

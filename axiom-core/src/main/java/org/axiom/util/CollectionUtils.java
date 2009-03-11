@@ -26,13 +26,25 @@ public class CollectionUtils {
     /**
      * A generic wrap around map/collect on an iterable reference, using a type mapped transformer.
      * @param iterable The {@link Iterable} to map over
-     * @param transformer The {@link TypeMappedTransformer} to transform items with
+     * @param transformer The {@link Computation} to transform items with
      * @return A transformed {@link Iterable}.
      */
     @SuppressWarnings({"unchecked"})
     public static <TIn,TOut> Iterable<TOut> map(final Iterable<TIn> iterable,
-        final TypeMappedTransformer<TIn,TOut> transformer) {
+        final Computation<TIn,TOut> transformer) {
         //The type constraints of the inputs make this a safe assumption
         return new ArrayList<TOut>(collect(iterable.iterator(), transformer));
+    }
+
+    /**
+     * A generic version of <i>map</i> that ignores the return values of the supplied operation.
+     * @param iterable The iterable items to operate on.
+     * @param operation The operation to apply to each item.
+     * @param <T> The underlying type of the items we're mapping {@code oepration} over.
+     */
+    public static <T> void map(final Iterable<T> iterable, final Operation<T> operation) {
+        for (final T item : iterable) {
+            operation.apply(item);
+        }
     }
 }
