@@ -72,11 +72,13 @@ public class LauncherSpec extends Specification<Launcher> {
         private void stubContext() {
             allowing(mockChannel).getContext();
             will(returnValue(mockContext));
+            allowing(mockChannel).getConfig();
+            will(returnValue(mockConfig));
         }
 
         private void stubFileSystemEnvironment(final String conf) throws ClassNotFoundException {
-            stubRegistry();
-            stubLookup(Environment.CONFIG_BEAN_ID, mockConfig);
+            //stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
             stubConfig(Environment.AXIOM_HOME,
                 concat(Environment.TMPDIR, ".axiom"));
             stubConfig(Environment.SCRIPT_REPOSITORY_URI, conf);

@@ -10,4 +10,5 @@ public interface Operation<T> {
      * @param input The object to apply the operation to.
      */
     void apply(final T input);
+    
 }

@@ -31,7 +31,6 @@ package org.axiom.service;
 import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
-import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import static org.axiom.integration.camel.RouteConfigurationScriptEvaluator.*;
 import org.slf4j.Logger;
@@ -76,7 +75,7 @@ public class ControlChannelBootstrapper {
         log.info("Bootstrapping control channel.");
         notNull(channel, "Control channel cannot be null.");
         final Registry registry = channel.getContext().getRegistry();
-        final Configuration config = requireRegisteredConfiguration(registry);
+        final Configuration config = channel.getConfig();
 
         RouteConfigurationScriptEvaluator evaluator =
             registry.lookup(config.getString(PROVIDER_BEAN_ID),

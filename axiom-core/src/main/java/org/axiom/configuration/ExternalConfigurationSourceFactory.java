@@ -29,11 +29,9 @@
 package org.axiom.configuration;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.*;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
-import org.axiom.service.LifecycleException;
 import org.axiom.integration.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -89,52 +87,6 @@ public class ExternalConfigurationSourceFactory {
     public static Configuration getRegisteredConfiguration(final CamelContext context) {
         notNull(context, "Camel context cannot be null.");
         return context.getRegistry().lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
-    }
-
-    /**
-     * Get the registered {@link org.apache.commons.configuration.Configuration}
-     * instance from the supplied {@link Registry}.
-     * @param registry The {@link Registry} in which the
-     * {@link org.apache.commons.configuration.Configuration} instance is registered.
-     * @return A registered {@link org.apache.commons.configuration.Configuration} instance
-     * or {@code null } if no registered instance is found.
-     */
-    public static Configuration getRegisteredConfiguration(final Registry registry) {
-        notNull(registry, "Registry cannot be null.");
-        return registry.lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
-    }
-
-    /**
-     * As {@link ExternalConfigurationSourceFactory#getRegisteredConfiguration},
-     * but throws {@link LifecycleException} if the configuration instance is not
-     * properly registered in the supplied context.
-     * @param registry The {@link Registry} in which the
-     * {@link org.apache.commons.configuration.Configuration} instance is registered.
-     * @return A registered {@link org.apache.commons.configuration.Configuration} instance
-     * or {@code null } if no registered instance is found.
-     */    
-    public static Configuration requireRegisteredConfiguration(final Registry registry) {
-        Configuration config = getRegisteredConfiguration(registry);
-        if (config == null) {
-            throw new LifecycleException(java.text.MessageFormat.format(
-                "Context Registry is incorrectly configured: bean for id {0} is not present.",
-                Environment.CONFIG_BEAN_ID
-            ));
-        }
-        return config;
-    }
-
-    /**
-     * As {@link ExternalConfigurationSourceFactory#getRegisteredConfiguration},
-     * but throws {@link LifecycleException} if the configuration instance is not
-     * properly registered in the supplied context.
-     * @param context The {@link org.apache.camel.CamelContext} in which the
-     * {@link org.apache.commons.configuration.Configuration} instance is registered.
-     * @return A registered {@link org.apache.commons.configuration.Configuration} instance
-     * or {@code null } if no registered instance is found.
-     */
-    public static Configuration requireRegisteredConfiguration(final CamelContext context) {
-        return requireRegisteredConfiguration(context.getRegistry());
     }
 
     /**

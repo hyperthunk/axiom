@@ -71,7 +71,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             ignoreFurtherCalls();
 
             specify(builder.build(),
-                satisfies(propertyValueContract("logName", setTo(logname))));
+                satisfies(propertyValueContract("logName", is(logname))));
         }
 
         public void itShouldNotSetTheLogNameIfItIsUndefined() {
@@ -92,7 +92,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             ignoreFurtherCalls();
 
             specify(builder.build(),
-                satisfies(propertyValueContract("logLevel", setTo(LoggingLevel.ERROR))));
+                satisfies(propertyValueContract("logLevel", is(LoggingLevel.ERROR))));
         }
 
         public void itShouldSetInterceptorTracingToTheConfiguredValue() {
@@ -102,7 +102,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             ignoreFurtherCalls();
 
             specify(builder.build(),
-                satisfies(propertyValueContract("traceInterceptors", setTo(true))));
+                satisfies(propertyValueContract("traceInterceptors", is(true))));
         }
 
         public void itShouldConfigureTheFormatterToShowBreadcrumbs() {
@@ -162,7 +162,7 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             ignoreFurtherCalls();
 
             specify(builder.build(),
-                satisfies(propertyValueContract("traceExceptions", setTo(true))));
+                satisfies(propertyValueContract("traceExceptions", is(true))));
         }
 
         public void itShouldPukeIfTheConfigurationInstanceIsMissing() {

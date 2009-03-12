@@ -28,14 +28,16 @@
 
 package org.axiom;
 
-import jdave.ExpectationFailedException;
-import jdave.IContract;
+import jdave.*;
 import org.apache.camel.CamelContext;
 import org.apache.camel.spi.Registry;
 import org.apache.commons.beanutils.BeanToPropertyValueTransformer;
 import org.apache.commons.collections.Transformer;
 import org.apache.commons.configuration.Configuration;
 import org.apache.commons.lang.ObjectUtils;
+import org.axiom.integration.Environment;
+import static org.axiom.util.CollectionUtils.*;
+import org.axiom.util.Operation;
 import org.jmock.Expectations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -56,8 +58,7 @@ public abstract class SpecSupport extends Expectations {
             final Registry registry, final Configuration config) {
         allowing(context).getRegistry();
         will(returnValue(registry));
-        allowing(registry).lookup(with(any(String.class)),
-            with(equal(Configuration.class)));
+        allowing(registry).lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
         will(returnValue(config));
     }
 
@@ -78,7 +79,36 @@ public abstract class SpecSupport extends Expectations {
         };
     }
 
-    public static Object setTo(final Object object) { return object; }
+    public static Block repeat(final Block block, final Integer n) {
+        return new Block() {
+            @Override public void run() throws Throwable {
+                map(range(0, n - 1), new Operation<Integer>() {
+                    @Override public void apply(final Integer _) {
+                        try { block.run(); }
+                        catch (Throwable throwable) { throw new RuntimeException(throwable); }
+                    }
+                });
+            }
+        };
+    }
+
+    /**
+     * Syntactic sugar that just returns its input.
+     * @param number
+     * @return
+     */
+    public static Integer times(final Integer number) {
+        // oh my how I'd like to write `alias times is' here :(
+        return is(number);
+    }
+
+    /**
+     * Syntactic sugar that just returns its input.
+     * @param input The input to return
+     * @param <T>
+     * @return {@code input}.
+     */
+    public static <T> T is(final T input) { return input; }
 
     public static Transformer property(final String propertyName) {
         return new BeanToPropertyValueTransformer(propertyName);

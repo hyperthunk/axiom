@@ -1,6 +1,9 @@
 package org.axiom.util;
 
+import static edu.emory.mathcs.backport.java.util.Arrays.*;
 import static org.apache.commons.collections.CollectionUtils.*;
+import org.apache.commons.lang.ArrayUtils;
+import org.apache.commons.lang.math.*;
 
 import java.util.*;
 
@@ -46,5 +49,18 @@ public class CollectionUtils {
         for (final T item : iterable) {
             operation.apply(item);
         }
+    }
+
+    //NB: the amount of effort to remove the duplication below just isn't worth it...
+
+    public static Iterable<Long> range(final Long... values) {
+        //return typedCollection(asList(values), Long.class);
+        final LongRange range = new LongRange(values[0], values[values.length - 1]);
+        return typedCollection(asList(ArrayUtils.toObject(range.toArray())), Long.class);        
+    }
+
+    public static Iterable<Integer> range(final Integer... values) {
+        final IntRange range = new IntRange(values[0], values[values.length - 1]);
+        return typedCollection(asList(ArrayUtils.toObject(range.toArray())), Integer.class);
     }
 }

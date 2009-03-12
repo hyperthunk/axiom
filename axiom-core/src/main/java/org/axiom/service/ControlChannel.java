@@ -33,9 +33,12 @@ import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
+import org.axiom.integration.Environment;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.text.MessageFormat;
 
 /**
  * Provides a managed message channel that can be used to
@@ -49,6 +52,8 @@ public class ControlChannel {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final CamelContext hostContext;
     private final Tracer tracer;
+
+    private Configuration config;
 
     public ControlChannel(final CamelContext hostContext) {
         this(hostContext, getTracer(hostContext));
@@ -145,5 +150,24 @@ public class ControlChannel {
      */
     public Tracer getTracer() {
         return tracer;
+    }
+
+    public <T> T lookup(final String key, Class<T> clazz) {
+        return getContext().getRegistry().lookup(key, clazz);
+    }
+
+    public Configuration getConfig() {
+        //NB: configuration instance is a singleton so potential
+        //    overwrite stomping due to concurrent access isn't going to cause any issues
+        if (config == null) {
+            config = getRegisteredConfiguration(hostContext);
+            if (config == null) {
+                throw new LifecycleException(MessageFormat.format(
+                    "Context Registry is incorrectly configured: bean for id {0} is not present.",
+                    Environment.CONFIG_BEAN_ID
+                ));
+            }
+        }
+        return config;
     }
 }

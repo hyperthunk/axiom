@@ -1,6 +1,5 @@
 package org.axiom.service;
 
-import org.apache.camel.spi.Registry;
 import static org.apache.commons.collections.CollectionUtils.typedCollection;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.io.FileUtils.*;
@@ -60,9 +59,7 @@ public class Launcher {
      */
     @SuppressWarnings({"unchecked"})
     private void reconfigureExistingRoutes(final ControlChannel channel) {
-        final Registry registry = channel.getContext().getRegistry();
-        Configuration config =
-            registry.lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
+        Configuration config = channel.getConfig();
         final String scriptPath = config.getString(Environment.SCRIPT_REPOSITORY_URI);
         log.info("Restoring existing routes from '{}'.", scriptPath);
         //NB: This unchecked operation is actually quite safe in practise

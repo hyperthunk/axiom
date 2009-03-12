@@ -77,6 +77,6 @@ public class ServiceSpecSupport extends SpecSupport {
 
     protected <T> T mock(final Mockery mockery, final Class<T> classToMock) {
         return mockery.mock(classToMock, format("Mock[{0}]@[{1}]",
-            classToMock.getCanonicalName(), getClass().getName()));
+            classToMock.getSimpleName(), getClass().getSimpleName()));
     }
 }

@@ -34,6 +34,8 @@ import jdave.junit4.JDaveRunner;
 import org.apache.camel.*;
 import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.processor.interceptor.Tracer;
+import org.apache.commons.configuration.Configuration;
+import org.axiom.integration.Environment;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -68,8 +70,33 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     public class WhenConsumingServicesViaTheChannel extends ServiceSpecSupport {
 
-        public void itShouldPerformLookupsOnBehalfOfTheConsumer() {
+        public ControlChannel create() {
+            prepareMocks(mockery());
+            return channel = new ControlChannel(mockContext, dummy(Tracer.class));
+        }
 
+        public void itShouldPerformLookupsOnBehalfOfTheConsumer() throws ClassNotFoundException {
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            
+            final Object baz = new Object();
+            final String key = "foobar";
+            stubLookup(key, baz);
+            checking(this);
+
+            specify(channel.lookup(key, baz.getClass()), same(baz));
+        }
+
+        public void itShouldLocateTheConfigurationInstanceAndCacheItForFutureUse() throws Throwable {
+            stubRegistry();
+            one(mockRegistry).lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
+            will(returnValue(mockConfig));
+            checking(this);
+
+            final Block lookup = new Block() {
+                @Override public void run() throws Throwable { channel.getConfig(); }
+            };
+
+            specify(repeat(lookup, times(2)), should.not().raiseAnyException());
         }
 
     }
@@ -78,7 +105,8 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public ControlChannel create() {
             mockContext = mock(mockery(), CamelContext.class);
-            return new ControlChannel(mockContext, dummy(Tracer.class, "dummy-trace"));
+            return channel =
+                new ControlChannel(mockContext, dummy(Tracer.class, "dummy-trace"));
         }
 
         public void itShouldPukeIfTheSuppliedLoaderIsNull() {
@@ -165,9 +193,6 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
     public class WhenStartingTheChannel extends ServiceSpecSupport {
 
         public ControlChannel create() {
-            /*mockContext = mock(CamelContext.class, "startable-cc");
-            mockRegistry = mock(Registry.class, "mocked-reg");
-            mockTracer = mock(Tracer.class);*/
             prepareMocks(mockery());
             return channel = new ControlChannel(mockContext, mockTracer);
         }
