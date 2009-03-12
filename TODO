@@ -1,5 +1,4 @@
  - axiom-core
-  - remove the bean id lookup indirection: it is pointless 
   - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire
    - write xlst for xml2code

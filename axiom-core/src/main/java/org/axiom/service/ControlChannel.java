@@ -40,13 +40,23 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.MessageFormat;
+import java.rmi.registry.Registry;
 
 /**
  * Provides a managed message channel that can be used to
- * control {@link CamelContext}s. The control channel is itself
- * managed by a private {@link CamelContext}, which is in turn
- * configured using JRuby scripts and/or by passing Camel Spring
- * XML to one of the uris exposed as a consumer.
+ * control {@link CamelContext}s. Once activated, the control channel's
+ * behavior can be controlled by adding routing instructions via the
+ * {@code load} method. Managed {@link CamelContext}s (i.e. those stored
+ * as components in the host {@link CamelContext}'s {@link Registry}) can
+ * be configured via the {@link ControlChannel#configure} methods.
+ * <p>
+ * This component is <b>not thread safe</b>. Specifically, there is no
+ * guarantee that calls to {@link ControlChannel#activate()} and/or
+ * {@link ControlChannel#destroy()} will not stomp on each other,
+ * nor are additional control channel and/or managed context route configuration
+ * updates synchronized. This component should therefore be considered
+ * to be <b>thread-hostile</b> and explicit synchronization used if/when required.
+ * </p>
  */
 public class ControlChannel {
 
@@ -77,28 +87,46 @@ public class ControlChannel {
     }
 
     /**
-     * Adds a set of routing/configuration rules to the control
-     * channel using the supplied {@link RouteLoader}. 
-     * @param loader
+     * Adds a set of routing/configuration rules to the host {@link CamelContext}
+     * using the supplied {@link RouteLoader}. 
+     * @param loader The loader for the routes you wish to load.
      */
     public void load(final RouteLoader loader) {
         notNull(loader, "Route loader cannot be null.");
         try {
             log.debug("Adding routes to context {}.", hostContext.getName());
+            //TODO: consider whether this should call via producer using the 'axiom:host' uri
+            /*
+            //e.g.,
+            hostContext.createProducerTemplate().
+                sendBodyAndHeader(Environment.AXIOM_HOST_URI,
+                    loader.getBuilder(), "command", "configure");*/
             hostContext.addRoutes(loader.load());
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
     }
 
-    public Object configure(final RouteBuilder builder) {
+    /**
+     * Sends new routing configuration to the control channel, which is
+     * subsequently processed based on the chosen startup mode (as set by
+     * the {@code axiom.bootstrap.startup.mode} system property).
+     * @param builder The builder containing the configuration you wish to apply
+     */
+    public void configure(final RouteBuilder builder) {
         final String channelUri = getConfig().getString(Environment.CONTROL_CHANNEL);
         final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
-        return producer.sendBodyAndHeader(channelUri, builder, "command", "configure");
+        producer.sendBodyAndHeader(channelUri, builder, "command", "configure");
     }
 
-    public Object configure(final RouteLoader routeLoader) {
-        return configure(routeLoader.getBuilder());
+    /**
+     * Sends new routing configuration to the control channel, which is
+     * subsequently processed based on the chosen startup mode (as set by
+     * the {@code axiom.bootstrap.startup.mode} system property).
+     * @param routeLoader An object which can load the configuration you wish to apply
+     */
+    public void configure(final RouteLoader routeLoader) {
+        configure(routeLoader.getBuilder());
     }
 
     /**
@@ -133,9 +161,7 @@ public class ControlChannel {
     }
 
     public RouteConfigurationScriptEvaluator getRouteScriptEvaluator() {
-        //TODO: reuse this elsewhere instead of duplicating this code
-        return hostContext.getRegistry().
-            lookup(Environment.ROUTE_SCRIPT_EVALUATOR,
+        return lookup(Environment.ROUTE_SCRIPT_EVALUATOR,
                 RouteConfigurationScriptEvaluator.class);
     }
 
@@ -159,6 +185,15 @@ public class ControlChannel {
         return tracer;
     }
 
+    /**
+     * Looks up a service in the registry underlying the backing {@link CamelContext},
+     * returning the service or null if it could not be found.
+     * @param key The registered name of the service
+     * @param clazz The expected type of the service instance
+     * @param <T>
+     * @return A service/object of the requisite type, or {@code null} if no registered
+     * instance(s) match the supplied {@code key}.
+     */
     public <T> T lookup(final String key, Class<T> clazz) {
         return getContext().getRegistry().lookup(key, clazz);
     }

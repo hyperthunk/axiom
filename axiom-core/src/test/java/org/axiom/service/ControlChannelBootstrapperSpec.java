@@ -45,7 +45,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
 
     private ControlChannelBootstrapper bootstrapper;
     private RouteConfigurationScriptEvaluator mockRouteBuilder = mock(RouteConfigurationScriptEvaluator.class);
-    private final String codeEvaluatorBeanId = "axiomCoreControlCodeEvaluator";
+    private final String codeEvaluatorBeanId = "axiom.processors.route.evaluator.id";
 
     public class WhenBootstrappingTheControlChannel extends ServiceSpecSupport {
 

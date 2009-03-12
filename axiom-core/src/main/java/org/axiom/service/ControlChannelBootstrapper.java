@@ -32,7 +32,6 @@ import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
-import org.axiom.integration.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,8 +77,7 @@ public class ControlChannelBootstrapper {
         final Configuration config = channel.getConfig();
 
         RouteConfigurationScriptEvaluator evaluator =
-            registry.lookup(config.getString(Environment.ROUTE_SCRIPT_EVALUATOR),
-                RouteConfigurationScriptEvaluator.class);
+            channel.getRouteScriptEvaluator();
 
         RouteScriptLoader loader =
             new RouteScriptLoader(config.getString(DEFAULT_SCRIPT_URI), evaluator);

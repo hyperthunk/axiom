@@ -43,7 +43,6 @@ public class AxiomComponentSpec extends Specification<AxiomComponent> {
 
     private ContextProcessingNode mockProcessor;
     private AxiomComponent component;
-    private static final String PROCESSOR = "processor";
 
     public class WhenIntegratedIntoAnExistingCamelContext extends ServiceSpecSupport {
 
@@ -68,10 +67,8 @@ public class AxiomComponentSpec extends Specification<AxiomComponent> {
             one(mockRegistry).lookup(contextBeanName, CamelContext.class);
             will(returnValue(mockContext));
 
-            one(mockConfig).getString(Environment.DEFAULT_PROCESSOR);
-            will(returnValue(PROCESSOR));
-
-            allowing(mockRegistry).lookup(PROCESSOR, ContextProcessingNode.class);
+            allowing(mockRegistry).lookup(Environment.DEFAULT_PROCESSOR,
+                ContextProcessingNode.class);
             will(returnValue(mockProcessor));
 
             allowing(mockProcessor);
@@ -102,12 +99,10 @@ public class AxiomComponentSpec extends Specification<AxiomComponent> {
             allowing(mockContext).getRegistry();
             will(returnValue(mockRegistry));
 
-            allowing(mockConfig).getString(Environment.DEFAULT_PROCESSOR);
-            will(returnValue(PROCESSOR));
-
             never(mockRegistry).lookup(with(any(String.class)), with(equal(CamelContext.class)));
 
-            allowing(mockRegistry).lookup(PROCESSOR, ContextProcessingNode.class);
+            allowing(mockRegistry).lookup(Environment.DEFAULT_PROCESSOR,
+                ContextProcessingNode.class);
             will(returnValue(mockProcessor));
 
             allowing(mockContext);
@@ -120,18 +115,14 @@ public class AxiomComponentSpec extends Specification<AxiomComponent> {
         public void itShouldLookupTheProcessingNodeInTheRegistry() throws Exception {
             //TODO: refactor this - it's a mess
             final CamelContext mockTargetContext = mockContext;
-            final String beanId = "axiom.control.processor.default";
 
             allowing(mockContext).getRegistry();
             will(returnValue(mockRegistry));
 
-            one(mockConfig).getString(Environment.DEFAULT_PROCESSOR);
-            will(returnValue(beanId));
-
             one(mockRegistry).lookup(with(any(String.class)), with(any(Class.class)));
             will(returnValue(mockTargetContext));
 
-            one(mockRegistry).lookup(beanId, ContextProcessingNode.class);
+            one(mockRegistry).lookup(Environment.DEFAULT_PROCESSOR, ContextProcessingNode.class);
             will(returnValue(mockProcessor));
 
             allowing(mockContext);
@@ -147,10 +138,8 @@ public class AxiomComponentSpec extends Specification<AxiomComponent> {
             allowing(mockContext).getRegistry();
             will(returnValue(mockRegistry));
 
-            allowing(mockConfig).getString(Environment.DEFAULT_PROCESSOR);
-            will(returnValue(PROCESSOR));
-
-            allowing(mockRegistry).lookup(PROCESSOR, ContextProcessingNode.class);
+            allowing(mockRegistry).lookup(Environment.DEFAULT_PROCESSOR,
+                ContextProcessingNode.class);
             will(returnValue(mockProcessor));
 
             one(mockRegistry).lookup(with(any(String.class)), with(any(Class.class)));

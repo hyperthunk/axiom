@@ -53,7 +53,7 @@ public class ScriptingEnvironmentSpec
     private Configuration config = mock(Configuration.class);
     private JRubyScriptEvaluator evaluator = mock(JRubyScriptEvaluator.class, "evaluator");
 
-    private final String evaluatorBeanId = "axiomCoreScriptEvaluator";
+    private final String evaluatorBeanId = "axiom.processors.code.eval.id";
 
     public class WhenConfiguringAndStartingUp extends SpecSupport {
 
@@ -62,7 +62,7 @@ public class ScriptingEnvironmentSpec
         }
 
         public void itShouldLookupTheConfigurationAndEvaluatorBeansInTheSuppliedCamelContext() {
-            stubEvalBeanId();
+            stubConfiguration(mockContext, registry, config);
             one(config).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(null));
 
@@ -77,7 +77,7 @@ public class ScriptingEnvironmentSpec
                 MessageFormat.format("plugins{0}~/.axiom/plugins{0}/usr/local/axiom/plugins", 
                     File.pathSeparator);
 
-            stubEvalBeanId();
+            stubConfiguration(mockContext, registry, config);
             allowing(config).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(pluginPaths));
 
@@ -101,12 +101,6 @@ public class ScriptingEnvironmentSpec
                     new ScriptingEnvironment(null, dummy(Configuration.class));
                 }
             }, should.raise(IllegalArgumentException.class));
-        }
-
-        private void stubEvalBeanId() {
-            stubConfiguration(mockContext, registry, config);
-            allowing(config).getString(Environment.CODE_EVALUATOR);
-            will(returnValue(evaluatorBeanId));
         }
     }
 }

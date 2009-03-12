@@ -120,6 +120,21 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             channel.configure(builder);
         }
 
+        public void itShouldPullTheRouteBuilderInsteadOfLoadingRoutes() {
+            stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubConfig(Environment.CONTROL_CHANNEL, "ignored://anyuri");
+            allowing(mockContext).createProducerTemplate();
+            will(returnValue(dummy(ProducerTemplate.class)));
+
+            final RouteBuilder dummyBuilder = dummy(RouteBuilder.class);
+            one(loader).getBuilder();
+            will(returnValue(dummyBuilder));
+            checking(this);
+            
+            channel.configure(loader);
+        }
+
     }
 
     public class WhenLoadingRoutesAndAddingThenToTheChannel extends ServiceSpecSupport {
