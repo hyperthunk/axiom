@@ -1,9 +1,3 @@
- - URGENT
-  - figure out what the hell is wrong with maven when it comes to integration testing
-  - find a way to either
-   - (a) pull out an integration-test module without making the IDE experience suffer considerably, or
-   - (b) use profiles and surefire-plugin config to attach some test cases to the integration-test phase
-  - move all integration tests out of the src/test/java directories for axiom-core and any other culprits  
  - axiom-core
   - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire
@@ -26,6 +20,7 @@
    - just talk to the server using http
    - convert commands into either camel objects for serialization, or by hand
  - misc
+  - move direct junit4 dependencies out of the poms
   - get either the cobertura or emma plugins working (they currently seem to break the build)
  * - general switch from commons-logging to slf4j (API)
    - implementations might use logback, as this looks preferable to log4j

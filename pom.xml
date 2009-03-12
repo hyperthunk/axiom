@@ -273,13 +273,63 @@
                     <artifactId>maven-surefire-plugin</artifactId>
                     <version>${surefire.version}</version>
                     <configuration>
-                        <!-- what the hell is up with maven's lack of integration testing support -->
-                        <!--<excludes>
+                        <skip>true</skip>
+                        <systemProperties>
+                            <property>
+                                <name>jdave.tools.specdox.format</name>
+                                <value>txt xml</value>
+                            </property>
+                            <property>
+                                <name>jdave.tools.specdox.dir</name>
+                                <value>target/jdave</value>
+                            </property>
+                        </systemProperties>                        
+                    </configuration>
+                    <executions>
+                        <execution>
+                            <id>unit-test</id>
+                            <phase>test</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <configuration>
+                                <skip>false</skip>
+                                <excludes>
+                                    <exclude>**/systest/**</exclude>
+                                </excludes>
+                                <includes>
+                                    <include>**/*Spec.java</include>
+                                    <include>**/Test*.java</include>
+                                </includes>
+                            </configuration>
+                        </execution>
+                        <execution>
+                            <id>integration-test</id>
+                            <phase>integration-test</phase>
+                            <goals>
+                                <goal>test</goal>
+                            </goals>
+                            <configuration>
+                                <skip>false</skip>
+                                <excludes>
+                                    <exclude>**/org/axiom/configuration/**</exclude>
+                                    <exclude>**/org/axiom/integration/**</exclude>
+                                    <exclude>**/org/axiom/service/**</exclude>
+                                </excludes>
+                                <includes>
+                                    <include>**/systest/*Spec.java</include>
+                                    <include>**/systest/Test*.java</include>
+                                </includes>
+                            </configuration>
+                        </execution>
+                    </executions>
+                    <!--<configuration>
+                        <excludes>
                             <exclude>**/systest/**</exclude>
-                        </excludes>-->
+                        </excludes>
                         <includes>
                             <include>**/*Spec.java</include>
-                            <include>**/Test*.java</include>
+                            --><!--<include>**/Test*.java</include>--><!--
                         </includes>
                         <systemProperties>
                             <property>
@@ -291,7 +341,7 @@
                                 <value>target/jdave</value>
                             </property>
                         </systemProperties>
-                    </configuration>
+                    </configuration>-->
                 </plugin>
                 <plugin>
                     <groupId>org.jtestr</groupId>
@@ -349,7 +399,6 @@
             </plugins>
         </pluginManagement>
     </build>
-
     <reporting>
         <plugins>
             <plugin>
