@@ -1,5 +1,6 @@
 package org.axiom.service;
 
+import org.apache.camel.CamelContext;
 import static org.apache.commons.collections.CollectionUtils.typedCollection;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.io.FileUtils.*;
@@ -28,6 +29,14 @@ public class Launcher {
     }
 
     /**
+     * See {@link Launcher#launch(ControlChannel)}.
+     * @param hostContext The host {@link CamelContext}.
+     */
+    public ControlChannel launch(final CamelContext hostContext) {
+        return launch(new ControlChannel(hostContext));
+    }
+
+    /**
      * Launches the supplied {@link ControlChannel}. The channel is
      * first bootstrapped with its own routing configuration. Once
      * configured, the channel is activated. Finally, any existing
@@ -37,21 +46,11 @@ public class Launcher {
      * property) are re-activated in an arbitrary order.
      * @param channel The channel to launch.
      */
-    public void launch(final ControlChannel channel) {
+    public ControlChannel launch(final ControlChannel channel) {
         bootstrapper.bootstrap(channel);
         channel.activate();
         reconfigureExistingRoutes(channel);
-    }
-
-    /**
-     * Gets the {@link ControlChannelBootstrapper} used by this.
-     * @return The bootstrapper instance in used by this class.
-     */
-    public ControlChannelBootstrapper getBootstrapper() {
-        if (bootstrapper == null) {
-            return bootstrapper = new ControlChannelBootstrapper();
-        }
-        return bootstrapper;
+        return channel;
     }
 
     /**

@@ -51,15 +51,19 @@ public class CollectionUtils {
         }
     }
 
-    //NB: the amount of effort to remove the duplication below just isn't worth it...
-
-    public static Iterable<Long> range(final Long... values) {
-        //return typedCollection(asList(values), Long.class);
-        final LongRange range = new LongRange(values[0], values[values.length - 1]);
-        return typedCollection(asList(ArrayUtils.toObject(range.toArray())), Long.class);        
-    }
-
+    /**
+     * Produces an {@link Iterable} object containing the range of values between
+     * {@code values[0]} and {@code values[values.length -1]} after {@code values}
+     * has been sorted (in place). Ideally you should just call this method with two
+     * arguments; the start and end of the range, like so:
+     * <p>
+     * {@code for (final int i : range(1,100)) //etc...}.
+     * </p>
+     * @param values
+     * @return
+     */
     public static Iterable<Integer> range(final Integer... values) {
+        Arrays.sort(values);
         final IntRange range = new IntRange(values[0], values[values.length - 1]);
         return typedCollection(asList(ArrayUtils.toObject(range.toArray())), Integer.class);
     }

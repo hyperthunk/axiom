@@ -28,7 +28,6 @@
 
 package org.axiom.service;
 
-import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
@@ -73,17 +72,16 @@ public class ControlChannelBootstrapper {
     public void bootstrap(final ControlChannel channel) {
         log.info("Bootstrapping control channel.");
         notNull(channel, "Control channel cannot be null.");
-        final Registry registry = channel.getContext().getRegistry();
-        final Configuration config = channel.getConfig();
 
-        RouteConfigurationScriptEvaluator evaluator =
+        final Configuration config = channel.getConfig();
+        final RouteConfigurationScriptEvaluator evaluator =
             channel.getRouteScriptEvaluator();
 
-        RouteScriptLoader loader =
+        final RouteScriptLoader loader =
             new RouteScriptLoader(config.getString(DEFAULT_SCRIPT_URI), evaluator);
         channel.load(loader);
 
-        Iterator iter = config.getKeys(EXTENDED_SCRIPTS_PREFIX);
+        final Iterator iter = config.getKeys(EXTENDED_SCRIPTS_PREFIX);
         while (iter.hasNext())  {
             final String entry = iter.next().toString();
             channel.load(new RouteScriptLoader(config.getString(entry), evaluator));

@@ -115,8 +115,7 @@ public class ControlChannel {
      */
     public void configure(final RouteBuilder builder) {
         final String channelUri = getConfig().getString(Environment.CONTROL_CHANNEL);
-        final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
-        producer.sendBodyAndHeader(channelUri, builder, "command", "configure");
+        sendBodyAndHeader(channelUri, builder, "signal", "configure");
     }
 
     /**
@@ -148,16 +147,67 @@ public class ControlChannel {
 
     /**
      * Closes the control channel and stops the underlying service(s) -
-     * after this call completes, all channel services are terminated
-     * and therefore the channel is effectively useless.
+     * once this call completes, all channel services have been stopped.
      */
     public void destroy() {
-        log.info("Stopping control channel.");
+        log.info("Destroying control channel.");
         try {
             getContext().stop();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
+    }
+
+    /**
+     * Sends a shutdown signal to the control channel and
+     * immediately returns. If you wish to wait for shutdown
+     * to complete, you should call the //TODO: implement this
+     * ControlChannel#waitForShutdown(int) method.
+     */
+    public void terminate() {
+        final String shutdownChannelUri =
+            getConfig().getString(Environment.TERMINATION_CHANNEL);
+        sendBodyAndHeader(shutdownChannelUri, null,
+            Environment.SIGNAL, Environment.SIG_TERMINATE);
+    }
+
+    public void terminateAndWait() {
+        terminate();
+        waitForShutdown();
+    }
+
+    public void terminateAndWait(final long timeout) {
+        terminate();
+        waitForShutdown(timeout);
+    }
+
+    public void waitForShutdown() {
+        try {
+            //TODO: test case assert not null -> consumer must be started already!
+            getTerminationChannel().createPollingConsumer().receive();
+        } catch (Exception e) {
+            throw new LifecycleException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    public void waitForShutdown(final long timeout) {
+        try {
+            //TODO: this is obvious duplicate of the 0 arity version
+            getTerminationChannel().createPollingConsumer().receive(timeout);
+        } catch (Exception e) {
+            throw new LifecycleException(e.getLocalizedMessage(), e);
+        }
+    }
+
+    private Endpoint getTerminationChannel() {
+        final String channelUri = getConfig().getString(Environment.TERMINATION_CHANNEL);
+        return getContext().getEndpoint(channelUri);
+    }
+
+    private void sendBodyAndHeader(final String channelUri, final Object payload,
+        final String header, final String headerValue) {
+        final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
+        producer.sendBodyAndHeader(channelUri, payload, header, headerValue);
     }
 
     public RouteConfigurationScriptEvaluator getRouteScriptEvaluator() {
@@ -213,4 +263,5 @@ public class ControlChannel {
         }
         return config;
     }
+
 }

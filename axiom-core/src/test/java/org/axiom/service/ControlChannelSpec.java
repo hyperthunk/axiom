@@ -37,7 +37,7 @@ import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultProducerTemplate;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
-import org.axiom.integration.Environment;
+import static org.axiom.integration.Environment.*;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
@@ -90,7 +90,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public void itShouldLocateTheConfigurationInstanceAndCacheItForFutureUse() throws Throwable {
             stubRegistry();
-            one(mockRegistry).lookup(Environment.CONFIG_BEAN, Configuration.class);
+            one(mockRegistry).lookup(CONFIG_BEAN, Configuration.class);
             will(returnValue(mockConfig));
             checking(this);
 
@@ -106,15 +106,14 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             final DefaultProducerTemplate mockTemplate =
                 mock(mockery(), DefaultProducerTemplate.class);
             final RouteBuilder builder = dummy(RouteBuilder.class);
-            
 
             stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubConfig(Environment.CONTROL_CHANNEL, channelUri);
+            stubConfig(CONTROL_CHANNEL, channelUri);
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockTemplate));
 
-            one(mockTemplate).sendBodyAndHeader(channelUri, builder, "command", "configure");
+            one(mockTemplate).sendBodyAndHeader(channelUri, builder, SIGNAL, SIG_CONFIGURE);
             checking(this);
 
             channel.configure(builder);
@@ -123,7 +122,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldPullTheRouteBuilderInsteadOfLoadingRoutes() {
             stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubConfig(Environment.CONTROL_CHANNEL, "ignored://anyuri");
+            stubConfig(CONTROL_CHANNEL, "ignored://anyuri");
             allowing(mockContext).createProducerTemplate();
             will(returnValue(dummy(ProducerTemplate.class)));
 
@@ -133,6 +132,87 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             checking(this);
             
             channel.configure(loader);
+        }
+
+        public void itShouldWaitInfinitelyForTheTerminationEndpoint() throws Exception {
+            final PollingConsumer mockConsumer = prepForWait();
+            one(mockConsumer).receive();
+            checking(this);
+            channel.waitForShutdown();
+        }
+
+        public void itShouldSetWaitTimeoutIfOneIsSupplied() throws Exception {
+            final long timeout = 1000;
+            final PollingConsumer mockConsumer = prepForWait();
+            one(mockConsumer).receive(timeout);
+            checking(this);
+            channel.waitForShutdown(timeout);
+        }
+
+        public void itShouldSendSigTermToTheControlChannelViaProducerTemplate() {
+            final String termChannel = "direct:terminate";
+            final ProducerTemplate mockProducer =
+                mock(mockery(), ProducerTemplate.class);
+
+            stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubConfig(CONTROL_CHANNEL, "ignored://anyuri");
+            stubConfig(TERMINATION_CHANNEL, termChannel);
+            allowing(mockContext).createProducerTemplate();
+            will(returnValue(mockProducer));
+
+            one(mockProducer).sendBodyAndHeader(
+                termChannel, null, SIGNAL, SIG_TERMINATE);
+            checking(this);
+
+            channel.terminate();
+        }
+
+        public void itShouldProvideWaitHookForGracefulTermination() throws Exception {
+            final PollingConsumer mockConsumer = prepForWait();
+            final ProducerTemplate mockProducer =
+                mock(mockery(), ProducerTemplate.class);
+
+            allowing(mockContext).createProducerTemplate();
+            will(returnValue(mockProducer));
+            justIgnore(mockProducer);
+            one(mockConsumer).receive();
+            checking(this);
+
+            channel.terminateAndWait();
+        }
+
+        public void itShouldProvideWaitHookWithTimeoutForGracefulTermination() throws Exception {
+            final PollingConsumer mockConsumer = prepForWait();
+            final ProducerTemplate mockProducer =
+                mock(mockery(), ProducerTemplate.class);
+            final long timeout = 1000;
+
+            allowing(mockContext).createProducerTemplate();
+            will(returnValue(mockProducer));
+            justIgnore(mockProducer);
+            one(mockConsumer).receive(timeout);
+            checking(this);
+
+            channel.terminateAndWait(timeout);
+        }
+
+        private PollingConsumer prepForWait() throws Exception {
+            final String termChannel = "direct:terminate";
+            stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubConfig(CONTROL_CHANNEL, "ignored://anyuri");
+            stubConfig(TERMINATION_CHANNEL, termChannel);
+
+            final Endpoint mockEndpoint = mock(mockery(), Endpoint.class);
+            allowing(mockContext).getEndpoint(termChannel);
+            will(returnValue(mockEndpoint));
+
+            final PollingConsumer mockConsumer = mock(mockery(), PollingConsumer.class);
+            allowing(mockEndpoint).createPollingConsumer();
+            will(returnValue(mockConsumer));
+
+            return mockConsumer;
         }
 
     }

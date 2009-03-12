@@ -90,6 +90,14 @@ public class Environment {
     public static final String CONTROL_CHANNEL = "axiom.channels.control";
 
     /**
+     * The property key for the uri on which the (camel) termination channel resides.
+     * Messages to this channel are an indication that system shutdown has been
+     * requested by a consumer. Application clients can use this to determine
+     * when to terminate the process. 
+     */
+    public static final String TERMINATION_CHANNEL = "axiom.channels.shutdown";
+
+    /**
      * The property key of the <b>HOME</b> directory for axiom.
      */
     public static final String AXIOM_HOME = "axiom.home";
@@ -116,6 +124,13 @@ public class Environment {
      * for the default registered instance (or prototype) or this type.
      */
     public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";
+
+    /**
+     * The termination signal id.
+     */
+    public static final String SIG_TERMINATE = "terminate";
+    public static final String SIGNAL = "signal";
+    public static final String SIG_CONFIGURE = "configure";
 
     /**
      * Ensures that the file system is properly configured, based on the supplied

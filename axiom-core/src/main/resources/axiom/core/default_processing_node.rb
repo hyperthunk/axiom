@@ -42,7 +42,7 @@ module Axiom
 
       def process(exchange)
         in_channel = exchange.getIn
-        command = in_channel.getHeader("command").to_s.downcase.to_sym
+        command = in_channel.getHeader("signal").to_s.downcase.to_sym
         return unless [:start, :stop, :configure].include? command
 
         if command == :configure

@@ -32,7 +32,7 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMA
 
 import org.axiom.integration.Environment
 
-control_channel = config >> 'axiom.control.channel'
+control_channel = config >> Environment.CONTROL_CHANNEL
 
 route {
   
@@ -53,7 +53,7 @@ route {
   from(control_channel).
     processRef(config >> Environment.DEFAULT_PROCESSOR).
       proceed.choice.
-        when(header("command").isEqualTo("shutdown")).
-          to(config >> 'axiom.control.channel.shutdown').
-        otherwise.stop # stops the routing, not the server itself!
+        when(header("signal").isEqualTo("terminate")).
+          to(config >> Environment.TERMINATION_CHANNEL).
+        otherwise.stop # stops the routing only, not the server itself!
 }
