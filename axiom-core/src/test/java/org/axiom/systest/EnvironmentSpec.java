@@ -69,7 +69,7 @@ public class EnvironmentSpec extends Specification<Environment> {
             for (final String path : paths) {
                 deleteIfExists(new File(path));
             }
-            Environment.ensureFileSystem(config);
+            Environment.prepareFileSystem(config);
             
             for (final String path : paths) {
                 if (StringUtils.isNotEmpty(path)) {
@@ -87,7 +87,7 @@ public class EnvironmentSpec extends Specification<Environment> {
 
         private void enforceFileSystemBehaviorChecks(final File tmpDir) throws IOException {
             deleteIfExists(tmpDir);
-            Environment.ensureFileSystem(config);
+            Environment.prepareFileSystem(config);
             specify(tmpDir, exists());
         }
 

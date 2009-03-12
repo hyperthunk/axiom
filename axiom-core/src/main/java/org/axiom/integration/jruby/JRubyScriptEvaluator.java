@@ -34,12 +34,6 @@ package org.axiom.integration.jruby;
 public interface JRubyScriptEvaluator {
 
     /**
-     * The property name used to identify the service id (JNDI uri or Spring Bean name)
-     * for the default registered instance (or prototype) or this type.
-     */
-    public static final String PROVIDER_BEAN_ID = "axiom.script.evaluator.id";
-
-    /**
      * Runs ruby's 'eval' method on the supplied string.
      * @param source the ruby source code to evaluate
      * @return probably whatever was last on ruby's stack :-)

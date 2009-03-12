@@ -86,7 +86,7 @@ public class ScriptingEnvironment {
 
     private JRubyScriptEvaluator lookupEvaluatorService() {
         final String evalServiceId =
-            configuration.getString(JRubyScriptEvaluator.PROVIDER_BEAN_ID);
+            configuration.getString(Environment.CODE_EVALUATOR);
         return context.getRegistry().lookup(evalServiceId, JRubyScriptEvaluator.class);
     }
 }

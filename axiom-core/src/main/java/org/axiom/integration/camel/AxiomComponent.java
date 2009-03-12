@@ -65,7 +65,7 @@ public class AxiomComponent extends DefaultComponent<Exchange> {
     }
 
     private ContextProcessingNode lookupProcessingNode() {
-        return lookup(config.getString(Environment.DEFAULT_PROCESSOR_BEAN_ID), ContextProcessingNode.class);
+        return lookup(config.getString(Environment.DEFAULT_PROCESSOR), ContextProcessingNode.class);
     }
 
     public Configuration getConfiguration() {

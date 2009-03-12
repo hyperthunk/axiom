@@ -83,17 +83,5 @@
             </exclusions>
         </dependency>
     </dependencies>
-<!--    <build>
-        <plugins>
-            <plugin>
-                <artifactId>maven-surefire-plugin</artifactId>
-                <configuration>
-                    <excludes>
-                        <exclude>**/systest/**</exclude>
-                    </excludes>
-                </configuration>
-            </plugin>
-        </plugins>
-    </build>-->
 </project>
 

@@ -30,6 +30,8 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMA
 # note that you don't have to configure logging/tracing here as it is
 # enabled in the properties/configuration stage instead
 
+import org.axiom.integration.Environment
+
 control_channel = config >> 'axiom.control.channel'
 
 route {
@@ -44,12 +46,12 @@ route {
     process(add_header "payload-classifier" => 'code').proceed
 
   intercept(header('payload-classifier').isEqualTo('code')).
-    processRef(config >> 'axiom.control.processors.evaluator.id').proceed
+    processRef(config >> Environment.ROUTE_SCRIPT_EVALUATOR).proceed
 
   # TODO: this implementation is badly broken - change it to use an axiom component instead
   # that processRef has no CamelContext associated with it, for example
   from(control_channel).
-    processRef(config >> 'axiom.control.processors.default.id').
+    processRef(config >> Environment.DEFAULT_PROCESSOR).
       proceed.choice.
         when(header("command").isEqualTo("shutdown")).
           to(config >> 'axiom.control.channel.shutdown').

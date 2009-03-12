@@ -45,7 +45,7 @@ public class Environment {
     // SYSTEM PROPERTIES
 
     /**
-     * Stores the value of the {@code line.separator} system property.
+     * The value of the 'line separator' (OS independant).
      */
     public static final String NEWLINE = System.getProperty("line.separator");
 
@@ -73,7 +73,7 @@ public class Environment {
      * channel. A lookup against this key will return the bean id, which can then
      * be used to resolve an instance at runtime.
      */
-    public static final String DEFAULT_PROCESSOR_BEAN_ID = "axiom.control.processors.default.id";
+    public static final String DEFAULT_PROCESSOR = "axiom.processors.default.id";
 
     /**
      * The bean id of the registered composite configuration instance
@@ -81,10 +81,16 @@ public class Environment {
      * the {@link Configuration} instance is registered, not a key into
      * any property/configuration store.
      */
-    public static final String CONFIG_BEAN_ID = "axiom.configuration";
+    public static final String CONFIG_BEAN = "axiom.configuration";
 
     /**
-     * The property key of the <b><i>home</i></b> directory for axiom.
+     * The property key for the uri on which the (camel) control channel
+     * resides within the host/managed context.
+     */
+    public static final String CONTROL_CHANNEL = "axiom.channels.control";
+
+    /**
+     * The property key of the <b>HOME</b> directory for axiom.
      */
     public static final String AXIOM_HOME = "axiom.home";
 
@@ -94,12 +100,30 @@ public class Environment {
     public static final String SCRIPT_REPOSITORY_URI = "axiom.scripts.repository.uri";
 
     /**
+     * The property key mapping the array of file extensions which are valid (i.e. will
+     * be searched for) in route script files. 
+     */
+    public static final String SCRIPT_FILE_EXTENSIONS = "axiom.scripts.file.extensions";
+
+    /**
+     * The property name used to identify the service id (JNDI uri or Spring Bean name)
+     * for the default registered instance (or prototype) or this type.
+     */
+    public static final String ROUTE_SCRIPT_EVALUATOR = "axiom.processors.route.evaluator.id";
+
+    /**
+     * The property name used to identify the service id (JNDI uri or Spring Bean name)
+     * for the default registered instance (or prototype) or this type.
+     */
+    public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";
+
+    /**
      * Ensures that the file system is properly configured, based on the supplied
      * properties (e.g., checks that the configured {@code axiom.home} directory
      * exists, etc).
      * @param config The configuration settings to use.
      */
-    public static void ensureFileSystem(final Configuration config) {
+    public static void prepareFileSystem(final Configuration config) {
         final File axiomHome = new File(config.getString(AXIOM_HOME));
         final File routeScriptsDir = new File(config.getString(SCRIPT_REPOSITORY_URI));
         final String endorsedPlugins = config.getString(ENDORSED_PLUGINS);

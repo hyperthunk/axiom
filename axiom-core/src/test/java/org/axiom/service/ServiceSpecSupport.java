@@ -32,6 +32,11 @@ public class ServiceSpecSupport extends SpecSupport {
         };
     }
 
+    protected void stubConfig(final String key, final String[] returns) {
+        allowing(mockConfig).getStringArray(key);
+        will(returnValue(returns));
+    }
+
     protected void stubConfig(final String key, final String returns) {
         allowing(mockConfig).getString(key);
         will(returnValue(returns));

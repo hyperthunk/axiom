@@ -299,7 +299,6 @@
                                 </excludes>
                                 <includes>
                                     <include>**/*Spec.java</include>
-                                    <include>**/Test*.java</include>
                                 </includes>
                             </configuration>
                         </execution>
@@ -311,6 +310,7 @@
                             </goals>
                             <configuration>
                                 <skip>false</skip>
+                                <!-- TODO: find a way to make this maintainable -->
                                 <excludes>
                                     <exclude>**/org/axiom/configuration/**</exclude>
                                     <exclude>**/org/axiom/integration/**</exclude>
@@ -318,30 +318,10 @@
                                 </excludes>
                                 <includes>
                                     <include>**/systest/*Spec.java</include>
-                                    <include>**/systest/Test*.java</include>
                                 </includes>
                             </configuration>
                         </execution>
                     </executions>
-                    <!--<configuration>
-                        <excludes>
-                            <exclude>**/systest/**</exclude>
-                        </excludes>
-                        <includes>
-                            <include>**/*Spec.java</include>
-                            --><!--<include>**/Test*.java</include>--><!--
-                        </includes>
-                        <systemProperties>
-                            <property>
-                                <name>jdave.tools.specdox.format</name>
-                                <value>txt xml</value>
-                            </property>
-                            <property>
-                                <name>jdave.tools.specdox.dir</name>
-                                <value>target/jdave</value>
-                            </property>
-                        </systemProperties>
-                    </configuration>-->
                 </plugin>
                 <plugin>
                     <groupId>org.jtestr</groupId>

@@ -79,6 +79,7 @@ public class LauncherSpec extends Specification<Launcher> {
         private void stubFileSystemEnvironment(final String conf) throws ClassNotFoundException {
             //stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubConfig(Environment.SCRIPT_FILE_EXTENSIONS, new String[] {"rb"});
             stubConfig(Environment.AXIOM_HOME,
                 concat(Environment.TMPDIR, ".axiom"));
             stubConfig(Environment.SCRIPT_REPOSITORY_URI, conf);

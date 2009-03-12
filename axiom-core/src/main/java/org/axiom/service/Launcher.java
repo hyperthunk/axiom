@@ -21,6 +21,8 @@ public class Launcher {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private ControlChannelBootstrapper bootstrapper;
 
+    public Launcher() { this(new ControlChannelBootstrapper()); }
+
     public Launcher(final ControlChannelBootstrapper bootstrapper) {
         this.bootstrapper = bootstrapper;
     }
@@ -60,10 +62,8 @@ public class Launcher {
     @SuppressWarnings({"unchecked"})
     private void reconfigureExistingRoutes(final ControlChannel channel) {
         Configuration config = channel.getConfig();
-        final String scriptPath = config.getString(Environment.SCRIPT_REPOSITORY_URI);
-        log.info("Restoring existing routes from '{}'.", scriptPath);
         //NB: This unchecked operation is actually quite safe in practise
-        map(typedCollection(locateRouteScripts(scriptPath), File.class),
+        map(typedCollection(locateRouteScripts(config), File.class),
             new Operation<File>() {
                 @Override public void apply(final File input) {
                     final String script = input.getAbsolutePath();
@@ -74,8 +74,11 @@ public class Launcher {
             });
     }
 
-    private Collection locateRouteScripts(final String scriptPath) {
-        //TODO: move the array of script extension suffixes to axiom.properties
-        return listFiles(new File(scriptPath), new String[] { "rb" }, false);
+    private Collection locateRouteScripts(final Configuration config) {
+        final String scriptPath = config.getString(Environment.SCRIPT_REPOSITORY_URI);
+        log.info("Restoring existing routes from '{}'.", scriptPath);
+        final String[] extensions =
+            config.getStringArray(Environment.SCRIPT_FILE_EXTENSIONS);
+        return listFiles(new File(scriptPath), extensions, false);
     }
 }

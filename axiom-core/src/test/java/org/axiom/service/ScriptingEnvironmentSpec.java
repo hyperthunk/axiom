@@ -105,7 +105,7 @@ public class ScriptingEnvironmentSpec
 
         private void stubEvalBeanId() {
             stubConfiguration(mockContext, registry, config);
-            allowing(config).getString(JRubyScriptEvaluator.PROVIDER_BEAN_ID);
+            allowing(config).getString(Environment.CODE_EVALUATOR);
             will(returnValue(evaluatorBeanId));
         }
     }

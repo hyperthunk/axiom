@@ -88,7 +88,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public void itShouldLocateTheConfigurationInstanceAndCacheItForFutureUse() throws Throwable {
             stubRegistry();
-            one(mockRegistry).lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
+            one(mockRegistry).lookup(Environment.CONFIG_BEAN, Configuration.class);
             will(returnValue(mockConfig));
             checking(this);
 

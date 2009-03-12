@@ -81,7 +81,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
                 }
             }, should.raise(LifecycleException.class, format(
                 "Context Registry is incorrectly configured: bean for id {0} is not present.",
-                Environment.CONFIG_BEAN_ID)));
+                Environment.CONFIG_BEAN)));
         }
 
         public void itShouldEvaluateTheConfiguredBootstrapScript() throws Throwable {
@@ -132,7 +132,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
         protected void stubForDefaultBootstrap() throws ClassNotFoundException {
             stubRegistry();
             stubLookup("axiom.configuration", mockConfig);
-            stubConfig("axiom.control.processors.evaluator.id", codeEvaluatorBeanId);
+            stubConfig(Environment.ROUTE_SCRIPT_EVALUATOR, codeEvaluatorBeanId);
             stubLookup(codeEvaluatorBeanId, mockRouteBuilder);
             stubConfig(ControlChannelBootstrapper.DEFAULT_SCRIPT_URI, "classpath:test-boot.rb");
         }

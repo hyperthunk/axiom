@@ -58,7 +58,7 @@ public abstract class SpecSupport extends Expectations {
             final Registry registry, final Configuration config) {
         allowing(context).getRegistry();
         will(returnValue(registry));
-        allowing(registry).lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
+        allowing(registry).lookup(Environment.CONFIG_BEAN, Configuration.class);
         will(returnValue(config));
     }
 

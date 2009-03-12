@@ -128,7 +128,7 @@ public class ControlChannel {
     public RouteConfigurationScriptEvaluator getRouteScriptEvaluator() {
         //TODO: reuse this elsewhere instead of duplicating this code
         return hostContext.getRegistry().
-            lookup(RouteConfigurationScriptEvaluator.PROVIDER_BEAN_ID,
+            lookup(Environment.ROUTE_SCRIPT_EVALUATOR,
                 RouteConfigurationScriptEvaluator.class);
     }
 
@@ -164,7 +164,7 @@ public class ControlChannel {
             if (config == null) {
                 throw new LifecycleException(MessageFormat.format(
                     "Context Registry is incorrectly configured: bean for id {0} is not present.",
-                    Environment.CONFIG_BEAN_ID
+                    Environment.CONFIG_BEAN
                 ));
             }
         }

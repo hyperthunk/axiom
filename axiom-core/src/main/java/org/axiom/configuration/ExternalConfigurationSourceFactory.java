@@ -86,7 +86,7 @@ public class ExternalConfigurationSourceFactory {
      */
     public static Configuration getRegisteredConfiguration(final CamelContext context) {
         notNull(context, "Camel context cannot be null.");
-        return context.getRegistry().lookup(Environment.CONFIG_BEAN_ID, Configuration.class);
+        return context.getRegistry().lookup(Environment.CONFIG_BEAN, Configuration.class);
     }
 
     /**
