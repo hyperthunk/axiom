@@ -29,13 +29,23 @@
 package org.axiom.service;
 
 import org.apache.camel.Route;
+import org.apache.camel.builder.RouteBuilder;
+
 import java.util.Collection;
 
 /**
- * Creates a collection of {@link Route} objects which can then
- * be used to configure a {@link org.apache.camel.CamelContext}.
+ * Creates a collection of {@link Route} objects using a camel
+ * {@link RouteBuilder} instance, which can then be used to
+ * configure a {@link org.apache.camel.CamelContext}.
  */
 public interface RouteLoader {
+
+    /**
+     * Gets a {@link RouteBuilder} backing the
+     * collection of {@link Route}s for this instance.
+     * @return
+     */
+    RouteBuilder getBuilder();
 
     /**
      * Loads the collection of {@link Route}s.

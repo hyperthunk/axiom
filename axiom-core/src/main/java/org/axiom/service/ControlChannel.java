@@ -28,7 +28,8 @@
 
 package org.axiom.service;
 
-import org.apache.camel.CamelContext;
+import org.apache.camel.*;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
@@ -90,8 +91,14 @@ public class ControlChannel {
         }
     }
 
-    public void configure(final RouteLoader routeLoader) {
-        //To change body of created methods use File | Settings | File Templates.
+    public Object configure(final RouteBuilder builder) {
+        final String channelUri = getConfig().getString(Environment.CONTROL_CHANNEL);
+        final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
+        return producer.sendBodyAndHeader(channelUri, builder, "command", "configure");
+    }
+
+    public Object configure(final RouteLoader routeLoader) {
+        return configure(routeLoader.getBuilder());
     }
 
     /**
@@ -157,6 +164,7 @@ public class ControlChannel {
     }
 
     public Configuration getConfig() {
+        //TODO: consider whether lazy init is really needed here!?
         //NB: configuration instance is a singleton so potential
         //    overwrite stomping due to concurrent access isn't going to cause any issues
         if (config == null) {

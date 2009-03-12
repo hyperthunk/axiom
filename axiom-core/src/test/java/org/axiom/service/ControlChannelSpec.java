@@ -32,7 +32,9 @@ import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.*;
+import org.apache.camel.builder.RouteBuilder;
 import org.apache.camel.impl.DefaultCamelContext;
+import org.apache.camel.impl.DefaultProducerTemplate;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.integration.Environment;
@@ -97,6 +99,25 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             };
 
             specify(repeat(lookup, times(2)), should.not().raiseAnyException());
+        }
+
+        public void itShouldConfigureViaProducerTemplateUsingConfiguredEndpoint() throws ClassNotFoundException {
+            final String channelUri = "direct:control-channel";
+            final DefaultProducerTemplate mockTemplate =
+                mock(mockery(), DefaultProducerTemplate.class);
+            final RouteBuilder builder = dummy(RouteBuilder.class);
+            
+
+            stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubConfig(Environment.CONTROL_CHANNEL, channelUri);
+            allowing(mockContext).createProducerTemplate();
+            will(returnValue(mockTemplate));
+
+            one(mockTemplate).sendBodyAndHeader(channelUri, builder, "command", "configure");
+            checking(this);
+
+            channel.configure(builder);
         }
 
     }
