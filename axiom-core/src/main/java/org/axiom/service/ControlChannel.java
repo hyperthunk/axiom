@@ -57,6 +57,63 @@ import java.rmi.registry.Registry;
  * updates synchronized. This component should therefore be considered
  * to be <b>thread-hostile</b> and explicit synchronization used if/when required.
  * </p>
+ * <p>
+ * An unconfigured channel will do exactly nothing for you. You need to load
+ * some configuration for the channel itself first of all, and this is normally
+ * done using {@link ControlChannelBootstrapper#bootstrap(ControlChannel)}, so you
+ * can look there for further details. 
+ * <p>
+ * Once configured, the channel remains idle until {@link ControlChannel#activate()} is
+ * called. {@link ControlChannel#activate()} returns control to the calling thread
+ * once the channel is running.
+ * </p>
+ * <p>
+ * There are several options for stopping the channel. The
+ * {@link ControlChannel#destroy()} method abruptly terminates all running services,
+ * effectively killing the channel. A more graceful mechanism for shutting down involves
+ * waiting for a message to signal that a client has requested shutdown. The default bootstrap
+ * scripts create a channel for exactly this purpose, using the uri defined by the
+ * {@code axiom.channels.shutdown.uri} system property.
+ * </p>
+ * <p>
+ * A client instructs the channel to shutdown by sending an exchange
+ * to the endpoint for this uri, with a header named “signal” set to the value “shutdown.” A
+ * consuming thread can then poll for this signal.
+ * To simplify this process and do this without having to explicitly use the <i>Camel</i> APIs,
+ * the {@link ControlChannel#waitShutdown} method provides this polling facility (with a variation
+ * that times out without further action). Before the {@link ControlChannel#waitShutdown} method
+ * returns, {@link ControlChannel#destroy()} will be called, effectively terminating the channel.
+ * </p>
+ * <p>
+ * To explicitly send the 'shutdown' signal yourself, call the {@link ControlChannel#sendShutdownSignal()}
+ * method, and to optionally combine this with the {@link ControlChannel#waitShutdown} call, the
+ * {@link ControlChannel#sendShutdownSignalAndWait} method can be used. 
+ * </p>
+ * Example:
+ * <pre>
+ *
+ *      CamelContext camelContext;
+ *      RouteLoader  routeLoader;
+ *
+ *      public static void main(String... argv) {
+ *          ControlChannel channel = new ControlChannel(camelContext);
+ *          channel.load(routeLoader);
+ *          channel.activate();
+ *
+ *          // to wait for a 'shutdown' signal
+ *          channel.waitShutdown(long timeout = 10000);
+ *
+ *          // alternatively, you can send 'shutdown' yourself
+ *          channel.sendShutdownSignal();
+ *
+ *          // optionally you can combine shutting down and waiting
+ *          channel.sendShutdownSignalAndWait(); //optional timeout as before
+ * 
+ *          // to stop all services
+ *          channel.destroy();
+ *      }
+ * </pre>
+ * </p>
  */
 public class ControlChannel {
 
@@ -130,7 +187,10 @@ public class ControlChannel {
 
     /**
      * Activates the control channel, which will from now on behave in
-     * accordance with the routes you set up in your bootstrap script.
+     * accordance with the routes you set up in your bootstrap script(s).
+     *
+     * See {@link ControlChannel#waitShutdown} and {@link ControlChannel#sendShutdownSignal()}
+     * for instructions on shutting down an activated channel. 
      */
     public void activate() {
         try {
@@ -146,8 +206,8 @@ public class ControlChannel {
     }
 
     /**
-     * Closes the control channel and stops the underlying service(s) -
-     * once this call completes, all channel services have been stopped.
+     * Stops all the underlying services, jobs and worker threads.
+     * @throws LifecycleException in the face of termination failure(s).
      */
     public void destroy() {
         log.info("Destroying control channel.");
@@ -161,38 +221,75 @@ public class ControlChannel {
     /**
      * Sends a shutdown signal to the control channel and
      * immediately returns. If you wish to wait for shutdown
-     * to complete, you should call the //TODO: implement this
-     * ControlChannel#waitForShutdown(int) method.
+     * to complete, you should call one of the {@link ControlChannel#waitShutdown}
+     * methods, or one of the {@link ControlChannel#sendShutdownSignalAndWait} methods
+     * to combine the signal sending and wait operations.
      */
-    public void terminate() {
+    public void sendShutdownSignal() {
         final String shutdownChannelUri =
             getConfig().getString(Environment.TERMINATION_CHANNEL);
+        log.info("Sending shutdown signal to {}.", shutdownChannelUri);
         sendBodyAndHeader(shutdownChannelUri, null,
             Environment.SIGNAL, Environment.SIG_TERMINATE);
     }
 
-    public void terminateAndWait() {
-        terminate();
-        waitForShutdown();
+    /**
+     * Sends a shutdown signal (using {@link ControlChannel#sendShutdownSignal()}
+     * and immediately goes into {@link ControlChannel#waitShutdown()}, which is
+     * a blocking call.
+     */
+    public void sendShutdownSignalAndWait() {
+        sendShutdownSignal();
+        waitShutdown();
     }
 
-    public void terminateAndWait(final long timeout) {
-        terminate();
-        waitForShutdown(timeout);
+    /**
+     * Sends a shutdown signal (using {@link ControlChannel#sendShutdownSignal()}
+     * and immediately goes into {@link ControlChannel#waitShutdown(long)}, using
+     * the supplied {@code timeout}.
+     *
+     * @param timeout The timeout to set when waiting for shutdown.
+     */
+    public void sendShutdownSignalAndWait(final long timeout) {
+        sendShutdownSignal();
+        waitShutdown(timeout);
     }
 
-    public void waitForShutdown() {
+    /**
+     * Waits for the 'shutdown channel' to receive a 'shutdown' signal.
+     * This is a blocking call: the calling thread will wait indefinitely
+     * until a 'shutdown' signal arrived. If the shutdown channel is not ready
+     * to service consumers, an exception is thrown.
+     *
+     * @exception LifecycleException Thrown if the shutdown channel is not ready.
+     * @exception IllegalStateException Thrown if the shutdown channel has not been started 
+     */
+    public void waitShutdown() {
+        log.info("Entering wait shutdown.");
+        PollingConsumer pollingConsumer;
         try {
-            //TODO: test case assert not null -> consumer must be started already!
-            getTerminationChannel().createPollingConsumer().receive();
+            pollingConsumer = getTerminationChannel().createPollingConsumer();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
+        //TODO: throw IllegalStateException if return value is null
+        pollingConsumer.receive();
     }
 
-    public void waitForShutdown(final long timeout) {
+    /**
+     * Waits for the 'shutdown channel' to receive a 'shutdown' signal.
+     * This blocks the calling thread, but returns {@code false} if the
+     * shutdown channel does not receive a signal prior to the timeout being
+     * exceeded. If the shutdown channel is not ready to service consumers,
+     * an exception is also thrown.
+     *
+     * @param timeout The number of milliseconds to wait before raising an exception.
+     * @exception LifecycleException Thrown if the shutdown channel is not ready
+     */
+    public /*boolean*/ void waitShutdown(final long timeout) {
+        log.info("Entering wait shutdown ({}ms timeout).", timeout);
         try {
-            //TODO: this is obvious duplicate of the 0 arity version
+            //TODO: return consumer.receive(timeout) != null;
             getTerminationChannel().createPollingConsumer().receive(timeout);
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
@@ -210,6 +307,10 @@ public class ControlChannel {
         producer.sendBodyAndHeader(channelUri, payload, header, headerValue);
     }
 
+    /**
+     * Gets the configured {@link RouteConfigurationScriptEvaluator}.
+     * @return
+     */
     public RouteConfigurationScriptEvaluator getRouteScriptEvaluator() {
         return lookup(Environment.ROUTE_SCRIPT_EVALUATOR,
                 RouteConfigurationScriptEvaluator.class);
@@ -219,7 +320,7 @@ public class ControlChannel {
      * Gets the underlying {@link CamelContext}. It is recommended that
      * you do not interfere with this service unless you *really* know what
      * you're doing.
-     * @return
+     * @return The {@link CamelContext} hosting this control channel.
      */
     public CamelContext getContext() {
         return hostContext;
@@ -227,9 +328,9 @@ public class ControlChannel {
 
     /**
      * Gets the {@link Tracer} instance attached to the underlying
-     * {@link CamelContext}. This can be used to configure and enable/disable
-     * tracing dynamically at runtime.
-     * @return
+     * {@link CamelContext}. This can be used to configure and
+     * enable/disable tracing dynamically at runtime.
+     * @return The {@link Tracer} instance associated with this control channel.
      */
     public Tracer getTracer() {
         return tracer;

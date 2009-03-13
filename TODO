@@ -1,4 +1,7 @@
  - axiom-core
+  - set up the control channel (class) to puke on method invocations when in an invalid state
+  - align the terminology in the model to the naming convention in the channels
+   - (e.g., use either 'shutdown' or 'terminate' but not a different combination of both) 
   - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire
    - write xlst for xml2code

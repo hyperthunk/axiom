@@ -3,9 +3,7 @@ package org.axiom.systest;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.CamelContext;
-import org.apache.camel.Endpoint;
 import org.apache.camel.spring.SpringCamelContext;
-import org.axiom.integration.Environment;
 import org.axiom.service.ControlChannel;
 import org.axiom.service.Launcher;
 import org.junit.runner.RunWith;
@@ -32,11 +30,9 @@ public class BootstrappedLaunchSpec extends Specification<Launcher> {
         /*public*/ private void itShouldRedirectTerminationCallsToTheShutdownChannel() throws Exception {
             ControlChannel channel = launcher.launch(camelContext);
 
-            channel.terminate();
-
-            Endpoint shutdownEp =
-                channel.getContext().getEndpoint(Environment.TERMINATION_CHANNEL);
-            shutdownEp.createPollingConsumer().receive(TEN_SECOND_TIMEOUT);
+            channel.sendShutdownSignal();
+            channel.waitShutdown(TEN_SECOND_TIMEOUT);
+            
         }
     }
 

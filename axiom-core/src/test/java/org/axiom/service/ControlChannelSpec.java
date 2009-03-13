@@ -138,7 +138,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             final PollingConsumer mockConsumer = prepForWait();
             one(mockConsumer).receive();
             checking(this);
-            channel.waitForShutdown();
+            channel.waitShutdown();
         }
 
         public void itShouldSetWaitTimeoutIfOneIsSupplied() throws Exception {
@@ -146,7 +146,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             final PollingConsumer mockConsumer = prepForWait();
             one(mockConsumer).receive(timeout);
             checking(this);
-            channel.waitForShutdown(timeout);
+            channel.waitShutdown(timeout);
         }
 
         public void itShouldSendSigTermToTheControlChannelViaProducerTemplate() {
@@ -165,7 +165,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
                 termChannel, null, SIGNAL, SIG_TERMINATE);
             checking(this);
 
-            channel.terminate();
+            channel.sendShutdownSignal();
         }
 
         public void itShouldProvideWaitHookForGracefulTermination() throws Exception {
@@ -179,7 +179,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             one(mockConsumer).receive();
             checking(this);
 
-            channel.terminateAndWait();
+            channel.sendShutdownSignalAndWait();
         }
 
         public void itShouldProvideWaitHookWithTimeoutForGracefulTermination() throws Exception {
@@ -194,7 +194,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             one(mockConsumer).receive(timeout);
             checking(this);
 
-            channel.terminateAndWait(timeout);
+            channel.sendShutdownSignalAndWait(timeout);
         }
 
         private PollingConsumer prepForWait() throws Exception {

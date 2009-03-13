@@ -30,6 +30,10 @@ The camel libraries also provide a lot of the Enterprise Integration Patterns
 as components of the framework, making it simpler and easier to reason about your 
 design using well trodden techniques.
 
+To this heady mix, Axiom adds the facilities to provide extensions to the standard java
+DSL in java and jruby and provides a simple and intuitive mechanism for loading these
+"plugins" into your own route definition scripts. 
+
 Status
 -------
 

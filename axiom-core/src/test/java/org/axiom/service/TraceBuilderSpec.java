@@ -110,7 +110,8 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             formatShowBreadCrumbs();
             ignoreFurtherCalls();
 
-            specify(builder.build().getFormatter().isShowBreadCrumb(), equal(true));
+            final boolean showBreadCrumbs = builder.build().getFormatter().isShowBreadCrumb();
+            specify(showBreadCrumbs, should.equal(true));
         }
 
         public void itShouldConfigureTheFormatterToShowExchangeProperties() {
@@ -120,7 +121,8 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             will(returnValue(false));
             ignoreFurtherCalls();
 
-            specify(builder.build().getFormatter().isShowProperties(), equal(false));
+            final boolean showProperties = builder.build().getFormatter().isShowProperties();
+            specify(showProperties, should.equal(false));
         }
 
         public void itShouldConfigureTheFormatterToShowExchangeHeaders() {
@@ -130,7 +132,8 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             will(returnValue(false));
             ignoreFurtherCalls();
 
-            specify(builder.build().getFormatter().isShowHeaders(), equal(false));
+            final boolean showHeaders = builder.build().getFormatter().isShowHeaders();
+            specify(showHeaders, should.equal(false));
         }
 
         public void itShouldConfigureTheFormatterToShowBodyType() {
@@ -140,7 +143,8 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             will(returnValue(false));
             ignoreFurtherCalls();
 
-            specify(builder.build().getFormatter().isShowBodyType(), equal(false));
+            final boolean showBodyType = builder.build().getFormatter().isShowBodyType();
+            specify(showBodyType, should.equal(false));
         }
 
         public void itShouldConfigureTheFormatterToShowBodyContent() {
@@ -150,7 +154,8 @@ public class TraceBuilderSpec extends Specification<TraceBuilder> {
             will(returnValue(false));
             ignoreFurtherCalls();
 
-            specify(builder.build().getFormatter().isShowBody(), equal(false));
+            final boolean showBody = builder.build().getFormatter().isShowBody();
+            specify(showBody, should.equal(false));
         }
 
         public void itShouldSetExceptionTracingToTheConfiguredValue() {
