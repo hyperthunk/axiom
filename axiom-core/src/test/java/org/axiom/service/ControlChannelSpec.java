@@ -134,19 +134,58 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             channel.configure(loader);
         }
 
-        public void itShouldWaitInfinitelyForTheTerminationEndpoint() throws Exception {
+        public void itShouldWaitInfinitelyForTheTerminationEndpoint() throws Throwable {
             final PollingConsumer mockConsumer = prepForWait();
             one(mockConsumer).receive();
+            will(returnValue(dummy(Exchange.class)));
+
+            one(mockContext).stop();
             checking(this);
-            channel.waitShutdown();
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    channel.waitShutdown();
+                }
+            }, should.not().raiseAnyException());
+        }
+
+        public void itShouldPukeWaitingForShutdownIfConsumerIsNotStarted() throws Throwable {
+            final Exchange valueIndicatingConsumerIsNotStarted = null;
+
+            final PollingConsumer mockConsumer = prepForWait();
+            one(mockConsumer).receive();
+            will(returnValue(valueIndicatingConsumerIsNotStarted));
+            checking(this);
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    channel.waitShutdown();
+                }
+            }, should.raise(IllegalStateException.class));
         }
 
         public void itShouldSetWaitTimeoutIfOneIsSupplied() throws Exception {
             final long timeout = 1000;
             final PollingConsumer mockConsumer = prepForWait();
             one(mockConsumer).receive(timeout);
+            will(returnValue(dummy(Exchange.class)));
+
+            one(mockContext).stop();
             checking(this);
-            channel.waitShutdown(timeout);
+
+            specify(channel.waitShutdown(timeout), should.equal(true));
+        }
+
+        public void itShouldReturnFalseIfShutdownDidNotOccurInTimelyManner() throws Exception {
+            final long timeout = 10;
+            final PollingConsumer mockConsumer = prepForWait();
+            allowing(mockConsumer).receive(timeout);
+            will(returnValue(null));
+
+            never(mockContext).stop();
+            checking(this);
+
+            specify(channel.waitShutdown(timeout), should.equal(false));
         }
 
         public void itShouldSendSigTermToTheControlChannelViaProducerTemplate() {
@@ -177,6 +216,8 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             will(returnValue(mockProducer));
             justIgnore(mockProducer);
             one(mockConsumer).receive();
+
+            allowing(mockContext).stop();
             checking(this);
 
             channel.sendShutdownSignalAndWait();
@@ -192,6 +233,8 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             will(returnValue(mockProducer));
             justIgnore(mockProducer);
             one(mockConsumer).receive(timeout);
+            will(returnValue(dummy(Exchange.class)));
+            allowing(mockContext).stop();
             checking(this);
 
             channel.sendShutdownSignalAndWait(timeout);

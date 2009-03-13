@@ -272,8 +272,11 @@ public class ControlChannel {
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
-        //TODO: throw IllegalStateException if return value is null
-        pollingConsumer.receive();
+        if (pollingConsumer.receive() == null) {
+            throw new IllegalStateException("Consumer was not started.");
+        } else {
+            destroy();    
+        }
     }
 
     /**
@@ -285,12 +288,20 @@ public class ControlChannel {
      *
      * @param timeout The number of milliseconds to wait before raising an exception.
      * @exception LifecycleException Thrown if the shutdown channel is not ready
+     * @return {@code true} if the shutdown occured within the specified timeout, otherwise {@code false}.
      */
-    public /*boolean*/ void waitShutdown(final long timeout) {
+    public boolean waitShutdown(final long timeout) {
         log.info("Entering wait shutdown ({}ms timeout).", timeout);
         try {
-            //TODO: return consumer.receive(timeout) != null;
-            getTerminationChannel().createPollingConsumer().receive(timeout);
+            final PollingConsumer pollingConsumer = 
+                getTerminationChannel().createPollingConsumer();
+            final boolean wasShutdown = pollingConsumer.receive(timeout) != null;
+            if (wasShutdown) {
+                destroy();
+            } else {
+                log.info("Wait Shutdown timed out after {}ms.", timeout);   
+            }
+            return wasShutdown;
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
