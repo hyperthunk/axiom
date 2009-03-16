@@ -40,9 +40,6 @@ import org.apache.commons.configuration.Configuration;
 import static org.axiom.integration.Environment.*;
 import org.junit.runner.RunWith;
 
-import java.util.ArrayList;
-import java.util.Collection;
-
 @SuppressWarnings({"ThrowableInstanceNeverThrown", "unchecked"})
 @RunWith(JDaveRunner.class)
 public class ControlChannelSpec extends Specification<ControlChannel> {
@@ -109,11 +106,11 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
             stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubConfig(CONTROL_CHANNEL, channelUri);
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockTemplate));
 
-            one(mockTemplate).sendBodyAndHeader(channelUri, builder, SIGNAL, SIG_CONFIGURE);
+            one(mockTemplate).sendBodyAndHeader(CONTROL_CHANNEL,
+                builder, SIGNAL, SIG_CONFIGURE);
             checking(this);
 
             channel.configure(builder);
@@ -122,53 +119,22 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldPullTheRouteBuilderInsteadOfLoadingRoutes() {
             stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubConfig(CONTROL_CHANNEL, "ignored://anyuri");
             allowing(mockContext).createProducerTemplate();
             will(returnValue(dummy(ProducerTemplate.class)));
 
             final RouteBuilder dummyBuilder = dummy(RouteBuilder.class);
-            one(loader).getBuilder();
+            one(loader).load();
             will(returnValue(dummyBuilder));
             checking(this);
             
             channel.configure(loader);
         }
 
-        public void itShouldWaitInfinitelyForTheTerminationEndpoint() throws Throwable {
-            final PollingConsumer mockConsumer = prepForWait();
-            one(mockConsumer).receive();
-            will(returnValue(dummy(Exchange.class)));
-
-            one(mockContext).stop();
-            checking(this);
-
-            specify(new Block() {
-                @Override public void run() throws Throwable {
-                    channel.waitShutdown();
-                }
-            }, should.not().raiseAnyException());
-        }
-
-        public void itShouldPukeWaitingForShutdownIfConsumerIsNotStarted() throws Throwable {
-            final Exchange valueIndicatingConsumerIsNotStarted = null;
-
-            final PollingConsumer mockConsumer = prepForWait();
-            one(mockConsumer).receive();
-            will(returnValue(valueIndicatingConsumerIsNotStarted));
-            checking(this);
-
-            specify(new Block() {
-                @Override public void run() throws Throwable {
-                    channel.waitShutdown();
-                }
-            }, should.raise(IllegalStateException.class));
-        }
-
         public void itShouldSetWaitTimeoutIfOneIsSupplied() throws Exception {
             final long timeout = 1000;
-            final PollingConsumer mockConsumer = prepForWait();
-            one(mockConsumer).receive(timeout);
-            will(returnValue(dummy(Exchange.class)));
+            final ShutdownChannel shutdownChannel = prepForWait();
+            one(shutdownChannel).waitShutdown(timeout);
+            will(returnValue(true));
 
             one(mockContext).stop();
             checking(this);
@@ -178,9 +144,9 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public void itShouldReturnFalseIfShutdownDidNotOccurInTimelyManner() throws Exception {
             final long timeout = 10;
-            final PollingConsumer mockConsumer = prepForWait();
-            allowing(mockConsumer).receive(timeout);
-            will(returnValue(null));
+            final ShutdownChannel shutdownChannel = prepForWait();
+            allowing(shutdownChannel).waitShutdown(timeout);
+            will(returnValue(false));
 
             never(mockContext).stop();
             checking(this);
@@ -189,33 +155,30 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldSendSigTermToTheControlChannelViaProducerTemplate() {
-            final String termChannel = "direct:terminate";
             final ProducerTemplate mockProducer =
                 mock(mockery(), ProducerTemplate.class);
 
             stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubConfig(CONTROL_CHANNEL, "ignored://anyuri");
-            stubConfig(TERMINATION_CHANNEL, termChannel);
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockProducer));
 
             one(mockProducer).sendBodyAndHeader(
-                termChannel, null, SIGNAL, SIG_TERMINATE);
+                TERMINATION_CHANNEL, null, SIGNAL, SIG_TERMINATE);
             checking(this);
 
             channel.sendShutdownSignal();
         }
 
         public void itShouldProvideWaitHookForGracefulTermination() throws Exception {
-            final PollingConsumer mockConsumer = prepForWait();
+            final ShutdownChannel shutdownChannel = prepForWait();
             final ProducerTemplate mockProducer =
                 mock(mockery(), ProducerTemplate.class);
 
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockProducer));
             justIgnore(mockProducer);
-            one(mockConsumer).receive();
+            one(shutdownChannel).waitShutdown();
 
             allowing(mockContext).stop();
             checking(this);
@@ -224,7 +187,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldProvideWaitHookWithTimeoutForGracefulTermination() throws Exception {
-            final PollingConsumer mockConsumer = prepForWait();
+            final ShutdownChannel shutdownChannel = prepForWait();
             final ProducerTemplate mockProducer =
                 mock(mockery(), ProducerTemplate.class);
             final long timeout = 1000;
@@ -232,30 +195,22 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockProducer));
             justIgnore(mockProducer);
-            one(mockConsumer).receive(timeout);
-            will(returnValue(dummy(Exchange.class)));
+
+            one(shutdownChannel).waitShutdown(timeout);
+            will(returnValue(true));
+            
             allowing(mockContext).stop();
             checking(this);
 
             channel.sendShutdownSignalAndWait(timeout);
         }
 
-        private PollingConsumer prepForWait() throws Exception {
-            final String termChannel = "direct:terminate";
+        private ShutdownChannel prepForWait() throws Exception {
             stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubConfig(CONTROL_CHANNEL, "ignored://anyuri");
-            stubConfig(TERMINATION_CHANNEL, termChannel);
-
-            final Endpoint mockEndpoint = mock(mockery(), Endpoint.class);
-            allowing(mockContext).getEndpoint(termChannel);
-            will(returnValue(mockEndpoint));
-
-            final PollingConsumer mockConsumer = mock(mockery(), PollingConsumer.class);
-            allowing(mockEndpoint).createPollingConsumer();
-            will(returnValue(mockConsumer));
-
-            return mockConsumer;
+            final ShutdownChannel shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            return shutdownChannel;
         }
 
     }
@@ -285,21 +240,10 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             new ControlChannel(mockContext).load(loader);
         }
 
-        public void itShouldPassTheLoadedRoutesToTheSuppliedContext() throws Exception {
-            final Collection<Route> routes = new ArrayList<Route>();
-            allowing(loader).load();
-            will(returnValue(routes));
-            allowing(mockContext).getName();
-            one(mockContext).addRoutes(routes);
-            checking(this);
-
-            new ControlChannel(mockContext).load(loader);
-        }
-
         public void itShouldWrapCheckedExceptionsWithRuntime() throws Exception {
             allowing(loader);
             allowing(mockContext).getName();
-            one(mockContext).addRoutes((Collection<Route>) with(anything()));
+            one(mockContext).addRoutes((RouteBuilder) with(anything()));
             will(throwException(new Exception()));
             checking(this);
 
@@ -371,6 +315,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldWrapAnyStartupExceptions() throws Exception {
             stubReadyToRunContext(mockery());
             allowing(mockContext).start();
+            allowing(mockContext).getName();
             will(throwException(new CamelException()));
             checking(this);
 
@@ -382,6 +327,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldStartTheCamelContext() throws Throwable {
             stubReadyToRunContext(mockery());
             one(mockContext).start();
+            allowing(mockContext).getName();
             checking(this);
 
             specify(new Block() {

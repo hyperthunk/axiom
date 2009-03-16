@@ -66,20 +66,7 @@ public class RouteScriptLoader implements RouteLoader {
     /**
      * {@inheritDoc}
      */
-    @Override public List<Route> load() {
-        try {
-            return getBuilder().getRouteList();
-        } catch (LifecycleException lEx) {
-            throw lEx;
-        } catch (Exception e) {
-            throw new LifecycleException(e.getLocalizedMessage(), e);
-        }
-    }
-
-    /**
-     * {@inheritDoc}
-     */
-    @Override public RouteBuilder getBuilder() {
+    @Override public RouteBuilder load() {
         try {
             final String uri = getPathToScript();
             log.info("Loading route list from {}.", uri);

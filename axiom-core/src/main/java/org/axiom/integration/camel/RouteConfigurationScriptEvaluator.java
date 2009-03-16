@@ -29,12 +29,13 @@
 package org.axiom.integration.camel;
 
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.CamelContextAware;
 
 /**
  *  Provides a means to configure a jruby routing script
  *  and obtain a {@link org.apache.camel.builder.RouteBuilder}.
  */
-public interface RouteConfigurationScriptEvaluator {
+public interface RouteConfigurationScriptEvaluator extends CamelContextAware {
 
     /**
      * Runs the provided body (ruby script source) to obtain a

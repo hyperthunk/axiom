@@ -31,7 +31,6 @@ package org.axiom.service;
 import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.commons.io.FileUtils.*;
 import org.apache.commons.lang.StringUtils;
@@ -41,9 +40,6 @@ import org.junit.runner.RunWith;
 import org.springframework.core.io.ClassPathResource;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
 
 @RunWith(JDaveRunner.class)
 public class RouteScriptLoaderSpec extends Specification<RouteScriptLoader> {
@@ -110,19 +106,15 @@ public class RouteScriptLoaderSpec extends Specification<RouteScriptLoader> {
         }
 
         public void itShouldReturnTheRouteBuilderGeneratedByTheEvaluator() {
-            final Collection<Route> routes = new ArrayList<Route>();
             final RouteBuilder routeBuilder = new RouteBuilder() {
                 @Override public void configure() throws Exception {}
-                @Override public List<Route> getRouteList() throws Exception {
-                    return (List<Route>) routes;
-                }
             };
 
             allowing(evaluator).configure(with(any(String.class)));
             will(returnValue(routeBuilder));
             checking(this);
 
-            specify(loader.load(), same(routes));
+            specify(loader.load(), same(routeBuilder));
         }
     }
 

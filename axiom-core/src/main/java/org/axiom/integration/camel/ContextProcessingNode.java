@@ -1,7 +1,6 @@
 package org.axiom.integration.camel;
 
-import org.apache.camel.CamelContext;
-import org.apache.camel.Processor;
+import org.apache.camel.*;
 
 /**
  * Describes a {@link org.apache.camel.Processor} that contains
@@ -11,7 +10,9 @@ import org.apache.camel.Processor;
  * 
  */
 public interface ContextProcessingNode extends Processor {
-    
+
+    //TODO: reconcile with CamelContextAware.
+
     /**
      * Sets the {@link org.apache.camel.CamelContext} to
      * which processing instructions will be applied.

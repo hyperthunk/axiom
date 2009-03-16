@@ -41,13 +41,19 @@ module Axiom
       include Configuration
       include Axiom::Plugins
 
+      attr_accessor :camel_context
+      alias setCamelContext camel_context=
+
       # convenience hook for script writers
       def route &block
-        SimpleRouteBuilder.new &block
+        builder = SimpleRouteBuilder.new &block
+        builder.properties = self.properties
+        builder.context = self.camel_context
+        builder
       end
 
       # configures the supplied script source in the context of a RouteBuilder instance
-      def configure(script_body)
+      def configure script_body
         eval script_body
       end
 

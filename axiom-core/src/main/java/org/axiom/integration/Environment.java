@@ -33,9 +33,12 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.*;
 import org.apache.commons.lang.StringUtils;
+import org.axiom.service.ShutdownChannel;
+import org.axiom.integration.camel.AxiomComponent;
 
 import java.io.File;
 import java.io.IOException;
+import java.rmi.registry.Registry;
 
 /**
  * Environment support functions.
@@ -63,10 +66,32 @@ public class Environment {
     public static final String ENDORSED_PLUGINS = "axiom.plugins.endorsed.uri";
 
     /**
-     * The uri of the {@link CamelContext} in which axiom is being hosted,
+     * The property key of the <b>HOME</b> directory for axiom.
+     */
+    public static final String AXIOM_HOME = "axiom.home";
+
+    /**
+     * The property key of the directory in which route scripts can be stored.
+     */
+    public static final String SCRIPT_REPOSITORY_URI = "axiom.scripts.repository.uri";
+
+    /**
+     * The property key mapping the array of file extensions which are valid (i.e. will
+     * be searched for) in route script files. 
+     */
+    public static final String SCRIPT_FILE_EXTENSIONS = "axiom.scripts.file.extensions";
+
+/**
+     * The uri of the {@link AxiomComponent} in which axiom is being hosted,
      * which can be used to obtain an endpoint and/or exchange.
      */
     public static final String AXIOM_HOST_URI = "axiom:host";
+
+    /**
+     * The bean id of the {@link CamelContext} which is defaulted as the
+     * container for the component refered to be {@code AXIOM_HOST_URI}.
+     */
+    public static final String HOST_CONTEXT = "axiom.camel.host.context.id";
 
     /**
      * The property key of the default procecessing node for the axiom control
@@ -84,34 +109,42 @@ public class Environment {
     public static final String CONFIG_BEAN = "axiom.configuration";
 
     /**
-     * The property key for the uri on which the (camel) control channel
-     * resides within the host/managed context.
+     * The uri on which the (camel) control channel resides within
+     * the host/managed camel context.
      */
-    public static final String CONTROL_CHANNEL = "axiom.channels.control";
+    public static final String CONTROL_CHANNEL = "direct:axiomControlChannel";    
 
     /**
-     * The property key for the uri on which the (camel) termination channel resides.
+     * The termination signal header value.
+     */
+    public static final String SIG_TERMINATE = "terminate";
+
+    /**
+     * The signal header tag.
+     */
+    public static final String SIGNAL = "signal";
+
+    /**
+     * The value of the {@code configure} header signal, used to indicate that the
+     * payload on a channel contains configuration updates.
+     */
+    public static final String SIG_CONFIGURE = "configure";
+
+    /**
+     * The uri on which the (camel) termination channel resides.
      * Messages to this channel are an indication that system shutdown has been
-     * requested by a consumer. Application clients can use this to determine
-     * when to terminate the process. 
+     * requested by a consumer. Application clients can use the {@link ShutdownChannel}
+     * class to interact with this channel, the default instance of which is available
+     * in the camel {@link Registry} under the id specified by
+     * {@code Environment.SHUTDOWN_CHANNEL_ID}. 
      */
-    public static final String TERMINATION_CHANNEL = "axiom.channels.shutdown";
+    public static final String TERMINATION_CHANNEL = "direct:axiomShutdownChannel";
 
     /**
-     * The property key of the <b>HOME</b> directory for axiom.
+     * The id of the default {@link ShutdownChannel} bean as registered with
+     * the host {@link CamelContext}s {@link Registry}.
      */
-    public static final String AXIOM_HOME = "axiom.home";
-
-    /**
-     * The property key of the directory in which route scripts can be stored.
-     */
-    public static final String SCRIPT_REPOSITORY_URI = "axiom.scripts.repository.uri";
-
-    /**
-     * The property key mapping the array of file extensions which are valid (i.e. will
-     * be searched for) in route script files. 
-     */
-    public static final String SCRIPT_FILE_EXTENSIONS = "axiom.scripts.file.extensions";
+    public static final String SHUTDOWN_CHANNEL_ID = "axiom.shutdown.channel.id";
 
     /**
      * The property name used to identify the service id (JNDI uri or Spring Bean name)
@@ -123,14 +156,7 @@ public class Environment {
      * The property name used to identify the service id (JNDI uri or Spring Bean name)
      * for the default registered instance (or prototype) or this type.
      */
-    public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";
-
-    /**
-     * The termination signal id.
-     */
-    public static final String SIG_TERMINATE = "terminate";
-    public static final String SIGNAL = "signal";
-    public static final String SIG_CONFIGURE = "configure";
+    public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";    
 
     /**
      * Ensures that the file system is properly configured, based on the supplied

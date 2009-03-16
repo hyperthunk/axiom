@@ -25,6 +25,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'axiom/core/configuration'
 require 'axiom/core/functor'
 require 'axiom/core/processor'
 
@@ -36,20 +37,25 @@ module Axiom
     # providing a convenient and simpilfied syntax for defining
     # RouteBuilder instances without messy java noise)
     class SimpleRouteBuilder < org.apache.camel.builder.RouteBuilder
+      include Configuration
       include Functor
+
+      # TODO: pull add_headers out into a plugin
 
       # adds all the header k=>v pairs from the supplied hash
       # to the current route
-
-      def add_header hash
+      def add_headers hash
         Processor.new do |exchange|
           out_channel = exchange.out
           hash.each { |k, v| out_channel.set_header k, v }
         end
       end
 
-      # see the javadoc for org.apache.camel.RouteBuilder
+      def lookup key
+        context.registry.lookup key
+      end
 
+      # see the javadoc for org.apache.camel.RouteBuilder
       def configure
         instance_eval &self
       end

@@ -25,14 +25,13 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-require 'axiom/plugins'
+# This is the default script for booting the control channel in embedded mode.
 
-# TODO: move this into an ext folder
+require 'java'
+import org.axiom.integration.Environment
 
-module Kernel
-
-  def logger
-    @logger ||= org.slf4j.LoggerFactory.get_logger self.class.name
-  end
-
-end
+route {
+  from(Environment::CONTROL_CHANNEL).choice.
+    when(header(Environment::SIGNAL).isEqualTo(Environment::SIG_TERMINATE)).
+      to(Environment::TERMINATION_CHANNEL)
+}

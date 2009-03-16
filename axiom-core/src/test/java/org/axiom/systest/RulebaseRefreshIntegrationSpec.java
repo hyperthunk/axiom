@@ -34,11 +34,11 @@ import org.apache.camel.*;
 import org.apache.camel.builder.RouteBuilder;
 import static org.apache.camel.builder.xml.XPathBuilder.*;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.apache.camel.spring.SpringCamelContext;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
+import org.axiom.integration.Environment;
 
 @RunWith(JDaveRunner.class)
 public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> {
@@ -56,7 +56,8 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
         public CamelContext create() {
             applicationContext =
                 new ClassPathXmlApplicationContext("axiom-core-default-context.xml");
-            return camelContext = new SpringCamelContext(applicationContext);
+            return camelContext = (CamelContext) applicationContext.getBean(Environment.HOST_CONTEXT); 
+                //new SpringCamelContext(applicationContext);
         }
 
         //@Ignore //TODO: move this into an integration testing module and re-enable
@@ -71,11 +72,11 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
                         filter(body().contains("stuff")).
                     to("mock:result");
 
-                    from("x").intercept(xpath("/foo/bar[count(child::*) > 0]")).
+                    from("direct:foobar").intercept(xpath("/foo/bar[count(child::*) > 0]")).
                         tryBlock().filter().xpath("*");
                 }
             };
-            camelContext.addRoutes(builder.getRouteList());
+            camelContext.addRoutes(builder);
             camelContext.start();
 
             try {
@@ -83,7 +84,7 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
                 resultEndpoint.expectedMessageCount(2);
 
                 ProducerTemplate template = camelContext.createProducerTemplate();
-                template.sendBody("mock:result", "<stuff/>");
+                template.sendBody("direct:start", "<stuff/>");
 
                 camelContext.addRoutes(
                     new RouteBuilder() {
@@ -96,7 +97,7 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
                     }
                 );
 
-                template.sendBody("mock:result", "other");
+                template.sendBody("direct:start", "other");
 
                 resultEndpoint.assertIsSatisfied();
             } finally {

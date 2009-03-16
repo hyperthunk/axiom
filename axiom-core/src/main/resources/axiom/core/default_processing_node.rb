@@ -58,7 +58,7 @@ module Axiom
         # this next line looks odd in ruby, but ensures that we act as a
         # good citizen in terms of being a data type channel for route builders
         builder = in_channel.getBody(org.apache.camel.builder.RouteBuilder.class);
-        builder.route_list
+        # builder.route_list
       end
 
     end

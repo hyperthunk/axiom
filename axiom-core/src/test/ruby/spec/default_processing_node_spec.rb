@@ -54,7 +54,9 @@ describe Axiom::Core::DefaultProcessingNode,
 
   it "should configure the camel context when routes are supplied" do
     context = CamelContext.new
-    context.expects(:addRoutes).once.with{ |x| x.is_a? List }
+    context.expects(:addRoutes).once.with do |x|
+      x.is_a? org.apache.camel.builder.RouteBuilder
+    end  
 
     mock_channel = Message.new
     mock_channel.stubs(:getHeader).returns "configure"

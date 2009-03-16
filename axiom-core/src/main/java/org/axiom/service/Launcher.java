@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.Collections;
 
 /**
  * Provides a simple API for launching a control channel
@@ -31,6 +32,7 @@ public class Launcher {
     /**
      * See {@link Launcher#launch(ControlChannel)}.
      * @param hostContext The host {@link CamelContext}.
+     * @return
      */
     public ControlChannel launch(final CamelContext hostContext) {
         return launch(new ControlChannel(hostContext));
@@ -45,6 +47,7 @@ public class Launcher {
      * indicated by the {@code axiom.scripts.repository.uri} system
      * property) are re-activated in an arbitrary order.
      * @param channel The channel to launch.
+     * @return
      */
     public ControlChannel launch(final ControlChannel channel) {
         bootstrapper.bootstrap(channel);
@@ -78,6 +81,11 @@ public class Launcher {
         log.info("Restoring existing routes from '{}'.", scriptPath);
         final String[] extensions =
             config.getStringArray(Environment.SCRIPT_FILE_EXTENSIONS);
-        return listFiles(new File(scriptPath), extensions, false);
+        final File directory = new File(scriptPath);
+        if (directory.isDirectory()) {
+            return listFiles(directory, extensions, false);
+        } else {
+            return Collections.EMPTY_LIST;
+        }
     }
 }

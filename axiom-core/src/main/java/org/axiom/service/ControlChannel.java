@@ -55,7 +55,7 @@ import java.rmi.registry.Registry;
  * {@link ControlChannel#destroy()} will not stomp on each other,
  * nor are additional control channel and/or managed context route configuration
  * updates synchronized. This component should therefore be considered
- * to be <b>thread-hostile</b> and explicit synchronization used if/when required.
+ * to be <b>thread hostile</b> and explicit synchronization used if/when required.
  * </p>
  * <p>
  * An unconfigured channel will do exactly nothing for you. You need to load
@@ -73,7 +73,7 @@ import java.rmi.registry.Registry;
  * effectively killing the channel. A more graceful mechanism for shutting down involves
  * waiting for a message to signal that a client has requested shutdown. The default bootstrap
  * scripts create a channel for exactly this purpose, using the uri defined by the
- * {@code axiom.channels.shutdown.uri} system property.
+ * {@code Environment.TERMINATION_CHANNEL} value.
  * </p>
  * <p>
  * A client instructs the channel to shutdown by sending an exchange
@@ -157,13 +157,13 @@ public class ControlChannel {
             //e.g.,
             hostContext.createProducerTemplate().
                 sendBodyAndHeader(Environment.AXIOM_HOST_URI,
-                    loader.getBuilder(), "command", "configure");*/
+                    loader.load(), "command", "configure");*/
             hostContext.addRoutes(loader.load());
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
     }
-
+                            
     /**
      * Sends new routing configuration to the control channel, which is
      * subsequently processed based on the chosen startup mode (as set by
@@ -171,8 +171,8 @@ public class ControlChannel {
      * @param builder The builder containing the configuration you wish to apply
      */
     public void configure(final RouteBuilder builder) {
-        final String channelUri = getConfig().getString(Environment.CONTROL_CHANNEL);
-        sendBodyAndHeader(channelUri, builder, "signal", "configure");
+        sendBodyAndHeader(Environment.CONTROL_CHANNEL,
+            builder, "signal", "configure");
     }
 
     /**
@@ -182,7 +182,7 @@ public class ControlChannel {
      * @param routeLoader An object which can load the configuration you wish to apply
      */
     public void configure(final RouteLoader routeLoader) {
-        configure(routeLoader.getBuilder());
+        configure(routeLoader.load());
     }
 
     /**
@@ -195,11 +195,13 @@ public class ControlChannel {
     public void activate() {
         try {
             log.info("Activating control channel.");
-            Configuration config = getRegisteredConfiguration(getContext());
-            log.info("Configuring tracer for {}.", getContext());
+            final CamelContext context = getContext();
+            Configuration config = getRegisteredConfiguration(context);
+
+            log.info("Configuring tracer for {}.", context.getName());
             TraceBuilder builder = new TraceBuilder(config, tracer);
-            getContext().addInterceptStrategy(builder.build());
-            getContext().start();
+            context.addInterceptStrategy(builder.build());
+            context.start();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
         }
@@ -226,10 +228,8 @@ public class ControlChannel {
      * to combine the signal sending and wait operations.
      */
     public void sendShutdownSignal() {
-        final String shutdownChannelUri =
-            getConfig().getString(Environment.TERMINATION_CHANNEL);
-        log.info("Sending shutdown signal to {}.", shutdownChannelUri);
-        sendBodyAndHeader(shutdownChannelUri, null,
+        log.info("Sending shutdown signal to {}.", Environment.TERMINATION_CHANNEL);
+        sendBodyAndHeader(Environment.TERMINATION_CHANNEL, null,
             Environment.SIGNAL, Environment.SIG_TERMINATE);
     }
 
@@ -250,33 +250,20 @@ public class ControlChannel {
      *
      * @param timeout The timeout to set when waiting for shutdown.
      */
-    public void sendShutdownSignalAndWait(final long timeout) {
+    public boolean sendShutdownSignalAndWait(final long timeout) {
         sendShutdownSignal();
-        waitShutdown(timeout);
+        return waitShutdown(timeout);
     }
 
     /**
      * Waits for the 'shutdown channel' to receive a 'shutdown' signal.
      * This is a blocking call: the calling thread will wait indefinitely
-     * until a 'shutdown' signal arrived. If the shutdown channel is not ready
-     * to service consumers, an exception is thrown.
-     *
-     * @exception LifecycleException Thrown if the shutdown channel is not ready.
-     * @exception IllegalStateException Thrown if the shutdown channel has not been started 
+     * until a 'shutdown' signal arrived. 
+     * @exception LifecycleException propagated from {@link ShutdownChannel#waitShutdown()}. 
      */
     public void waitShutdown() {
-        log.info("Entering wait shutdown.");
-        PollingConsumer pollingConsumer;
-        try {
-            pollingConsumer = getTerminationChannel().createPollingConsumer();
-        } catch (Exception e) {
-            throw new LifecycleException(e.getLocalizedMessage(), e);
-        }
-        if (pollingConsumer.receive() == null) {
-            throw new IllegalStateException("Consumer was not started.");
-        } else {
-            destroy();    
-        }
+        getShutdownChannel().waitShutdown();
+        destroy();
     }
 
     /**
@@ -291,31 +278,27 @@ public class ControlChannel {
      * @return {@code true} if the shutdown occured within the specified timeout, otherwise {@code false}.
      */
     public boolean waitShutdown(final long timeout) {
-        log.info("Entering wait shutdown ({}ms timeout).", timeout);
-        try {
-            final PollingConsumer pollingConsumer = 
-                getTerminationChannel().createPollingConsumer();
-            final boolean wasShutdown = pollingConsumer.receive(timeout) != null;
-            if (wasShutdown) {
-                destroy();
-            } else {
-                log.info("Wait Shutdown timed out after {}ms.", timeout);   
-            }
-            return wasShutdown;
-        } catch (Exception e) {
-            throw new LifecycleException(e.getLocalizedMessage(), e);
+        final boolean wasShutdown =
+            getShutdownChannel().waitShutdown(timeout);
+        if (wasShutdown) {
+            destroy();
         }
-    }
-
-    private Endpoint getTerminationChannel() {
-        final String channelUri = getConfig().getString(Environment.TERMINATION_CHANNEL);
-        return getContext().getEndpoint(channelUri);
+        return wasShutdown;
     }
 
     private void sendBodyAndHeader(final String channelUri, final Object payload,
         final String header, final String headerValue) {
         final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
         producer.sendBodyAndHeader(channelUri, payload, header, headerValue);
+    }
+
+    /**
+     * Exposes the {@link ShutdownChannel} used by the underlying camel context
+     * to indicate receipt of a shutdown signal.
+     * @return the registered {@link ShutdownChannel} instance.
+     */
+    public ShutdownChannel getShutdownChannel() {
+        return lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class);
     }
 
     /**

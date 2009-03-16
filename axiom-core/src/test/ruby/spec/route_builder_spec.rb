@@ -51,16 +51,34 @@ describe Axiom::Core::SimpleRouteBuilder,
 end
 
 describe Axiom::Core::SimpleRouteBuilder,
-  "when adding headers dynamically with the DSL wrapper method" do
+  "when performing a lookup in the underlying camel spi registry" do
+
+  it "should lookup the registry using the underlying camel context" do
+    mock_registry = org.apache.camel.spi.Registry.new
+    mock_context = org.apache.camel.CamelContext.new
+    mock_context.expects(:registry).once.returns(mock_registry)
+    mock_registry.stubs(:lookup).returns(:expected_response)
+
+    builder = Axiom::Core::SimpleRouteBuilder.new do
+      lookup('foobarbaz')
+    end
+    builder.context = mock_context
+    builder.configure.should eql(:expected_response)
+  end
+
+end
+
+describe Axiom::Core::SimpleRouteBuilder,
+  "when adding multiple headers dynamically with the DSL wrapper method" do
 
   it "should generate a processor instance for calls to set_header" do
-    Axiom::Core::SimpleRouteBuilder.new{}.add_header({}).
+    Axiom::Core::SimpleRouteBuilder.new{}.add_headers({}).
         class.should == Axiom::Core::Processor
   end
 
   it "should not puke if the supplied header values are nil" do
     lambda do
-      Axiom::Core::SimpleRouteBuilder.new{}.add_header(nil)
+      Axiom::Core::SimpleRouteBuilder.new{}.add_headers(nil)
     end.should_not raise_error
   end
 
@@ -78,7 +96,7 @@ describe Axiom::Core::SimpleRouteBuilder,
       mock_message.expects(:set_header).with(k,v).at_least_once
     end
 
-    processor = Axiom::Core::SimpleRouteBuilder.new{}.add_header(new_headers)
+    processor = Axiom::Core::SimpleRouteBuilder.new{}.add_headers(new_headers)
     processor.process(ex)
   end
 

@@ -43,7 +43,24 @@
     <bean id="axiom.configuration"
       scope="singleton"
       factory-bean="axiom.configuration.factory"
-      factory-method="createConfiguration" />
+      factory-method="createConfiguration" />    
+
+    <camel:camelContext id="axiom.camel.host.context.id" useJmx="true">
+        <!-- the package declaration causes camel to scan
+            for bean integration via annotations - we use this to configure the
+            shutdown channel -->
+        <!--<camel:package>org.axiom.service</camel:package>-->        
+    </camel:camelContext>
+
+    <bean id="axiom.shutdown.channel.id"
+          class="org.axiom.service.ShutdownChannel"
+          scope="singleton" />
+
+    <bean id="axiom"
+          class="org.axiom.integration.camel.AxiomComponent">
+        <property name="camelContext" ref="axiom.camel.host.context.id" />
+        <property name="configuration" ref="axiom.configuration" />
+    </bean>
 
     <lang:jruby id="axiom.processors.code.eval.id"
         script-source="classpath:axiom/core/evaluator.rb"
@@ -53,14 +70,15 @@
         script-source="classpath:axiom/core/route_builder_configurator.rb"
         script-interfaces="org.axiom.integration.camel.RouteConfigurationScriptEvaluator">
         <lang:property name="properties" ref="axiom.configuration" />
+        <lang:property name="camelContext" ref="axiom.camel.host.context.id" />
     </lang:jruby>
 
-    <!-- axiom.control.processor.default -->
     <lang:jruby
-        scope="prototype"
+        scope="singleton"
         id="axiom.processors.default.id"
         script-source="classpath:/axiom/core/default_processing_node.rb"
-        script-interfaces="org.apache.camel.Processor" />
+        script-interfaces="org.axiom.integration.camel.ContextProcessingNode" />
+
 
     <!-- lets configure the ActiveMQ JMS broker server to listen on TCP 61616 -->
     <!--<broker:broker useJmx="false" persistent="false" brokerName="localhost">
