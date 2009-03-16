@@ -3,9 +3,9 @@ package org.axiom.systest;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.CamelContext;
-import org.apache.camel.builder.RouteBuilder;
 import org.axiom.integration.Environment;
-import org.axiom.service.*;
+import org.axiom.service.ControlChannel;
+import org.axiom.service.Launcher;
 import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
@@ -30,7 +30,7 @@ public class BootstrappedLaunchSpec extends Specification<Launcher> {
             return launcher = new Launcher();
         }
 
-        private void anotherKindOfTest() throws Exception {
+        /*private void anotherKindOfTest() throws Exception {
             RouteBuilder builder = new RouteBuilder() {
                 @Override public void configure() throws Exception {
                     from("direct:axiomControlChannel").
@@ -44,13 +44,19 @@ public class BootstrappedLaunchSpec extends Specification<Launcher> {
             ShutdownChannel shutdown = camelContext.getRegistry().
                 lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class);
             specify(shutdown.waitShutdown(1000), equal(true));
-        }
+        }*/
 
         public void itShouldRedirectTerminationCallsToTheShutdownChannel() throws Exception {
             ControlChannel channel = launcher.launch(camelContext);
 
             channel.sendShutdownSignal();
             specify(channel.waitShutdown(TEN_SECOND_TIMEOUT), should.equal(true));
+        }
+
+        public void itShouldInterceptScriptCodePassingMessageBodyThroughAnEvaluatorNode() {
+            ControlChannel channel = launcher.launch(camelContext);
+
+            
         }
     }
 

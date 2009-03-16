@@ -13,6 +13,11 @@ import java.util.concurrent.TimeUnit;
 /**
  * Exposes an API for a channel used to indicate
  * shutdown/termination of an axiom control channel context.
+ * <p>
+ * A {@link ShutdownChannel} is always associated with an instance
+ * of a {@link ControlChannel}, the lifecycle of which is bound to
+ * the termination channel exposed via this object.
+ * </p>
  */
 public class ShutdownChannel {
 

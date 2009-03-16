@@ -46,12 +46,12 @@ route {
     process(add_header "payload-classifier" => 'code').proceed
 
   intercept(header('payload-classifier').isEqualTo('code')).
-    processRef(config >> Environment.ROUTE_SCRIPT_EVALUATOR).proceed
+    processRef(Environment.ROUTE_SCRIPT_EVALUATOR).proceed
 
   # TODO: this implementation is badly broken - change it to use an axiom component instead
   # that processRef has no CamelContext associated with it, for example
   from(control_channel).
-    processRef(config >> Environment.DEFAULT_PROCESSOR).
+    processRef(Environment.DEFAULT_PROCESSOR).
       proceed.choice.
         when(header("signal").isEqualTo("terminate")).
           to(config >> Environment.TERMINATION_CHANNEL).

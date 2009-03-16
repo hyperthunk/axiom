@@ -33,5 +33,7 @@ import org.axiom.integration.Environment
 route {
   from(Environment::CONTROL_CHANNEL).choice.
     when(header(Environment::SIGNAL).isEqualTo(Environment::SIG_TERMINATE)).
-      to(Environment::TERMINATION_CHANNEL)
+      to(Environment::TERMINATION_CHANNEL).
+    when(header(Environment::PAYLOAD_CLASSIFIER).isEqualTo('code')).
+      to(Environment::ROUTE_SCRIPT_EVALUATOR)
 }

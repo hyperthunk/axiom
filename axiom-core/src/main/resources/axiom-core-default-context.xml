@@ -36,37 +36,43 @@
         http://activemq.apache.org/camel/schema/spring http://activemq.apache.org/camel/schema/spring/camel-spring.xsd
         http://activemq.apache.org/schema/core http://activemq.apache.org/schema/core/activemq-core-5.1.0.xsd http://www.springframework.org/schema/lang http://www.springframework.org/schema/lang/spring-lang-2.0.xsd">
 
-    <bean scope="singleton"
-          class="org.axiom.configuration.ExternalConfigurationSourceFactory"
-          id="axiom.configuration.factory" />
+    <bean
+        scope="singleton"
+        class="org.axiom.configuration.ExternalConfigurationSourceFactory"
+        id="axiom.configuration.factory" />
 
-    <bean id="axiom.configuration"
-      scope="singleton"
-      factory-bean="axiom.configuration.factory"
-      factory-method="createConfiguration" />    
+    <bean
+        id="axiom.configuration"
+        scope="singleton"
+        factory-bean="axiom.configuration.factory"
+        factory-method="createConfiguration" />
 
-    <camel:camelContext id="axiom.camel.host.context.id" useJmx="true">
-        <!-- the package declaration causes camel to scan
-            for bean integration via annotations - we use this to configure the
-            shutdown channel -->
-        <!--<camel:package>org.axiom.service</camel:package>-->        
-    </camel:camelContext>
+    <camel:camelContext
+        id="axiom.camel.host.context.id"
+        useJmx="true" />
 
-    <bean id="axiom.shutdown.channel.id"
-          class="org.axiom.service.ShutdownChannel"
-          scope="singleton" />
+    <bean
+        id="axiom.shutdown.channel.id"
+        scope="prototype"
+        class="org.axiom.service.ShutdownChannel" />
 
-    <bean id="axiom"
-          class="org.axiom.integration.camel.AxiomComponent">
+    <bean
+        id="axiom"
+        scope="prototype"
+        class="org.axiom.integration.camel.AxiomComponent">
         <property name="camelContext" ref="axiom.camel.host.context.id" />
         <property name="configuration" ref="axiom.configuration" />
     </bean>
 
-    <lang:jruby id="axiom.processors.code.eval.id"
+    <lang:jruby
+        scope="prototype"
+        id="axiom.processors.code.eval.id"
         script-source="classpath:axiom/core/evaluator.rb"
         script-interfaces="org.axiom.integration.jruby.JRubyScriptEvaluator" />
 
-    <lang:jruby id="axiom.processors.route.evaluator.id"
+    <lang:jruby
+        scope="prototype"
+        id="axiom.processors.route.evaluator.id"
         script-source="classpath:axiom/core/route_builder_configurator.rb"
         script-interfaces="org.axiom.integration.camel.RouteConfigurationScriptEvaluator">
         <lang:property name="properties" ref="axiom.configuration" />
@@ -74,7 +80,7 @@
     </lang:jruby>
 
     <lang:jruby
-        scope="singleton"
+        scope="prototype"
         id="axiom.processors.default.id"
         script-source="classpath:/axiom/core/default_processing_node.rb"
         script-interfaces="org.axiom.integration.camel.ContextProcessingNode" />

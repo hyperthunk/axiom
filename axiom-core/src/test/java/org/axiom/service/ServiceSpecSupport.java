@@ -77,7 +77,7 @@ public class ServiceSpecSupport extends SpecSupport {
         mockContext = mock(mockery, CamelContext.class);
         mockConfig = mock(mockery, Configuration.class);
         mockRegistry = mock(mockery, Registry.class);
-        mockTracer = mock(mockery, Tracer.class);
+        mockTracer = mock(mockery, Tracer.class);        
     }
 
     protected <T> T mock(final Mockery mockery, final Class<T> classToMock) {

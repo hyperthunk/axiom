@@ -50,9 +50,14 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
     public class WhenBootstrappingTheControlChannel extends ServiceSpecSupport {
 
         private ControlChannel channel;
+        private ShutdownChannel shutdownChannel;
 
-        public ControlChannelBootstrapper create() {
+        public ControlChannelBootstrapper create() throws ClassNotFoundException {
             prepareMocks(mockery());
+            stubRegistry();
+            shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            checking(this);
             channel = new ControlChannel(mockContext);
 
             allowing(mockContext).getName();

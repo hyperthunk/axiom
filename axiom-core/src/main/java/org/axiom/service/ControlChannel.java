@@ -122,6 +122,7 @@ public class ControlChannel {
     private final Tracer tracer;
 
     private Configuration config;
+    private final ShutdownChannel shutdownChannel;
 
     public ControlChannel(final CamelContext hostContext) {
         this(hostContext, getTracer(hostContext));
@@ -132,6 +133,8 @@ public class ControlChannel {
         notNull(tracer, "Tracer cannot be null.");
         this.tracer = tracer;
         this.hostContext = hostContext;
+        this.shutdownChannel =
+            lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class);
     }
 
     private static Tracer getTracer(final CamelContext context) {
@@ -259,7 +262,7 @@ public class ControlChannel {
      * Waits for the 'shutdown channel' to receive a 'shutdown' signal.
      * This is a blocking call: the calling thread will wait indefinitely
      * until a 'shutdown' signal arrived. 
-     * @exception LifecycleException propagated from {@link ShutdownChannel#waitShutdown()}. 
+     * @exception LifecycleException Thrown in the case of shutdown failure 
      */
     public void waitShutdown() {
         getShutdownChannel().waitShutdown();
@@ -274,7 +277,7 @@ public class ControlChannel {
      * an exception is also thrown.
      *
      * @param timeout The number of milliseconds to wait before raising an exception.
-     * @exception LifecycleException Thrown if the shutdown channel is not ready
+     * @exception LifecycleException Thrown if the shutdown channel encounters an error
      * @return {@code true} if the shutdown occured within the specified timeout, otherwise {@code false}.
      */
     public boolean waitShutdown(final long timeout) {
@@ -297,8 +300,8 @@ public class ControlChannel {
      * to indicate receipt of a shutdown signal.
      * @return the registered {@link ShutdownChannel} instance.
      */
-    public ShutdownChannel getShutdownChannel() {
-        return lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class);
+    ShutdownChannel getShutdownChannel() {
+        return shutdownChannel;
     }
 
     /**

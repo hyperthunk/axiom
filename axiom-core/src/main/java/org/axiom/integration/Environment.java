@@ -33,8 +33,8 @@ import org.apache.commons.configuration.Configuration;
 import org.apache.commons.io.FileUtils;
 import static org.apache.commons.io.FileUtils.*;
 import org.apache.commons.lang.StringUtils;
-import org.axiom.service.ShutdownChannel;
 import org.axiom.integration.camel.AxiomComponent;
+import org.axiom.service.ControlChannel;
 
 import java.io.File;
 import java.io.IOException;
@@ -81,7 +81,7 @@ public class Environment {
      */
     public static final String SCRIPT_FILE_EXTENSIONS = "axiom.scripts.file.extensions";
 
-/**
+    /**
      * The uri of the {@link AxiomComponent} in which axiom is being hosted,
      * which can be used to obtain an endpoint and/or exchange.
      */
@@ -131,17 +131,20 @@ public class Environment {
     public static final String SIG_CONFIGURE = "configure";
 
     /**
+     * The payload classifier header tag.
+     */
+    public static final String PAYLOAD_CLASSIFIER = "payload-classifier";
+
+    /**
      * The uri on which the (camel) termination channel resides.
      * Messages to this channel are an indication that system shutdown has been
-     * requested by a consumer. Application clients can use the {@link ShutdownChannel}
-     * class to interact with this channel, the default instance of which is available
-     * in the camel {@link Registry} under the id specified by
-     * {@code Environment.SHUTDOWN_CHANNEL_ID}. 
+     * requested by a consumer. Application clients can use the {@link ControlChannel#waitShutdown}
+     * methods to interact with this channel.
      */
     public static final String TERMINATION_CHANNEL = "direct:axiomShutdownChannel";
 
     /**
-     * The id of the default {@link ShutdownChannel} bean as registered with
+     * The bean id of the {@code ShutdownChannel} prototype as registered with
      * the host {@link CamelContext}s {@link Registry}.
      */
     public static final String SHUTDOWN_CHANNEL_ID = "axiom.shutdown.channel.id";

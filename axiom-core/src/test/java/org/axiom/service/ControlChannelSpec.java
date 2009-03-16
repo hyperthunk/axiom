@@ -38,6 +38,7 @@ import org.apache.camel.impl.DefaultProducerTemplate;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import static org.axiom.integration.Environment.*;
+import org.axiom.integration.Environment;
 import org.junit.runner.RunWith;
 
 @SuppressWarnings({"ThrowableInstanceNeverThrown", "unchecked"})
@@ -46,6 +47,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     private RouteLoader loader = mock(RouteLoader.class);
     private ControlChannel channel;
+    private ShutdownChannel shutdownChannel;
 
     public class WhenInitializingNewInstances extends ServiceSpecSupport {
         
@@ -69,8 +71,12 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     public class WhenConsumingServicesViaTheChannel extends ServiceSpecSupport {
 
-        public ControlChannel create() {
+        public ControlChannel create() throws ClassNotFoundException {
             prepareMocks(mockery());
+            stubRegistry();
+            shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            checking(this);
             return channel = new ControlChannel(mockContext, dummy(Tracer.class));
         }
 
@@ -86,7 +92,6 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldLocateTheConfigurationInstanceAndCacheItForFutureUse() throws Throwable {
-            stubRegistry();
             one(mockRegistry).lookup(CONFIG_BEAN, Configuration.class);
             will(returnValue(mockConfig));
             checking(this);
@@ -104,7 +109,6 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
                 mock(mockery(), DefaultProducerTemplate.class);
             final RouteBuilder builder = dummy(RouteBuilder.class);
 
-            stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockTemplate));
@@ -117,7 +121,6 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldPullTheRouteBuilderInsteadOfLoadingRoutes() {
-            stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
             allowing(mockContext).createProducerTemplate();
             will(returnValue(dummy(ProducerTemplate.class)));
@@ -132,7 +135,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public void itShouldSetWaitTimeoutIfOneIsSupplied() throws Exception {
             final long timeout = 1000;
-            final ShutdownChannel shutdownChannel = prepForWait();
+            prepForWait();
             one(shutdownChannel).waitShutdown(timeout);
             will(returnValue(true));
 
@@ -144,7 +147,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
         public void itShouldReturnFalseIfShutdownDidNotOccurInTimelyManner() throws Exception {
             final long timeout = 10;
-            final ShutdownChannel shutdownChannel = prepForWait();
+            prepForWait();
             allowing(shutdownChannel).waitShutdown(timeout);
             will(returnValue(false));
 
@@ -158,7 +161,6 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             final ProducerTemplate mockProducer =
                 mock(mockery(), ProducerTemplate.class);
 
-            stubRegistry();
             stubConfiguration(mockContext, mockRegistry, mockConfig);
             allowing(mockContext).createProducerTemplate();
             will(returnValue(mockProducer));
@@ -171,7 +173,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldProvideWaitHookForGracefulTermination() throws Exception {
-            final ShutdownChannel shutdownChannel = prepForWait();
+            prepForWait();
             final ProducerTemplate mockProducer =
                 mock(mockery(), ProducerTemplate.class);
 
@@ -187,7 +189,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         }
 
         public void itShouldProvideWaitHookWithTimeoutForGracefulTermination() throws Exception {
-            final ShutdownChannel shutdownChannel = prepForWait();
+            prepForWait();
             final ProducerTemplate mockProducer =
                 mock(mockery(), ProducerTemplate.class);
             final long timeout = 1000;
@@ -205,20 +207,21 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             channel.sendShutdownSignalAndWait(timeout);
         }
 
-        private ShutdownChannel prepForWait() throws Exception {
-            stubRegistry();
+        private void prepForWait() throws Exception {
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            final ShutdownChannel shutdownChannel = mock(mockery(), ShutdownChannel.class);
             stubLookup(SHUTDOWN_CHANNEL_ID, shutdownChannel);
-            return shutdownChannel;
         }
 
     }
 
     public class WhenLoadingRoutesAndAddingThenToTheChannel extends ServiceSpecSupport {
 
-        public ControlChannel create() {
-            mockContext = mock(mockery(), CamelContext.class);
+        public ControlChannel create() throws ClassNotFoundException {
+            prepareMocks(mockery());
+            stubRegistry();
+            shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            checking(this);
             return channel =
                 new ControlChannel(mockContext, dummy(Tracer.class, "dummy-trace"));
         }
@@ -258,8 +261,12 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     public class WhenConfiguringTheChannel extends ServiceSpecSupport {
 
-        public ControlChannel create() {
+        public ControlChannel create() throws ClassNotFoundException {
             prepareMocks(mockery());
+            stubRegistry();
+            shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            checking(this);
             return channel = new ControlChannel(mockContext, mockTracer);
         }
 
@@ -295,8 +302,12 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     public class WhenStartingTheChannel extends ServiceSpecSupport {
 
-        public ControlChannel create() {
+        public ControlChannel create() throws ClassNotFoundException {
             prepareMocks(mockery());
+            stubRegistry();
+            shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            checking(this);
             return channel = new ControlChannel(mockContext, mockTracer);
         }
 
@@ -339,8 +350,12 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
     public class WhenStoppingTheCamelContext extends ServiceSpecSupport {
 
-        public ControlChannel create() {
+        public ControlChannel create() throws ClassNotFoundException {
             prepareMocks(mockery());
+            stubRegistry();
+            shutdownChannel = mock(mockery(), ShutdownChannel.class);
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            checking(this);
             return channel = new ControlChannel(mockContext, mockTracer);
         }
 
