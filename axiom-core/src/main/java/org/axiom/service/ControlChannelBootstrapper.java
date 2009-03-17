@@ -31,10 +31,12 @@ package org.axiom.service;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
+import org.axiom.integration.Environment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Iterator;
+import static java.text.MessageFormat.format;
 
 /**
  * Provides a means of bootstrapping a {@link ControlChannel} with its
@@ -74,6 +76,11 @@ public class ControlChannelBootstrapper {
         notNull(channel, "Control channel cannot be null.");
 
         final Configuration config = channel.getConfig();
+        if (config == null) {
+            throw new LifecycleException(format(
+                "Context Registry is incorrectly configured: bean for id {0} is not present.",
+                Environment.CONFIG_BEAN));
+        }
         final RouteConfigurationScriptEvaluator evaluator =
             channel.getRouteScriptEvaluator();
 

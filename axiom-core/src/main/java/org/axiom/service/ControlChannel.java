@@ -39,7 +39,6 @@ import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.text.MessageFormat;
 import java.rmi.registry.Registry;
 
 /**
@@ -122,28 +121,34 @@ public class ControlChannel {
     private final Tracer tracer;
 
     private Configuration config;
-    private final ShutdownChannel shutdownChannel;
+    private ShutdownChannel shutdownChannel;
 
     public ControlChannel(final CamelContext hostContext) {
-        this(hostContext, getTracer(hostContext));
+        this(hostContext, new Tracer());
     }
 
     public ControlChannel(final CamelContext hostContext, final Tracer tracer) {
-        notNull(hostContext, "Camel context cannot be null.");
-        notNull(tracer, "Tracer cannot be null.");
-        this.tracer = tracer;
-        this.hostContext = hostContext;
-        this.shutdownChannel =
-            lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class);
+        this(hostContext, tracer, getRegisteredConfiguration(hostContext));
     }
 
-    private static Tracer getTracer(final CamelContext context) {
-        Tracer tracer = Tracer.getTracer(context);
-        if (tracer == null) {
-            return new Tracer();
-        } else {
-            return tracer;
-        }
+    public ControlChannel(final CamelContext hostContext,
+        final Tracer tracer, final Configuration config) {
+        this(hostContext, tracer, config,
+            hostContext.
+                getRegistry().
+                lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class));
+    }
+
+    public ControlChannel(final CamelContext hostContext, final Tracer tracer,
+        final Configuration config, final ShutdownChannel shutdownChannel) {
+        notNull(hostContext, "Camel context cannot be null.");
+        notNull(tracer, "Tracer cannot be null.");
+        notNull(config, "Configuration cannot be null.");
+        notNull(shutdownChannel, "Shutdown Channel cannot be null.");
+        this.hostContext = hostContext;
+        this.tracer = tracer;
+        this.config = config;
+        this.shutdownChannel = shutdownChannel;
     }
 
     /**
@@ -199,11 +204,12 @@ public class ControlChannel {
         try {
             log.info("Activating control channel.");
             final CamelContext context = getContext();
-            Configuration config = getRegisteredConfiguration(context);
 
-            log.info("Configuring tracer for {}.", context.getName());
-            TraceBuilder builder = new TraceBuilder(config, tracer);
+            log.info("Configuring trace interceptor for {}.", context.getName());
+            TraceBuilder builder = new TraceBuilder(getConfig(), tracer);
             context.addInterceptStrategy(builder.build());
+
+            log.debug("Starting underlying camel context.");
             context.start();
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
@@ -252,6 +258,7 @@ public class ControlChannel {
      * the supplied {@code timeout}.
      *
      * @param timeout The timeout to set when waiting for shutdown.
+     * @return The result of {@link ControlChannel#waitShutdown(long)}. 
      */
     public boolean sendShutdownSignalAndWait(final long timeout) {
         sendShutdownSignal();
@@ -296,6 +303,19 @@ public class ControlChannel {
     }
 
     /**
+     * Looks up a service in the registry underlying the backing {@link CamelContext},
+     * returning the service or null if it could not be found.
+     * @param key The registered name of the service
+     * @param clazz The expected type of the service instance
+     * @param <T>
+     * @return A service/object of the requisite type, or {@code null} if no registered
+     * instance(s) match the supplied {@code key}.
+     */
+    public <T> T lookup(final String key, Class<T> clazz) {
+        return getContext().getRegistry().lookup(key, clazz);
+    }
+
+    /**
      * Exposes the {@link ShutdownChannel} used by the underlying camel context
      * to indicate receipt of a shutdown signal.
      * @return the registered {@link ShutdownChannel} instance.
@@ -334,31 +354,10 @@ public class ControlChannel {
     }
 
     /**
-     * Looks up a service in the registry underlying the backing {@link CamelContext},
-     * returning the service or null if it could not be found.
-     * @param key The registered name of the service
-     * @param clazz The expected type of the service instance
-     * @param <T>
-     * @return A service/object of the requisite type, or {@code null} if no registered
-     * instance(s) match the supplied {@code key}.
+     * Gets the {@link Configuration} instance associated with this.
+     * @return
      */
-    public <T> T lookup(final String key, Class<T> clazz) {
-        return getContext().getRegistry().lookup(key, clazz);
-    }
-
     public Configuration getConfig() {
-        //TODO: consider whether lazy init is really needed here!?
-        //NB: configuration instance is a singleton so potential
-        //    overwrite stomping due to concurrent access isn't going to cause any issues
-        if (config == null) {
-            config = getRegisteredConfiguration(hostContext);
-            if (config == null) {
-                throw new LifecycleException(MessageFormat.format(
-                    "Context Registry is incorrectly configured: bean for id {0} is not present.",
-                    Environment.CONFIG_BEAN
-                ));
-            }
-        }
         return config;
     }
 

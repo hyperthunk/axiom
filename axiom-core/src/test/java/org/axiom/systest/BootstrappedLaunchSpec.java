@@ -3,6 +3,8 @@ package org.axiom.systest;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.CamelContext;
+import org.apache.commons.configuration.Configuration;
+import static org.axiom.configuration.ExternalConfigurationSourceFactory.*;
 import org.axiom.integration.Environment;
 import org.axiom.service.ControlChannel;
 import org.axiom.service.Launcher;
@@ -54,9 +56,14 @@ public class BootstrappedLaunchSpec extends Specification<Launcher> {
         }
 
         public void itShouldInterceptScriptCodePassingMessageBodyThroughAnEvaluatorNode() {
-            ControlChannel channel = launcher.launch(camelContext);
-
-            
+            System.setProperty("axiom.configuration.externals",
+                "bootstrapped.launch.spec.properties");
+            try {
+                Configuration config = getRegisteredConfiguration(camelContext);
+                ControlChannel channel = launcher.launch(camelContext);
+            } finally {
+                System.clearProperty("axiom.configuration.externals");
+            }
         }
     }
 

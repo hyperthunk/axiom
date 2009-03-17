@@ -32,7 +32,6 @@ import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.commons.configuration.Configuration;
 import org.axiom.integration.Environment;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.junit.runner.RunWith;
@@ -55,6 +54,7 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
         public ControlChannelBootstrapper create() throws ClassNotFoundException {
             prepareMocks(mockery());
             stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
             shutdownChannel = mock(mockery(), ShutdownChannel.class);
             stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
@@ -74,9 +74,8 @@ public class ControlChannelBootstrapperSpec extends Specification<ControlChannel
         }
 
         public void itShouldPukeIfTheRegistryIsIncorrectlyConfigured() {
-            stubRegistry();
-            allowing(mockRegistry).lookup(with(any(String.class)),
-                with(equal(Configuration.class)));
+            channel = mock(mockery(), ControlChannel.class);
+            allowing(channel).getConfig();
             will(returnValue(null));
             checking(this);
 

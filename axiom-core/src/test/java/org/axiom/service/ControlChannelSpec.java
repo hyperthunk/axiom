@@ -33,12 +33,11 @@ import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.*;
 import org.apache.camel.builder.RouteBuilder;
-import org.apache.camel.impl.DefaultCamelContext;
 import org.apache.camel.impl.DefaultProducerTemplate;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
-import static org.axiom.integration.Environment.*;
 import org.axiom.integration.Environment;
+import static org.axiom.integration.Environment.*;
 import org.junit.runner.RunWith;
 
 @SuppressWarnings({"ThrowableInstanceNeverThrown", "unchecked"})
@@ -54,14 +53,32 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldPukeIfTheTracerOrContextInstanceIsMissing() {
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    new ControlChannel(null, dummy(Tracer.class));
+                    new ControlChannel(null, dummy(Tracer.class),
+                        dummy(Configuration.class), dummy(ShutdownChannel.class));
                 }
             },
             should.raise(IllegalArgumentException.class));
 
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    new ControlChannel(dummy(CamelContext.class), null);
+                    new ControlChannel(dummy(CamelContext.class), null,
+                        dummy(Configuration.class), dummy(ShutdownChannel.class));
+                }
+            },
+            should.raise(IllegalArgumentException.class));
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    new ControlChannel(dummy(CamelContext.class), dummy(Tracer.class),
+                        null, dummy(ShutdownChannel.class));
+                }
+            },
+            should.raise(IllegalArgumentException.class));
+
+            specify(new Block() {
+                @Override public void run() throws Throwable {
+                    new ControlChannel(dummy(CamelContext.class), dummy(Tracer.class),
+                        dummy(Configuration.class), null);
                 }
             },
             should.raise(IllegalArgumentException.class));
@@ -77,7 +94,8 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             shutdownChannel = mock(mockery(), ShutdownChannel.class);
             stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
-            return channel = new ControlChannel(mockContext, dummy(Tracer.class));
+            return channel = new ControlChannel(mockContext,
+                dummy(Tracer.class), mockConfig, shutdownChannel);
         }
 
         public void itShouldPerformLookupsOnBehalfOfTheConsumer() throws ClassNotFoundException {
@@ -94,10 +112,14 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public void itShouldLocateTheConfigurationInstanceAndCacheItForFutureUse() throws Throwable {
             one(mockRegistry).lookup(CONFIG_BEAN, Configuration.class);
             will(returnValue(mockConfig));
+            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
 
+            final ControlChannel altChannel = new ControlChannel(mockContext);
             final Block lookup = new Block() {
-                @Override public void run() throws Throwable { channel.getConfig(); }
+                @Override public void run() throws Throwable {
+                    altChannel.getConfig();
+                }
             };
 
             specify(repeat(lookup, times(2)), should.not().raiseAnyException());
@@ -223,13 +245,14 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
             return channel =
-                new ControlChannel(mockContext, dummy(Tracer.class, "dummy-trace"));
+                new ControlChannel(mockContext,
+                    dummy(Tracer.class, "dummy-trace"), mockConfig);
         }
 
         public void itShouldPukeIfTheSuppliedLoaderIsNull() {
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    new ControlChannel(mockContext).load(null);
+                    channel.load(null);
                 }
             }, should.raise(IllegalArgumentException.class));            
         }
@@ -240,7 +263,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             justIgnore(mockContext);
             checking(this);
 
-            new ControlChannel(mockContext).load(loader);
+            channel.load(loader);
         }
 
         public void itShouldWrapCheckedExceptionsWithRuntime() throws Exception {
@@ -252,7 +275,7 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
 
             specify(new Block() {
                 @Override public void run() throws Throwable {
-                    new ControlChannel(mockContext).load(loader);
+                    channel.load(loader);
                 }
             }, should.raise(LifecycleException.class));
         }
@@ -267,20 +290,8 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             shutdownChannel = mock(mockery(), ShutdownChannel.class);
             stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
-            return channel = new ControlChannel(mockContext, mockTracer);
-        }
-
-        public void itShouldAttemptObtainingTracerInstanceFromTheContextInitially() {
-            DefaultCamelContext context = new DefaultCamelContext();
-            context.addInterceptStrategy(mockTracer);
-            ControlChannel channel = new ControlChannel(context);
-
-            specify(channel.getTracer(), same(mockTracer));
-        }
-
-        public void itShouldCreateNewTracerInstanceIfNoneIsPresent() {
-            final ControlChannel channel = new ControlChannel(new DefaultCamelContext());
-            specify(channel.getTracer(), isNotNull());
+            return channel = new ControlChannel(mockContext,
+                mockTracer, mockConfig);
         }
 
         @SuppressWarnings({"unchecked"})
@@ -305,17 +316,19 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
         public ControlChannel create() throws ClassNotFoundException {
             prepareMocks(mockery());
             stubRegistry();
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
             shutdownChannel = mock(mockery(), ShutdownChannel.class);
             stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
-            return channel = new ControlChannel(mockContext, mockTracer);
+            return channel = new ControlChannel(mockContext,
+                mockTracer, mockConfig, shutdownChannel);
         }
 
-        public void itShouldWrapAnyRegistryLookupExceptions() {
-            allowing(mockContext).getRegistry();
-            will(returnValue(mockRegistry));
-            allowing(mockRegistry).lookup(with(any(String.class)), with(any(Class.class)));
+        public void itShouldWrapAnyRegistryLookupExceptions() throws Exception {
+            allowing(mockContext).getName();
+            allowing(mockContext).start();
             will(throwException(new RuntimeException()));
+            justIgnore(mockContext, mockTracer, mockConfig, shutdownChannel);
             checking(this);
             
             specify(new Block() {
@@ -354,9 +367,10 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
             prepareMocks(mockery());
             stubRegistry();
             shutdownChannel = mock(mockery(), ShutdownChannel.class);
-            stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
+            //stubLookup(Environment.SHUTDOWN_CHANNEL_ID, shutdownChannel);
             checking(this);
-            return channel = new ControlChannel(mockContext, mockTracer);
+            return channel = new ControlChannel(mockContext,
+                mockTracer, mockConfig, shutdownChannel);
         }
 
         public void itShouldStopTheUnderlyingContext() throws Exception {

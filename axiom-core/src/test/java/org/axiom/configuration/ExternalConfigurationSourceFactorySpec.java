@@ -62,6 +62,17 @@ public class ExternalConfigurationSourceFactorySpec
             specify(config.getProperty(key), should.equal(expectedValue));
         }
 
+        public void itShouldPreferUserDefinedPropertiesToDefaultOnes() {
+            final String sysKey = ExternalConfigurationSourceFactory.AXIOM_CONFIGURATION_EXTERNALS;
+            System.setProperty(sysKey, "another.axiom.properties");
+
+            //axiom.test.properties contains axiom.test.overridden=foobarbaz
+            //another.axiom.properties contains axiom.test.overridden=overriden
+            final Configuration config = factory.createConfiguration();
+            final String expectedValue = "overriden";
+            specify(config.getString("axiom.test.overridden"), equal(expectedValue));
+        }
+
         public void itShouldAddExternalPropertiesInCascadingOrder() throws ConfigurationException {
             final String sysKey = ExternalConfigurationSourceFactory.AXIOM_CONFIGURATION_EXTERNALS;
             System.setProperty(sysKey,
@@ -75,17 +86,6 @@ public class ExternalConfigurationSourceFactorySpec
             specify(config.getString("axiom.test.foo"), equal(expectedValue));
         }
 
-        public void itShouldPreferUserDefinedPropertiesToDefaultOnes() {
-            final String sysKey = ExternalConfigurationSourceFactory.AXIOM_CONFIGURATION_EXTERNALS;
-            System.setProperty(sysKey, "another.axiom.properties");
-
-            //axiom.test.properties contains axiom.test.overridden=foobarbaz
-            //another.axiom.properties contains axiom.test.overridden=overriden
-            final Configuration config = factory.createConfiguration();
-            final String expectedValue = "overriden";
-            specify(config.getString("axiom.test.overridden"), equal(expectedValue));
-        }
-
         public void itShouldWrapConfigurationExceptionsInFatalRuntimeErrors() throws Exception{
             specify(new Block() {
                 @Override public void run() throws Throwable {
@@ -95,43 +95,5 @@ public class ExternalConfigurationSourceFactorySpec
         }
 
     }
-
-    //TODO: re-introduce these???
-
-    /*@Test
-    public void cascadingConfigurationSetupPrefersSystemConfig() throws ConfigurationException {
-        final String key = "axiom.control.channel.in";
-        System.setProperty(key, "direct:control-channel");
-
-        final ExternalConfigurationSourceFactory factory =
-            new ExternalConfigurationSourceFactory("axiom.test.properties");
-        //axiom.test.properties contains axiom.control.channel.in=direct:start
-
-        final Configuration config = factory.createConfiguration();
-        final String expectedValue = "direct:control-channel";
-        assertThat(String.valueOf(config.getProperty(key)),
-            equal(expectedValue));
-    }
-
-    @Test
-    public void cascadingConfigurationAddsExternalPropertiesInCascadingOrder() throws ConfigurationException {
-        final String sysKey = "axiom.configuration.externals";
-        System.setProperty(sysKey,
-                StringUtils.join(new Object[]{
-                        "yet.another.axiom.properties",
-                        "another.axiom.properties"
-                }, File.pathSeparator));
-
-        final ExternalConfigurationSourceFactory factory =
-            new ExternalConfigurationSourceFactory("axiom.test.properties");
-        
-        final Configuration config = factory.createConfiguration();
-        final String expectedValue = "yet-another-foo";
-        assertThat(config.getString("axiom.test.foo"), equal(expectedValue));
-    }
-
-    @Test(expected = RuntimeException.class)
-    public void configurationExceptionsResultInFatalRuntimeErrors() {
-        new ExternalConfigurationSourceFactory("no-such-file-name").createConfiguration();
-    }*/
+    
 }
