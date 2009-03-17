@@ -25,46 +25,18 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import org.apache.camel.CamelContext
-import org.apache.camel.Exchange
-import org.apache.camel.Message
-import java.util.List
+require 'axiom'
 
-require 'axiom/core/route_builder'
-require 'axiom/core/default_processing_node'
+import org.slf4j.Logger
 
-describe Axiom::Core::DefaultProcessingNode,
-  "when interacting with a subordinate context via the control channel" do
+describe "Utilizing the Kernel.logger mixin method" do
 
-  [:start, :stop].each do |instruction|
-    it "should #{instruction} the camel context when the relevant header is supplied" do
-      context = CamelContext.new
-      context.expects(instruction).once
-
-      # first message is a dud, second one says stop...
-      # same stub will do for both cases, as well as for the header values
-      mock_channel = Message.new
-      mock_channel.stubs(:getHeader).returns "test", instruction.to_s
-
-      processor = Axiom::Core::DefaultProcessingNode.new
-      processor.context = context
-      2.times { processor.process(stubbed_exchange mock_channel) }
+  it "should magically create a logger instance for you" do
+    class Foo
     end
-  end
-
-  it "should configure the camel context when routes are supplied" do
-    context = CamelContext.new
-    context.expects(:addRoutes).once.with do |x|
-      x.is_a? org.apache.camel.builder.RouteBuilder
-    end  
-
-    mock_channel = Message.new
-    mock_channel.stubs(:getHeader).returns "configure"
-    mock_channel.stubs(:body).returns Axiom::Core::SimpleRouteBuilder.new {}
-
-    processor = Axiom::Core::DefaultProcessingNode.new
-    processor.context = context
-    processor.process(stubbed_exchange mock_channel)
+    foo = Foo.new
+    foo.logger.should respond_to(:debug)
+    foo.logger.debug "MESSAGE FROM FOO"
   end
 
 end

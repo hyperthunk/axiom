@@ -32,7 +32,8 @@ require 'axiom/plugins'
 module Kernel
 
   def logger
-    @logger ||= org.slf4j.LoggerFactory.get_logger self.class.name
+    @logger ||= org.slf4j.LoggerFactory.getLogger("org.axiom.#{self.class.name}")
+    @logger
   end
 
 end

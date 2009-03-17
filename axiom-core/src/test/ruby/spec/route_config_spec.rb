@@ -25,46 +25,55 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import org.apache.camel.CamelContext
+require 'axiom'
+require 'axiom/plugins'
+require 'axiom/plugins/route_config'
+
 import org.apache.camel.Exchange
 import org.apache.camel.Message
-import java.util.List
+import org.axiom.integration.Environment
+import org.axiom.integration.camel.RouteConfigurationScriptEvaluator
 
-require 'axiom/core/route_builder'
-require 'axiom/core/default_processing_node'
+describe "The built in route_config plugin" do
 
-describe Axiom::Core::DefaultProcessingNode,
-  "when interacting with a subordinate context via the control channel" do
+  include Axiom::Plugins
 
-  [:start, :stop].each do |instruction|
-    it "should #{instruction} the camel context when the relevant header is supplied" do
-      context = CamelContext.new
-      context.expects(instruction).once
-
-      # first message is a dud, second one says stop...
-      # same stub will do for both cases, as well as for the header values
-      mock_channel = Message.new
-      mock_channel.stubs(:getHeader).returns "test", instruction.to_s
-
-      processor = Axiom::Core::DefaultProcessingNode.new
-      processor.context = context
-      2.times { processor.process(stubbed_exchange mock_channel) }
-    end
+  it "should return a processor implementation" do
+    processor = route_config mock()
+    processor.should be_instance_of(Axiom::Core::Processor)
   end
 
-  it "should configure the camel context when routes are supplied" do
-    context = CamelContext.new
-    context.expects(:addRoutes).once.with do |x|
-      x.is_a? org.apache.camel.builder.RouteBuilder
-    end  
+  it "should puke if the required configurator is missing" do
+    lambda {
+      route_config nil
+    }.should raise_error 
+  end
 
-    mock_channel = Message.new
-    mock_channel.stubs(:getHeader).returns "configure"
-    mock_channel.stubs(:body).returns Axiom::Core::SimpleRouteBuilder.new {}
+  it "should pull the body from the input channel and pass it to the configurator" do
+    body = 'BODY'
+    configurator = RouteConfigurationScriptEvaluator.new 
+    configurator.expects(:configure).once.with(body)
 
-    processor = Axiom::Core::DefaultProcessingNode.new
-    processor.context = context
-    processor.process(stubbed_exchange mock_channel)
+    route_config(configurator).
+      process(
+        stub 'exchange-stub',
+          :getIn => stub('in_channel', :body => body),
+          :getOut => stub('out_channel', :body= => nil, :set_header => nil)
+      )
+  end
+
+  it "should set the configure signal header on the output channel" do
+    out_channel = Message.new
+    out_channel.stubs(:body=)
+    out_channel.expects(:set_header).once.with(
+        Environment::SIGNAL, Environment::SIG_CONFIGURE)
+
+    route_config(stub 'configurator', :configure => nil).
+      process(
+        stub 'exchange-stub',
+          :getIn => stub('in_channel', :body => 'BODY'),
+          :getOut => out_channel
+      )
   end
 
 end

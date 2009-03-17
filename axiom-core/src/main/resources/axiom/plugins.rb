@@ -26,3 +26,4 @@
 #
 
 require 'axiom/plugins/builder'
+require 'axiom/plugins/route_config'

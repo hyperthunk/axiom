@@ -83,7 +83,9 @@
         scope="prototype"
         id="axiom.processors.default.id"
         script-source="classpath:/axiom/core/default_processing_node.rb"
-        script-interfaces="org.axiom.integration.camel.ContextProcessingNode" />
+        script-interfaces="org.axiom.integration.camel.ContextProcessingNode">
+        <lang:property name="context" ref="axiom.camel.host.context.id" />
+    </lang:jruby>
 
 
     <!-- lets configure the ActiveMQ JMS broker server to listen on TCP 61616 -->

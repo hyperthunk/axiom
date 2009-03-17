@@ -25,7 +25,9 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'axiom'
 require 'axiom/core/processor'
+import org.axiom.integration.Environment
 
 module Axiom
   module Core
@@ -40,26 +42,33 @@ module Axiom
       alias getContext context
       alias setContext context=
 
-      def process(exchange)
+      def process exchange
+        logger.debug "Processing exchange #{exchange}"
         in_channel = exchange.getIn
-        command = in_channel.getHeader("signal").to_s.downcase.to_sym
-        return unless [:start, :stop, :configure].include? command
+        sig = (in_channel.getHeader(Environment::SIGNAL) || 'nil').to_sym
+        logger.debug "Signal header set to [#{sig}]."
+        return unless [:start, :stop, :configure].include? sig
 
-        if command == :configure
-          @context.addRoutes(additional_routes in_channel)
+        if sig.eql? :configure
+          @context.addRoutes in_channel.body
+          logger.debug "Configuration update handled."
         else
-          @context.send command
+          @context.send sig
         end
       end
 
-      private
+      
+=begin
+private
 
       def additional_routes in_channel
         # this next line looks odd in ruby, but ensures that we act as a
         # good citizen in terms of being a data type channel for route builders
         builder = in_channel.getBody(org.apache.camel.builder.RouteBuilder.class);
-        # builder.route_list
+        builder
       end
+=end
+
 
     end
 

@@ -193,6 +193,12 @@ public class ControlChannel {
         configure(routeLoader.load());
     }
 
+    private void sendBodyAndHeader(final String channelUri, final Object payload,
+        final String header, final String headerValue) {
+        final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
+        producer.sendBodyAndHeader(channelUri, payload, header, headerValue);
+    }
+
     /**
      * Activates the control channel, which will from now on behave in
      * accordance with the routes you set up in your bootstrap script(s).
@@ -294,12 +300,6 @@ public class ControlChannel {
             destroy();
         }
         return wasShutdown;
-    }
-
-    private void sendBodyAndHeader(final String channelUri, final Object payload,
-        final String header, final String headerValue) {
-        final ProducerTemplate<Exchange> producer = getContext().createProducerTemplate();
-        producer.sendBodyAndHeader(channelUri, payload, header, headerValue);
     }
 
     /**

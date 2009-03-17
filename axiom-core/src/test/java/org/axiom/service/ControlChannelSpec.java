@@ -98,6 +98,10 @@ public class ControlChannelSpec extends Specification<ControlChannel> {
                 dummy(Tracer.class), mockConfig, shutdownChannel);
         }
 
+        public void itShouldExposeProducerViaTheUnderlyingCamelContext() {
+            
+        }
+
         public void itShouldPerformLookupsOnBehalfOfTheConsumer() throws ClassNotFoundException {
             stubConfiguration(mockContext, mockRegistry, mockConfig);
             

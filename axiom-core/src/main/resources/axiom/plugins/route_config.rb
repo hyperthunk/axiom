@@ -25,46 +25,26 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-import org.apache.camel.CamelContext
-import org.apache.camel.Exchange
-import org.apache.camel.Message
-import java.util.List
+require 'axiom'
+require 'axiom/plugins/builder'
+require 'axiom/core/processor'
 
-require 'axiom/core/route_builder'
-require 'axiom/core/default_processing_node'
+import org.axiom.integration.Environment
 
-describe Axiom::Core::DefaultProcessingNode,
-  "when interacting with a subordinate context via the control channel" do
+include Axiom::Plugins
 
-  [:start, :stop].each do |instruction|
-    it "should #{instruction} the camel context when the relevant header is supplied" do
-      context = CamelContext.new
-      context.expects(instruction).once
+plugin :route_config do |configurator|
+  fail "Configurator cannot be nil." if configurator.nil?
+  Axiom::Core::Processor.new do |exchange|
+    logger.debug "Redirecting exchange #{exchange} to #{configurator}."
+    in_channel = exchange.getIn
+    body = in_channel.body
 
-      # first message is a dud, second one says stop...
-      # same stub will do for both cases, as well as for the header values
-      mock_channel = Message.new
-      mock_channel.stubs(:getHeader).returns "test", instruction.to_s
-
-      processor = Axiom::Core::DefaultProcessingNode.new
-      processor.context = context
-      2.times { processor.process(stubbed_exchange mock_channel) }
+    unless body.nil?
+      logger.debug "Assigning configured routes for post processing."
+      out_channel = exchange.getOut
+      out_channel.body = configurator.configure body
+      out_channel.set_header Environment::SIGNAL, Environment::SIG_CONFIGURE
     end
   end
-
-  it "should configure the camel context when routes are supplied" do
-    context = CamelContext.new
-    context.expects(:addRoutes).once.with do |x|
-      x.is_a? org.apache.camel.builder.RouteBuilder
-    end  
-
-    mock_channel = Message.new
-    mock_channel.stubs(:getHeader).returns "configure"
-    mock_channel.stubs(:body).returns Axiom::Core::SimpleRouteBuilder.new {}
-
-    processor = Axiom::Core::DefaultProcessingNode.new
-    processor.context = context
-    processor.process(stubbed_exchange mock_channel)
-  end
-
 end

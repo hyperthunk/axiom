@@ -25,6 +25,7 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'axiom'
 require 'axiom/core/route_builder'
 require 'axiom/core/configuration'
 require 'axiom/plugins'
@@ -42,10 +43,11 @@ module Axiom
       include Axiom::Plugins
 
       attr_accessor :camel_context
-      alias setCamelContext camel_context=
+      alias setCamelContext camel_context=    # does jruby do this for us?
 
       # convenience hook for script writers
       def route &block
+        logger.debug "Generating route builder from block."
         builder = SimpleRouteBuilder.new &block
         builder.properties = self.properties
         builder.context = self.camel_context
@@ -54,7 +56,10 @@ module Axiom
 
       # configures the supplied script source in the context of a RouteBuilder instance
       def configure script_body
-        eval script_body
+        logger.debug "Evaluating configuration script."
+        response = instance_eval script_body
+        logger.debug "Script evaluated to #{response}."
+        response
       end
 
     end
