@@ -76,7 +76,7 @@ import java.rmi.registry.Registry;
  * </p>
  * <p>
  * A client instructs the channel to shutdown by sending an exchange
- * to the endpoint for this uri, with a header named “signal” set to the value “shutdown.” A
+ * to the endpoint for this uri, with a header named 'signal' set to the value 'shutdown'. A
  * consuming thread can then poll for this signal.
  * To simplify this process and do this without having to explicitly use the <i>Camel</i> APIs,
  * the {@link ControlChannel#waitShutdown} method provides this polling facility (with a variation
