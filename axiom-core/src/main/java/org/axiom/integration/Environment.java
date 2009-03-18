@@ -45,6 +45,24 @@ import java.rmi.registry.Registry;
  */
 public class Environment {
 
+    // STATIC ENVIRONMENT PROPERTIES
+
+    public static final String JRUBY_JAR;
+
+    static {
+        try {
+            //TODO: this is hideous - find another way
+            Class<? extends Object> clazz = Class.forName("org.jruby.Ruby");
+            JRUBY_JAR = clazz.getClassLoader()
+                .getResource("org/jruby/Ruby.class")
+                .getPath()
+                .split("!")[0]
+                .replaceAll("file:", "");
+        } catch (Exception e) {
+            throw new RuntimeException(e.getLocalizedMessage(), e);
+        }
+    }
+
     // SYSTEM PROPERTIES
 
     /**
@@ -159,7 +177,9 @@ public class Environment {
      * The property name used to identify the service id (JNDI uri or Spring Bean name)
      * for the default registered instance (or prototype) or this type.
      */
-    public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";    
+    public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";
+
+    public static final String SCRIPTING_ENVIRONMENT = "axiom.scripting.environment";
 
     /**
      * Ensures that the file system is properly configured, based on the supplied

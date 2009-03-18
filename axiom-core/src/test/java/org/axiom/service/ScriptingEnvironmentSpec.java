@@ -31,12 +31,9 @@ package org.axiom.service;
 import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.CamelContext;
-import org.apache.camel.spi.Registry;
 import org.apache.commons.configuration.Configuration;
-import org.axiom.SpecSupport;
-import org.axiom.integration.jruby.JRubyScriptEvaluator;
 import org.axiom.integration.Environment;
+import org.axiom.integration.jruby.JRubyScriptEvaluator;
 import static org.hamcrest.Matchers.*;
 import org.junit.runner.RunWith;
 
@@ -48,25 +45,25 @@ public class ScriptingEnvironmentSpec
     extends Specification<ScriptingEnvironment> {
 
     private ScriptingEnvironment scriptEnv;
-    private CamelContext mockContext = mock(CamelContext.class);
-    private Registry registry = mock(Registry.class);
-    private Configuration config = mock(Configuration.class);
     private JRubyScriptEvaluator evaluator = mock(JRubyScriptEvaluator.class, "evaluator");
 
     private final String evaluatorBeanId = "axiom.processors.code.eval.id";
 
-    public class WhenConfiguringAndStartingUp extends SpecSupport {
+    public class WhenConfiguringAndStartingUp extends ServiceSpecSupport {
 
         public ScriptingEnvironment create() {
-            return scriptEnv = new ScriptingEnvironment(mockContext, config);
+            prepareMocks(mockery());
+            return scriptEnv = new ScriptingEnvironment(mockContext, mockConfig);
         }
 
-        public void itShouldLookupTheConfigurationAndEvaluatorBeansInTheSuppliedCamelContext() {
-            stubConfiguration(mockContext, registry, config);
-            one(config).getString(Environment.ENDORSED_PLUGINS, null);
+        public void itShouldLookupThemockConfigurationAndEvaluatorBeansInTheSuppliedCamelContext()
+            throws ClassNotFoundException {
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            stubLookup(Environment.CODE_EVALUATOR, evaluator);
+            one(mockConfig).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(null));
 
-            justIgnore(config, registry);
+            justIgnore(mockConfig, mockRegistry, evaluator);
             checking(this);
 
             scriptEnv.activate();
@@ -77,16 +74,19 @@ public class ScriptingEnvironmentSpec
                 MessageFormat.format("plugins{0}~/.axiom/plugins{0}/usr/local/axiom/plugins", 
                     File.pathSeparator);
 
-            stubConfiguration(mockContext, registry, config);
-            allowing(config).getString(Environment.ENDORSED_PLUGINS, null);
+            stubConfiguration(mockContext, mockRegistry, mockConfig);
+            allowing(mockConfig).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(pluginPaths));
 
-            allowing(registry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);
+            allowing(mockRegistry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);
             will(returnValue(evaluator));
-            justIgnore(config, registry);
+            justIgnore(mockConfig, mockRegistry);
 
+            allowing(evaluator).evaluate("require '" + Environment.JRUBY_JAR + "'");
+            will(returnValue(true));
+            
             one(evaluator).evaluate(with(
-                equalToIgnoringWhiteSpace(String.format("'%s'.split(File.PATH_SEPARATOR)." +
+                equalToIgnoringWhiteSpace(String.format("'%s'.split(File::PATH_SEPARATOR)." +
                     "each { |path| $LOAD_PATH.unshift path unless $LOAD_PATH.include? path }", 
                     pluginPaths))));
             will(returnValue(true));

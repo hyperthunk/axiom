@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2009, Tim Watson
 # All rights reserved.
 #
@@ -26,13 +25,22 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-log4j.rootLogger=INFO, out
+require 'java'
+require 'axiom'
+require 'axiom/plugins'
 
-log4j.logger.org.axiom=DEBUG
-log4j.logger.org.apache.camel=DEBUG
-log4j.logger.org.springframework=INFO
-log4j.logger.org.jruby=DEBUG
+route {
 
-log4j.appender.out=org.apache.log4j.ConsoleAppender
-log4j.appender.out.layout=org.apache.log4j.PatternLayout
-log4j.appender.out.layout.ConversionPattern=%d %p [%t] [%c] %m%n
+  # TODO: consider a silent validate and capture status as xml processor 
+  fail_log = File.join *[:file, :dir].collect { |x| config >> "http.test.failures.#{x}.uri" }
+
+  from("jetty://#{config >> 'http.test.inbound.uri'}").
+    to("http://#{config >> 'http.test.outbound.uri'}")
+  
+  #  choice.when(xsd_valid? body => "#{config >> 'http.test.xsd'}").
+  #    to("http://#{config >> 'http.test.outbound.uri'}").
+  #  otherwise.
+  #    to("file://#{fail_log}").
+  #    to("http://#{config >> 'http.test.outbound.uri'}")
+
+}

@@ -68,7 +68,14 @@
         scope="prototype"
         id="axiom.processors.code.eval.id"
         script-source="classpath:axiom/core/evaluator.rb"
-        script-interfaces="org.axiom.integration.jruby.JRubyScriptEvaluator" />
+        script-interfaces="org.axiom.integration.jruby.JRubyScriptEvaluator" />    
+
+    <bean
+        id="axiom.scripting.environment"
+        class="org.axiom.service.ScriptingEnvironment"
+        init-method="activate">
+        <constructor-arg ref="axiom.camel.host.context.id"/>
+    </bean>
 
     <lang:jruby
         scope="prototype"

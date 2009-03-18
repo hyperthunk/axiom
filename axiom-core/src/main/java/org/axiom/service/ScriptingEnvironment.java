@@ -61,12 +61,14 @@ public class ScriptingEnvironment {
 
     public void activate() {
         log.info("Starting jruby scripting environment.");
+        log.debug("Requiring jruby jar from {}.", Environment.JRUBY_JAR);
+        evaluateScriptFragment("require '" + Environment.JRUBY_JAR + "'");
         final String pluginUris = configuration.getString(Environment.ENDORSED_PLUGINS, null);
         log.debug("Plugin uris: [{}]", pluginUris);
         if (isNotEmpty(pluginUris)) {
             log.info("Adding {} to the jruby LOAD_PATH.", pluginUris);
             final String scriptFragment =
-                format("'%s'.split(File.PATH_SEPARATOR).each { |path| " +
+                format("'%s'.split(File::PATH_SEPARATOR).each { |path| " +
                     "$LOAD_PATH.unshift path unless $LOAD_PATH.include? path }", pluginUris);
             evaluateScriptFragment(scriptFragment);
         }

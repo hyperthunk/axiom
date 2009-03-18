@@ -26,6 +26,11 @@ public class BootstrappedLaunchSpec extends Specification<ControlChannel> {
         private Launcher launcher;
         private ControlChannel channel;
 
+        /*Ruby ruby = org.jruby.Ruby.getDefaultInstance();
+        String jarPath = ruby.getClass().getClassLoader().getResource("org/jruby/Ruby.class").getPath().split("!")[0].replaceAll("file:", "");
+        ruby.evalScript("require '" + jarPath + "'");
+        ruby.evalScript("require 'net/http'");*/
+
         public ControlChannel create() {
             camelContext = (CamelContext) applicationContext.getBean(
                 Environment.HOST_CONTEXT, CamelContext.class);
@@ -33,23 +38,7 @@ public class BootstrappedLaunchSpec extends Specification<ControlChannel> {
             return channel = launcher.launch(camelContext);
         }
 
-        /*private void anotherKindOfTest() throws Exception {
-            RouteBuilder builder = new RouteBuilder() {
-                @Override public void configure() throws Exception {
-                    from("direct:axiomControlChannel").
-                        to(Environment.TERMINATION_CHANNEL);
-                }
-            };
-            camelContext.addRoutes(builder);
-            camelContext.start();
-
-            camelContext.createProducerTemplate().sendBody("direct:axiomControlChannel", "BODY");
-            ShutdownChannel shutdown = camelContext.getRegistry().
-                lookup(Environment.SHUTDOWN_CHANNEL_ID, ShutdownChannel.class);
-            specify(shutdown.waitShutdown(1000), equal(true));
-        }*/
-
-        private void itShouldRedirectTerminationCallsToTheShutdownChannel() throws Exception {
+        public void itShouldRedirectTerminationCallsToTheShutdownChannel() throws Exception {
             channel.sendShutdownSignal();
             specify(channel.waitShutdown(TEN_SECOND_TIMEOUT), should.equal(true));
         }
