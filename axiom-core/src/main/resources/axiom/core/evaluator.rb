@@ -32,9 +32,21 @@ module Axiom
     class Evaluator
       include JRubyScriptEvaluator
 
+      def initialize
+        $AXIOM ||= {}
+      end
+
       def evaluate(source)
         # NB: a simple `alias evaluate eval` might've worked?
-        eval source
+        instance_eval source
+      end
+
+      attr_accessor :camel_context
+
+      def setCamelContext(camelContext)
+        @camel_context = camelContext
+        $AXIOM[:camel] = @camel_context
+        $AXIOM[:spring] = @camel_context.registry
       end
 
     end

@@ -26,6 +26,7 @@
 #
 
 require 'axiom/plugins'
+require 'axiom/core/functor'
 
 # TODO: move this into an ext folder
 
@@ -36,4 +37,25 @@ module Kernel
     @logger
   end
 
+  def puts str
+    str = "#{str}\n" unless str =~ /.*#{"\n"}$/
+    $logger.debug str
+  end
+
 end
+
+module Axiom
+  class StdOut
+
+    def method_missing sym, *args
+      if [:puts, :<<, :print, :printf, :putc, :write].include? sym
+        $logger.send :debug, *args.collect { |e| e.is_a? String ? e : "#{e}" }
+      else
+        STDOUT.send sym, *args
+      end
+    end
+
+  end
+end 
+
+$logger = org.slf4j.LoggerFactory.getLogger("org.axiom.Root::Logger")

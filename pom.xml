@@ -33,7 +33,7 @@
 
     <!-- properties -->
     <properties>
-        <axiom.version>0.1.0</axiom.version>
+        <axiom.version>0.3.0</axiom.version>
         <ant.version>1.7.1</ant.version>
         <asm.version>2.2.3</asm.version>
         <jdk.version>1.6</jdk.version>
@@ -44,6 +44,7 @@
         <camel.version>1.5.0</camel.version>
         <activemq.version>4.1.1</activemq.version>
         <spring.version>2.5.6</spring.version>
+        <spring.classpath.uri>/Users/pax/.m2/repository/org/springframework/spring-core/2.5.6</spring.classpath.uri>
         <spring.jruby.version>1.0</spring.jruby.version>
         <jdave.version>1.1</jdave.version>
         <surefire.version>2.3</surefire.version>
@@ -60,10 +61,11 @@
     <!-- child modules -->
     <modules>
         <module>axiom-core</module>
+        <module>axiom-integration-test</module>
     </modules>
 
     <!-- repositories - might be better to strip these out later on -->
-    <repositories>
+    <!--<repositories>
         <repository>
             <id>laughing-panda</id>
             <name>Laughing Panda</name>
@@ -77,17 +79,28 @@
             <name>Laughing Panda</name>
             <url>http://www.laughingpanda.org/maven2/</url>
         </pluginRepository>
-    </pluginRepositories>
+    </pluginRepositories>-->
 
     <!-- common dependencies -->
     <dependencies>
+
+        <!-- top level camel depends -->
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-core</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.camel</groupId>
+            <artifactId>camel-spring</artifactId>
+            <version>${camel.version}</version>
+        </dependency>
 
         <!-- springframework -->
         <dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring</artifactId>
             <version>${spring.version}</version>
-            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.jruby</groupId>
@@ -99,7 +112,6 @@
             <groupId>org.springframework</groupId>
             <artifactId>spring-core</artifactId>
             <version>${spring.version}</version>
-            <!--<scope>provided</scope>-->
             <exclusions>
                 <exclusion>
                     <groupId>org.jruby</groupId>
@@ -233,22 +245,6 @@
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.jtestr</groupId>
-            <artifactId>jtestr</artifactId>
-            <version>${jtestr.version}</version>
-            <scope>test</scope>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.testng</groupId>
-                    <artifactId>testng</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.jruby</groupId>
-                    <artifactId>jruby-complete</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
 
         <!-- log4j specific jar is in here just for testing purposes -->
         <dependency>
@@ -337,6 +333,7 @@
                                 </excludes>
                                 <includes>
                                     <include>**/systest/*Spec.java</include>
+                                    <include>**/systest/*TestRunner.java</include>
                                 </includes>
                             </configuration>
                         </execution>
@@ -364,12 +361,16 @@
                                     <groupId>org.testng</groupId>
                                     <artifactId>testng</artifactId>
                                 </exclusion>
+                                <exclusion>
+                                    <groupId>org.jruby</groupId>
+                                    <artifactId>jruby-complete</artifactId>
+                                </exclusion>
                             </exclusions>
                         </dependency>
                     </dependencies>
                     <executions>
                         <execution>
-                            <phase>integration-test</phase>
+                            <phase>test</phase>
                             <goals>
                                 <goal>test</goal>
                             </goals>

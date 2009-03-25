@@ -13,3 +13,4 @@ ebin/
 *.iml
 target/*
 axiom-core/target/*
+axiom-integration-test/target/*

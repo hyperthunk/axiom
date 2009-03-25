@@ -1,7 +1,6 @@
 package org.axiom.service;
 
 import org.apache.camel.CamelContext;
-import org.apache.camel.processor.interceptor.Tracer;
 import static org.apache.commons.collections.CollectionUtils.typedCollection;
 import org.apache.commons.configuration.Configuration;
 import static org.apache.commons.io.FileUtils.*;

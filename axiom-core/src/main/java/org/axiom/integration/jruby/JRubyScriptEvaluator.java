@@ -28,10 +28,12 @@
 
 package org.axiom.integration.jruby;
 
+import org.apache.camel.CamelContextAware;
+
 /**
  * TODO: document this as internal use only - can't make it non-public
  */
-public interface JRubyScriptEvaluator {
+public interface JRubyScriptEvaluator extends CamelContextAware {
 
     /**
      * Runs ruby's 'eval' method on the supplied string.

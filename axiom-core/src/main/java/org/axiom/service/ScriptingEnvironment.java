@@ -48,6 +48,7 @@ public class ScriptingEnvironment {
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Configuration configuration;
     private final CamelContext context;
+    private JRubyScriptEvaluator evaluator;
 
     public ScriptingEnvironment(final CamelContext context) {
         this(context, getRegisteredConfiguration(context));
@@ -57,6 +58,7 @@ public class ScriptingEnvironment {
         notNull(context, "Camel context cannot be null.");
         this.context = context;
         this.configuration = configuration;
+        evaluator = lookupEvaluatorService();
     }
 
     public void activate() {
@@ -74,6 +76,10 @@ public class ScriptingEnvironment {
         }
     }
 
+    public void registerContext() {
+
+    }
+
     /**
      * Evaluates the supplied script fragment. This is done in a global
      * context, so you shouldn't make too many assumptions when calling it.
@@ -81,9 +87,8 @@ public class ScriptingEnvironment {
      * @return the last value on the stack after evaluating the supplied code.
      */
     public Object evaluateScriptFragment(final String scriptFragment) {
-        log.debug("Evaluating script fragment: <script>{}{}{}</script>",
-            new Object[] {Environment.NEWLINE, scriptFragment, Environment.NEWLINE});
-        return lookupEvaluatorService().evaluate(scriptFragment);
+        log.debug("[Script <eval>]{}{}", Environment.NEWLINE, scriptFragment);
+        return evaluator.evaluate(scriptFragment);
     }
 
     private JRubyScriptEvaluator lookupEvaluatorService() {

@@ -30,19 +30,16 @@ package org.axiom.service;
 
 import org.apache.camel.Route;
 import org.apache.camel.builder.RouteBuilder;
-import static org.apache.commons.io.FileUtils.*;
+import org.apache.commons.io.IOUtils;
 import static org.apache.commons.lang.StringUtils.*;
 import static org.apache.commons.lang.Validate.*;
 import org.axiom.integration.Environment;
 import org.axiom.integration.camel.RouteConfigurationScriptEvaluator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.Resource;
+import org.springframework.core.io.*;
 
-import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
 /**
  * A {@link RouteLoader} that takes a script from the file system
@@ -68,10 +65,15 @@ public class RouteScriptLoader implements RouteLoader {
      */
     @Override public RouteBuilder load() {
         try {
-            final String uri = getPathToScript();
-            log.info("Loading route list from {}.", uri);
-            final String bootstrapCode = readFileToString(new File(uri));
-            log.debug("Applying {}:{}{}", new Object[] {uri, Environment.NEWLINE, bootstrapCode});
+            final Resource script = getScript();
+            final String bootstrapCode = IOUtils.toString(script.getInputStream());
+            log.debug("Applying {}:{}{}",
+                new Object[] {
+                    script.getURI(),
+                    Environment.NEWLINE,
+                    bootstrapCode
+                }
+            );
             return scriptEvaluator.configure(bootstrapCode);
         } catch (IOException e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);
@@ -82,20 +84,23 @@ public class RouteScriptLoader implements RouteLoader {
      * Gets the path to the script to be loaded by this.
      * @return
      */
-    public String getPathToScript() {
-        return normalizedScriptUri(pathToScript);
+    public Resource getScript() {
+        return getScriptResource(pathToScript);
     }
 
-    private String normalizedScriptUri(final String uri) {
+    private Resource getScriptResource(final String uri) {
         try {
             if (startsWithIgnoreCase(uri, "classpath:")) {
+                final String classPathUri = substringAfter(uri, "classpath:");
+                log.info("Loading route list from classpath uri {}.", classPathUri);
                 Resource resource =
-                    new ClassPathResource(substringAfter(uri, "classpath:"));
-                log.debug("Resolved '{}' to '{}'.", uri, resource);
-                return resource.getFile().getAbsolutePath();
+                    new ClassPathResource(classPathUri);
+                log.debug("Resolved '{}' to '{}'.", classPathUri, resource);
+                return resource;
             }
-            return uri;
-        } catch (IOException e) {
+            log.info("Loading route list from file system path {}.", uri);
+            return new FileSystemResource(uri);
+        } catch (Exception e) {
             throw new RuntimeException(e.getLocalizedMessage(), e);
         }
     }

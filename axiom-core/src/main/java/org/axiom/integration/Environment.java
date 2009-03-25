@@ -35,6 +35,8 @@ import static org.apache.commons.io.FileUtils.*;
 import org.apache.commons.lang.StringUtils;
 import org.axiom.integration.camel.AxiomComponent;
 import org.axiom.service.ControlChannel;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.support.FileSystemXmlApplicationContext;
 
 import java.io.File;
 import java.io.IOException;
@@ -74,6 +76,9 @@ public class Environment {
      * The location of the 'tmp' directory (OS independant).
      */
     public static final String TMPDIR = System.getProperty("java.io.tmpdir");
+
+    public static final String[] CLASSPATH =
+        System.getProperty("java.class.path").split(File.pathSeparator);
 
     // APPLICATION PROPERTIES
 
@@ -179,7 +184,31 @@ public class Environment {
      */
     public static final String CODE_EVALUATOR = "axiom.processors.code.eval.id";
 
+    /**
+     * The bean id of the scripting environment bean.
+     */
     public static final String SCRIPTING_ENVIRONMENT = "axiom.scripting.environment";
+
+    /**
+     * Resolve a relative path to a classpath resource in axiom-core - utility
+     * method used for resolving resources otherwise inaccessible when running
+     * tests in jtestr.
+     * @param relativePath
+     * @return
+     */
+    public static String resolveResourcePath(final String relativePath) {
+        //TODO: find some other way to do this....
+        return Environment.class.getClassLoader().getResource(relativePath).toExternalForm();
+    }
+
+    /**
+     * Loads a file system xml application context.
+     * @param xmlPath Path to the xml document.
+     * @return A new application context instance.
+     */
+    public static ApplicationContext loadApplicationContext(final String xmlPath) {
+        return new FileSystemXmlApplicationContext(xmlPath);
+    }
 
     /**
      * Ensures that the file system is properly configured, based on the supplied

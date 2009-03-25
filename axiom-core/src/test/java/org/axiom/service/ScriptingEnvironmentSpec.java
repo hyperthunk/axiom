@@ -51,15 +51,18 @@ public class ScriptingEnvironmentSpec
 
     public class WhenConfiguringAndStartingUp extends ServiceSpecSupport {
 
-        public ScriptingEnvironment create() {
+        public ScriptingEnvironment create() throws ClassNotFoundException {
             prepareMocks(mockery());
+            allowing(mockContext).getRegistry();
+            will(returnValue(mockRegistry)) ;
+            stubLookup(Environment.CODE_EVALUATOR, evaluator);
+            checking(this);
             return scriptEnv = new ScriptingEnvironment(mockContext, mockConfig);
         }
 
         public void itShouldLookupThemockConfigurationAndEvaluatorBeansInTheSuppliedCamelContext()
             throws ClassNotFoundException {
             stubConfiguration(mockContext, mockRegistry, mockConfig);
-            stubLookup(Environment.CODE_EVALUATOR, evaluator);
             one(mockConfig).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(null));
 
@@ -78,8 +81,8 @@ public class ScriptingEnvironmentSpec
             allowing(mockConfig).getString(Environment.ENDORSED_PLUGINS, null);
             will(returnValue(pluginPaths));
 
-            allowing(mockRegistry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);
-            will(returnValue(evaluator));
+            /*allowing(mockRegistry).lookup(evaluatorBeanId, JRubyScriptEvaluator.class);
+            will(returnValue(evaluator));*/
             justIgnore(mockConfig, mockRegistry);
 
             allowing(evaluator).evaluate("require '" + Environment.JRUBY_JAR + "'");

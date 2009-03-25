@@ -11,6 +11,7 @@ import org.hamcrest.*;
 import org.jmock.Mockery;
 
 import static java.text.MessageFormat.*;
+import java.io.IOException;
 
 public class ServiceSpecSupport extends SpecSupport {
 
@@ -22,7 +23,12 @@ public class ServiceSpecSupport extends SpecSupport {
     public static Matcher<RouteScriptLoader> routeLoaderFromScriptPath(final String expectedScriptPath) {
         return new TypeSafeMatcher<RouteScriptLoader>() {
             @Override public boolean matchesSafely(final RouteScriptLoader routeScriptLoader) {
-                return StringUtils.equals(expectedScriptPath, routeScriptLoader.getPathToScript());
+                try {
+                    return StringUtils.equals(expectedScriptPath,
+                        routeScriptLoader.getScript().getURI().getPath());
+                } catch (IOException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
             }
 
             @Override public void describeTo(final Description description) {
