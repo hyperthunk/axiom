@@ -28,13 +28,16 @@
 require 'java'
 require 'spec'
 
-require 'ping'
-require 'net/http'
 require 'uri'
+require 'net/http'
+require 'ping'
+require 'socket'
 
 require 'axiom'
 require 'axiom/core/configuration'
 require 'axiom/plugins'
+
+require File.join($axiom_testdir, 'spec_helper.rb')
 
 import org.axiom.integration.Environment
 import org.axiom.configuration.ExternalConfigurationSourceFactory
@@ -45,18 +48,29 @@ import java.lang.System
 
 describe "proxying inter-system communications over http" do
 
+  include HTTPSpecSupport
   include Axiom::Core::Configuration
 
+  def inbound_uri
+    URI.parse("http://#{config >> 'http.test.inbound.uri'}")
+  end
+
   before :all do
+    @requests = []
     @camel = $AXIOM[:camel]
     conf = ExternalConfigurationSourceFactory.get_registered_configuration(@camel)
     config_path = File.join($axiom_testdir, 'http.routing.properties')
-    logger.debug "Loading properties from #{config_path}."
+    logger.debug("Loading properties from #{config_path}.")
     conf.add_configuration(PropertiesConfiguration.new config_path)
     self.setProperties conf
 
     logger.debug("Launching http listener")
-    launch_http_listener
+    @listener = URI.parse("http://#{config >> 'http.test.outbound.uri'}")
+    start_http! @listener do |request, response|
+      #logger.debug("request-body: #{request.body}")
+      @requests.push request
+      response.status = 200
+    end
 
     logger.debug("Launching control channel.")
     @channel = Launcher.new.launch(@camel)
@@ -64,31 +78,31 @@ describe "proxying inter-system communications over http" do
     @channel.load(RouteScriptLoader.new(File.join($axiom_testdir, 'http_routes.rb'), eval_svc))
   end
 
-  def launch_http_listener
-    #TODO: launch a simple http listener 
+  after :all do
+    logger.debug("Stopping http test listener.")
+    stop_http!
   end
 
   it "should spool up an http endpoint listening on the given port" do
-    timeout = 10 # seconds
-    Ping.pingecho(
-        config >> 'http.test.host.ip',
-        timeout,
-        config >> 'http.test.inbound.port'
-    ).should be_true
-  end
-
-  it "should log incoming requests to the specified event log" do
-    uri = URI.parse("http://#{config >> 'http.test.inbound.uri'}")
-    Net::HTTP.start(uri.host, uri.port) do |http|
-      post_data = "var1=a1\nvar2=a2"
-      http.post2(uri.path, post_data) do |response|
-        response.code.should eql('200')
-      end
+    http_interaction inbound_uri, 'ignored....' do |response|
+      response.code.should eql('200')
     end
   end
 
-
-  #it "should forward incoming requests to the specified outbound http endpoint"
+  it "should forward incoming requests to the specified outbound http endpoint" do
+    timeout = 25 # seconds
+    # Ping.pingecho(@listener.host, timeout, @listener.port).should be_true
+    post_data=<<-EOF
+      <request>
+        <data />
+      </request>
+    EOF
+    http_interaction inbound_uri, post_data do |response|
+      response.code.should eql('200')
+    end
+    request = @requests.pop
+    request.body.should == post_data.chop
+  end
     # TODO: spool up a Net::Http based listener, POST the inbound http endpoint, check for receipt
 
 end

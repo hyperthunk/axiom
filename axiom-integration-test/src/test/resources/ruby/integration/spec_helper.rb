@@ -1,4 +1,3 @@
-#
 # Copyright (c) 2009, Tim Watson
 # All rights reserved.
 #
@@ -26,12 +25,40 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-log4j.rootLogger=INFO, out
+require 'axiom'
+require 'webrick'
 
-log4j.logger.org.axiom=DEBUG
-log4j.logger.org.apache.camel=INFO
+module HTTPTestListener
 
-log4j.appender.out=org.apache.log4j.FileAppender
-log4j.appender.out.File=integration-test.log
-log4j.appender.out.layout=org.apache.log4j.PatternLayout
-log4j.appender.out.layout.ConversionPattern=%d %p [%t] [%c] %m%n
+  def start_http! uri, &block
+    fail "already listening" if running?
+    @server = WEBrick::HTTPServer.new :Port => uri.port
+    @server.mount_proc uri.path, &block
+    @thread = Thread.new { @server.start }
+  end
+
+  def stop_http!
+    return if running?
+    @server.shutdown
+    @thread.kill
+    @thread = nil
+  end
+
+  def running?
+    ((!@thread.nil?) && @thread.alive?)
+  end
+
+end
+
+module HTTPSpecSupport
+  include HTTPTestListener
+
+  def http_interaction uri, post_data, headers={'Content-Type' => 'text/xml'}
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      http.post(uri.path, post_data, headers) do |response|
+        yield response
+      end
+    end
+  end
+
+end
