@@ -30,6 +30,7 @@ require 'spec'
 
 require 'ping'
 require 'net/http'
+require 'uri'
 
 require 'axiom'
 require 'axiom/core/configuration'
@@ -52,8 +53,10 @@ describe "proxying inter-system communications over http" do
     config_path = File.join($axiom_testdir, 'http.routing.properties')
     logger.debug "Loading properties from #{config_path}."
     conf.add_configuration(PropertiesConfiguration.new config_path)
-
     self.setProperties conf
+
+    logger.debug("Launching http listener")
+    launch_http_listener
 
     logger.debug("Launching control channel.")
     @channel = Launcher.new.launch(@camel)
@@ -61,16 +64,29 @@ describe "proxying inter-system communications over http" do
     @channel.load(RouteScriptLoader.new(File.join($axiom_testdir, 'http_routes.rb'), eval_svc))
   end
 
-
-  it "should spool up an http endpoint listening on the given port" do
-  #  prepare
-    #timeout = 10 # seconds
-    #(Ping.pingecho config >> 'http.test.host.ip',
-    #    timeout, config >> 'http.test.inbound.port').should be_true
+  def launch_http_listener
+    #TODO: launch a simple http listener 
   end
 
-  #it "should log incoming requests to the specified event log"
-    # TODO: POST the http endpoint and check the log file
+  it "should spool up an http endpoint listening on the given port" do
+    timeout = 10 # seconds
+    Ping.pingecho(
+        config >> 'http.test.host.ip',
+        timeout,
+        config >> 'http.test.inbound.port'
+    ).should be_true
+  end
+
+  it "should log incoming requests to the specified event log" do
+    uri = URI.parse("http://#{config >> 'http.test.inbound.uri'}")
+    Net::HTTP.start(uri.host, uri.port) do |http|
+      post_data = "var1=a1\nvar2=a2"
+      http.post2(uri.path, post_data) do |response|
+        response.code.should eql('200')
+      end
+    end
+  end
+
 
   #it "should forward incoming requests to the specified outbound http endpoint"
     # TODO: spool up a Net::Http based listener, POST the inbound http endpoint, check for receipt
