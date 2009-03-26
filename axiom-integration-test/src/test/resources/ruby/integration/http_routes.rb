@@ -32,8 +32,10 @@ require 'axiom/plugins'
 route {
 
   # TODO: consider a silent validate and capture status as xml processor 
-  # fail_log = File.join *[:file, :dir].collect { |x| config >> "http.test.failures.#{x}.uri" }
+  request_log = File.join *[:dir, :file].collect { |x| config >> "http.test.data.#{x}" }
 
+  intercept.to("file://#{request_log}").proceed
+  
   from("jetty:http://#{config >> 'http.test.inbound.uri'}").
     to("http://#{config >> 'http.test.outbound.uri'}")
   

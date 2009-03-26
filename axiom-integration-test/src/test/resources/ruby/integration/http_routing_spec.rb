@@ -32,6 +32,7 @@ require 'uri'
 require 'net/http'
 require 'ping'
 require 'socket'
+require 'fileutils'
 
 require 'axiom'
 require 'axiom/core/configuration'
@@ -45,6 +46,8 @@ import org.axiom.service.RouteScriptLoader
 import org.axiom.service.Launcher
 import org.apache.commons.configuration.PropertiesConfiguration
 import java.lang.System
+
+include FileUtils
 
 describe "proxying inter-system communications over http" do
 
@@ -64,10 +67,14 @@ describe "proxying inter-system communications over http" do
     conf.add_configuration(PropertiesConfiguration.new config_path)
     self.setProperties conf
 
+    @logfile = File.join *[:dir, :file].collect { |x| config >> "http.test.data.#{x}" }
+    logger.debug("Creating log file #{@logfile}.")
+    (mkdir_p File.dirname(@logfile); touch @logfile) unless File.exist? @logfile
+
     logger.debug("Launching http listener")
     @listener = URI.parse("http://#{config >> 'http.test.outbound.uri'}")
     start_http! @listener do |request, response|
-      #logger.debug("request-body: #{request.body}")
+      logger.debug("request-body: #{request.body}")
       @requests.push request
       response.status = 200
     end
@@ -84,8 +91,8 @@ describe "proxying inter-system communications over http" do
   end
 
   it "should spool up an http endpoint listening on the given port" do
-    http_interaction inbound_uri, 'ignored....' do |response|
-      response.code.should eql('200')
+    http_interaction inbound_uri, 'ignored....\n' do |response|
+      response.code.to_i.should 200
     end
   end
 
@@ -97,13 +104,19 @@ describe "proxying inter-system communications over http" do
         <data />
       </request>
     EOF
-    http_interaction inbound_uri, post_data do |response|
-      response.code.should eql('200')
-    end
+    http_interaction inbound_uri, post_data 
     request = @requests.pop
-    request.body.should == post_data.chop
+    request.body.should == post_data.chop   # the final newline is stripped by the server
   end
-    # TODO: spool up a Net::Http based listener, POST the inbound http endpoint, check for receipt
+
+  it "should intercept all inbound requests and push then to the specified log file" do
+    data=<<-EOF
+      <request id='foo' />
+    EOF
+    http_interaction inbound_uri, data
+    log_entries = File.readlines @logfile
+    log_entries.last.should include(data)
+  end
 
 end
 
