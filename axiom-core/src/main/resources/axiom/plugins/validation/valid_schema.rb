@@ -25,6 +25,10 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'axiom'
 require 'axiom/plugins/builder'
-require 'axiom/plugins/route_config'
-require 'axiom/plugins/validation/valid_schema'
+require 'axiom/core/processor'
+
+include Axiom::Plugins
+
+register_plugin :valid_schema?, org.axiom.SamplePlugin
