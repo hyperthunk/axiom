@@ -31,18 +31,34 @@ require 'axiom/plugins'
 
 route {
 
-  # TODO: consider a silent validate and capture status as xml processor 
+  # the global request log
   request_log = File.join *[:dir, :file].collect { |x| config >> "http.test.data.#{x}" }
-
-  intercept.to("file://#{request_log}").proceed
+  logger.debug "intercepting all requests to #{request_log}"
   
+  # the invalid schema log
+  invalid_schema_log = File.join *[:dir, :file].collect { |x| config >> "http.test.failures.#{x}" }
+  logger.debug "intercepting all requests with invalid schema to #{invalid_schema_log}"
+
+  # the request schema (xsd) file
+  xsd_file = config >> 'http.test.data.schema.file'
+  logger.debug "reading schema from #{xsd_file}"
+
+#  intercept.
+#    to("file://#{request_log}")
+
+  intercept(is_not(valid_schema?(xsd_file))).
+    to("file://#{invalid_schema_log}")
+
   from("jetty:http://#{config >> 'http.test.inbound.uri'}").
     to("http://#{config >> 'http.test.outbound.uri'}")
-  
-  #  choice.when(xsd_valid? body => "#{config >> 'http.test.xsd'}").
-  #    to("http://#{config >> 'http.test.outbound.uri'}").
-  #  otherwise.
-  #    to("file://#{fail_log}").
-  #    to("http://#{config >> 'http.test.outbound.uri'}")
+
+#  outbound_route = "http://#{config >> 'http.test.outbound.uri'}"
+
+#  from("jetty:http://#{config >> 'http.test.inbound.uri'}").
+#    choice.when().
+#      to("file://#{invalid_schema_log}").
+#      to(outbound_route).
+#    otherwise.
+#      to(outbound_route)
 
 }

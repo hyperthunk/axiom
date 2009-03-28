@@ -1,0 +1,10 @@
+<xsd:schema attributeFormDefault="unqualified" elementFormDefault="qualified" version="1.0" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <xsd:element nillable="false" name="request">
+    <xsd:complexType>
+      <xsd:sequence minOccurs="0" maxOccurs="unbounded">
+        <xsd:element name="data" type="xsd:string" />
+      </xsd:sequence>
+      <xsd:attribute name="id" type="xsd:string" default="12345" />
+    </xsd:complexType>
+  </xsd:element>
+</xsd:schema>

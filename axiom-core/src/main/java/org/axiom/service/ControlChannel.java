@@ -160,12 +160,6 @@ public class ControlChannel {
         notNull(loader, "Route loader cannot be null.");
         try {
             log.debug("Adding routes to context {}.", hostContext.getName());
-            //TODO: consider whether this should call via producer using the 'axiom:host' uri
-            /*
-            //e.g.,
-            hostContext.createProducerTemplate().
-                sendBodyAndHeader(Environment.AXIOM_HOST_URI,
-                    loader.load(), "command", "configure");*/
             hostContext.addRoutes(loader.load());
         } catch (Exception e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);

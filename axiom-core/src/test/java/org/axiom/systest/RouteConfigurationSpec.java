@@ -32,16 +32,19 @@ import jdave.Specification;
 import jdave.junit4.JDaveRunner;
 import org.apache.camel.*;
 import org.apache.camel.builder.RouteBuilder;
+import org.apache.camel.builder.PredicateBuilder;
 import static org.apache.camel.builder.xml.XPathBuilder.*;
 import org.apache.camel.component.mock.MockEndpoint;
-import org.junit.Test;
+import org.axiom.integration.Environment;
+import org.axiom.plugins.ValidXsdExpression;
 import org.junit.runner.RunWith;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.support.ClassPathXmlApplicationContext;
-import org.axiom.integration.Environment;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ClassPathResource;
 
 @RunWith(JDaveRunner.class)
-public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> {
+public class RouteConfigurationSpec extends Specification<CamelContext> {
 
     ApplicationContext applicationContext;
     CamelContext camelContext;
@@ -50,6 +53,57 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
             // deliberately ignoring exchange...
         }
     };
+
+    public MockEndpoint getMockEndpoint(final String uri) {
+        return (MockEndpoint) camelContext.getEndpoint(uri);
+    }
+
+    public class WhenApplyingValidationRulesInline {
+
+        private final String outputChannel = "mock:outputChannel";
+        private final String invalidSchemaChannel = "mock:invalidSchemaChannel";
+        private final String inboundWebUri = "jetty://http://0.0.0.0:10647/inbound/web";
+
+        public CamelContext create() throws Exception {
+            applicationContext =
+                new ClassPathXmlApplicationContext("axiom-core-default-context.xml");
+            camelContext = (CamelContext) applicationContext.getBean(Environment.HOST_CONTEXT);
+            final Resource xsd = new ClassPathResource("validation-test.xsd");
+            final Predicate validSchema = new ValidXsdExpression(xsd.getURL());
+            camelContext.addRoutes(
+                new RouteBuilder() {
+                    @Override public void configure() throws Exception {
+                        intercept(isNot(validSchema))
+                            .to(invalidSchemaChannel);
+                        
+                        from(inboundWebUri).to(outputChannel);
+                    }
+
+                    private Predicate isNot(final Predicate validSchema) {
+                        return PredicateBuilder.not(validSchema);
+                    }
+                }
+            );
+            camelContext.start();
+            return camelContext;
+        }
+
+        public void itShouldRouteInvalidMarkupToBothTheErrorChannelAndOutboundRoutes() throws Exception {
+            final String body = "<request><badelement/></request>";
+            final MockEndpoint outboundRoute = getMockEndpoint(outputChannel);
+            outboundRoute.expectedMessageCount(1);
+            outboundRoute.expectedBodiesReceived(body);
+            getMockEndpoint(invalidSchemaChannel).expectedMessageCount(1);
+
+            final ProducerTemplate<Exchange> producer =
+                camelContext.createProducerTemplate();
+            producer.sendBody(inboundWebUri, body);
+
+            outboundRoute.assertIsSatisfied();
+            getMockEndpoint(invalidSchemaChannel).assertIsSatisfied();
+        }
+
+    }
 
     public class WhenRefreshingTheCamelContextRuleBase {
 
@@ -60,8 +114,6 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
                 //new SpringCamelContext(applicationContext);
         }
 
-        //@Ignore //TODO: move this into an integration testing module and re-enable
-        @Test
         public void addingAdditionalEndpointOnDefinedRoute() throws Exception {
             //TODO: refactor this to use our components later on
 
@@ -80,7 +132,7 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
             camelContext.start();
 
             try {
-                MockEndpoint resultEndpoint = (MockEndpoint) camelContext.getEndpoint("mock:result");
+                MockEndpoint resultEndpoint = getMockEndpoint("mock:result");
                 resultEndpoint.expectedMessageCount(2);
 
                 ProducerTemplate template = camelContext.createProducerTemplate();
@@ -105,7 +157,6 @@ public class RulebaseRefreshIntegrationSpec extends Specification<CamelContext> 
             }
         }
 
-        @Test
         public void shouldExchangesBeCopiedByProcessorsOrNot() throws Exception {
             final String body = "<body />";
             final String foo = "foo";

@@ -33,8 +33,20 @@ require 'axiom/core/functor'
 module Kernel
 
   def logger
-    @logger ||= org.slf4j.LoggerFactory.getLogger("org.axiom.#{self.class.name}")
+    @logger ||= org.slf4j.LoggerFactory.getLogger("org.axiom.scriptengine.#{self.class.name}")
     @logger
+  end
+
+  def logging *opts
+    begin
+      return yield if block_given?
+    rescue Exception => e
+      backtrace = (e.backtrace || []).join("\n")
+      args = *(["[ScriptingEnvironment] #{e.inspect}\n#{backtrace}.\n#{opts[1,]}"] +
+               (opts[2,] || []))
+      logger.send opts.first || :error, args
+      raise e
+    end
   end
 
   def puts str
@@ -42,20 +54,6 @@ module Kernel
     $logger.debug str
   end
 
-end
-
-module Axiom
-  class StdOut
-
-    def method_missing sym, *args
-      if [:puts, :<<, :print, :printf, :putc, :write].include? sym
-        $logger.send :debug, *args.collect { |e| e.is_a? String ? e : "#{e}" }
-      else
-        STDOUT.send sym, *args
-      end
-    end
-
-  end
 end 
 
 $logger = org.slf4j.LoggerFactory.getLogger("org.axiom.Root::Logger")

@@ -148,6 +148,30 @@ public class Environment {
     public static final String SIGNAL = "signal";
 
     /**
+     * The meta-content header tag. This is used to provide a hint to
+     * processors and/or endpoints, about specific header content.
+     */
+    public static final String META_CONTENT = "META-CONTENT";
+
+    /**
+     * This is a meta-content header value that indicates the presence of
+     * trace information in one or more headers.
+     */
+    public static final String TRACE_INFO_HEADER = "TRACE-INFO";
+
+    /**
+     * A header tag that indicates the presence of trace warnings
+     * in the inbound message headers.
+     */
+    public static final String TRACE_WARNINGS = "trace-warnings";
+
+    /**
+     * A header tag that indicates the presence of trace errors 
+     * in the inbound message headers.
+     */
+    public static final String TRACE_ERRORS = "trace-errors";
+
+    /**
      * The value of the {@code configure} header signal, used to indicate that the
      * payload on a channel contains configuration updates.
      */

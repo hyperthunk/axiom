@@ -31,19 +31,21 @@ package org.axiom.plugins;
 import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.Exchange;
-import org.apache.camel.InvalidPayloadRuntimeException;
+import org.apache.camel.*;
 import org.apache.camel.impl.DefaultMessage;
 import org.axiom.SpecSupport;
+import org.axiom.integration.Environment;
 import org.hamcrest.Description;
 import org.jmock.api.Action;
 import org.jmock.api.Invocation;
 import org.junit.runner.RunWith;
-import org.xml.sax.ErrorHandler;
-import org.xml.sax.SAXException;
+import org.xml.sax.*;
 
+import javax.xml.transform.Source;
 import javax.xml.validation.Schema;
 import javax.xml.validation.Validator;
+import java.io.IOException;
+import java.util.List;
 
 @RunWith(JDaveRunner.class)
 public class ValidXsdExpressionSpec extends Specification<ValidXsdExpression> {
@@ -63,17 +65,19 @@ public class ValidXsdExpressionSpec extends Specification<ValidXsdExpression> {
 
         private ErrorHandler errorHandlerCapture;
         private ValidXsdExpression expression;
-        private final Exchange exchange = mock(Exchange.class, "Exchange-mock");
+        private final Exchange exchange = mock(Exchange.class, "mock-exchange");
         private final Schema schema = mock(Schema.class);
-        private final Validator validator = mock(Validator.class, "Validator-mock");
+        private final Validator validator = mock(Validator.class, "mock-validator");
+        private Message outputChannel = mock(Message.class, "mock-message");
 
         public ValidXsdExpression create() throws SAXException {
+            expectThatBodyIsCopiedToOutputChannel();
             return expression = new ValidXsdExpression(schema);
         }
 
         public void itShouldPukeIfTheInputChannelHasNoBody() {
             stubInputChannel(new DefaultMessage());
-            
+
             specify(new Block() {
                 @Override public void run() throws Throwable {
                     expression.evaluate(exchange);
@@ -82,34 +86,161 @@ public class ValidXsdExpressionSpec extends Specification<ValidXsdExpression> {
         }
 
         public void itShouldObtainValidatorFromTheSchema() {
-            final DefaultMessage message = new DefaultMessage();
-            message.setBody("<body />");
-            stubInputChannel(message);
+            expectMetaContentHeadersSet();
+            allowing(exchange).getOut();
+            will(returnValue(outputChannel));
+            checking(this);
+            stubInputChannel("<body />");
             stubValidator(dummy(Validator.class));
 
-            expression.evaluate(dummy(Exchange.class));
+            expression.evaluate(exchange);
         }
 
         public void itShouldExplicitlySetAnErrorHandler() {
-            final DefaultMessage message = new DefaultMessage();
-            message.setBody("<body />");
-            stubInputChannel(message);
+            allowing(exchange).getOut();
+            will(returnValue(outputChannel));
+            stubInputChannel("<body />");
             stubValidator(validator);
-
+            expectMetaContentHeadersSet();
             one(validator).setErrorHandler(with(any(ErrorHandler.class)));
+            justIgnore(validator);
             checking(this);
 
-            expression.evaluate(dummy(Exchange.class, "ignored-exchange"));
+            expression.evaluate(exchange);
+        }
+
+        public void itShouldReturnFalseIfValidationErrorsOccur() throws IOException, SAXException {
+            stubValidationError(new Action() {
+                @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+                @Override public Object invoke(final Invocation invocation) throws Throwable {
+                    errorHandlerCapture.error(new SAXParseException("", dummy(Locator.class)));
+                    return null;
+                }
+                @Override public void describeTo(final Description description) {}
+            });
+            justIgnore(outputChannel);
+            checking(this);
+
+            specify(expression,
+                shouldEvaluateExchangeAndReturn(exchange, false));
+        }
+
+        public void itShouldReturnFalseIfFatalValidationErrorsOccur() throws IOException, SAXException {
+            expectThatBodyIsCopiedToOutputChannel();
+            stubValidationError(new Action() {
+                @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+                @Override public Object invoke(final Invocation invocation) throws Throwable {
+                    errorHandlerCapture.fatalError(new SAXParseException("", dummy(Locator.class)));
+                    return null;
+                }
+                @Override public void describeTo(final Description description) {}
+            });
+            justIgnore(outputChannel);
+            checking(this);
+
+            specify(expression,
+                shouldEvaluateExchangeAndReturn(exchange, false));
+        }
+
+        public void itShouldLogWarningsInTheOutboundHeadersButValidationShouldSucceed() throws IOException,
+            SAXException {
+            stubValidationError(new Action() {
+                @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+                @Override public Object invoke(final Invocation invocation) throws Throwable {
+                    final SAXParseException exception =
+                        new SAXParseException("", dummy(Locator.class));
+                    errorHandlerCapture.warning(exception);
+                    return null;
+                }
+                @Override public void describeTo(final Description description) {}
+            });
+
+            expectMetaContentHeadersSet();
+
+            specify(expression,
+                shouldEvaluateExchangeAndReturn(exchange, true));
+        }
+
+        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        public void itShouldReturnFalseIfValidationRaisesExceptions() throws IOException, SAXException {
+            expectThatBodyIsCopiedToOutputChannel();
+            stubValidationFailureException(new SAXParseException("", dummy(Locator.class)));
+            allowing(outputChannel).setHeader(
+                Environment.META_CONTENT, Environment.TRACE_WARNINGS);
+            exactly(2).of(outputChannel).setHeader(
+                with(any(String.class)), with(any(List.class)));
+            checking(this);
+
+            specify(expression,
+                shouldEvaluateExchangeAndReturn(exchange, false));
+        }
+
+        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        public void itShouldReturnFalseIfIOInteractionRaisesExceptions() throws IOException, SAXException {
+            stubValidationFailureException(new IOException());
+            justIgnore(outputChannel);
+            checking(this);
+
+            specify(expression,
+                shouldEvaluateExchangeAndReturn(exchange, false));
+        }
+
+        private void expectMetaContentHeadersSet() {
+            allowing(outputChannel).setHeader(
+                Environment.META_CONTENT, Environment.TRACE_WARNINGS);
+            allowing(outputChannel).setHeader(
+                with(any(String.class)), with(any(List.class)));
+            checking(this);
+        }
+
+        private void stubValidationError(final Action action) throws SAXException, IOException {
+            stubInputChannel("<body />");
+            stubValidator(validator);
+
+            allowing(validator).setErrorHandler(with(any(ErrorHandler.class)));
+            will(storeTheErrorHandlerForTesting());
+
+            allowing(validator).validate(with(any(Source.class)));
+            will(action);
+
+            allowing(exchange).getOut();
+            will(returnValue(outputChannel));
+            checking(this);
+        }
+
+        @SuppressWarnings({"ThrowableInstanceNeverThrown"})
+        private void stubValidationFailureException(final Exception ex) throws SAXException, IOException {
+            stubInputChannel("<body />");
+            stubValidator(validator);
+
+            allowing(validator).setErrorHandler(with(any(ErrorHandler.class)));
+            will(storeTheErrorHandlerForTesting());
+
+            allowing(validator).validate(with(any(Source.class)));
+            will(throwException(ex));
+
+            allowing(exchange).getOut();
+            will(returnValue(outputChannel));
+
+            checking(this);
+        }
+
+        private void expectThatBodyIsCopiedToOutputChannel() {
+            allowing(outputChannel).setBody(
+                with(any(String.class)), with(equal(String.class)));
+            checking(this);
+        }
+
+        private void stubInputChannel(final Object messageBody) {
+            final DefaultMessage message = new DefaultMessage();
+            message.setBody(messageBody, String.class);
+            stubInputChannel(message);
         }
 
         private void stubInputChannel(final DefaultMessage message) {
             allowing(exchange).getIn();
             will(returnValue(message));
             checking(this);
-        }
-
-        private void stubValidator() {
-            stubValidator(validator);
         }
 
         private void stubValidator(final Validator validator) {

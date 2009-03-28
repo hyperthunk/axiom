@@ -25,10 +25,12 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'java'
 require 'axiom'
 require 'axiom/plugins/builder'
-require 'axiom/core/processor'
+
+import org.axiom.plugins.ValidXsdExpression
 
 include Axiom::Plugins
 
-register_plugin :valid_schema?, org.axiom.SamplePlugin
+register_plugin :valid_schema?, ValidXsdExpression

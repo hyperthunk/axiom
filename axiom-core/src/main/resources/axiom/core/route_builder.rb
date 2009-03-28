@@ -29,6 +29,8 @@ require 'axiom/core/configuration'
 require 'axiom/core/functor'
 require 'axiom/core/processor'
 
+import org.apache.camel.builder.PredicateBuilder
+
 module Axiom
   module Core
 
@@ -46,18 +48,30 @@ module Axiom
       # to the current route
       def add_headers hash
         Processor.new do |exchange|
-          out_channel = exchange.out
-          hash.each { |k, v| out_channel.set_header k, v }
+          logging {
+            out_channel = exchange.out
+            hash.each { |k, v| out_channel.set_header k, v }
+          }
         end
       end
 
+      def is_not(predicate_or_expr)
+        logging {
+          return PredicateBuilder.not predicate_or_expr
+        }
+      end
+
       def lookup key
-        context.registry.lookup key
+        logging {
+          context.registry.lookup key
+        }
       end
 
       # see the javadoc for org.apache.camel.RouteBuilder
       def configure
-        instance_eval &self
+        logging {
+          instance_eval &self
+        }
       end
     end
 

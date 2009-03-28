@@ -60,15 +60,21 @@ module Axiom
     private
 
     def fail_property_assignment property, thing
-      fail "Property #{property} is not supported by #{thing}."
+      message = "Property #{property} is not supported by #{thing}."
+      logger.debug(message)
+      fail message
     end
 
     def fail_registration clazz
-      fail "Cannot register class #{clazz} as a plugin because it has no public constructor!"
+      message = "Cannot register class #{clazz} as a plugin because it has no public constructor!"
+      logger.debug(message)
+      fail message
     end
 
     def fail_properties args
-      raise ArgumentError.new("Only named args supported: supplied #{args}")
+      message = "Only named args supported: supplied #{args}"
+      logger.debug(message)
+      raise ArgumentError.new(message)
     end
 
   end

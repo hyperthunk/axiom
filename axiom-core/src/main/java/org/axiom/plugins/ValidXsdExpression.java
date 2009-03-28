@@ -29,19 +29,28 @@
 package org.axiom.plugins;
 
 import org.apache.camel.*;
+import org.apache.commons.io.IOUtils;
 import static org.apache.commons.lang.Validate.*;
+import org.axiom.integration.Environment;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.xml.sax.*;
 
 import javax.xml.XMLConstants;
+import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.*;
 import java.io.File;
+import java.io.IOException;
 import java.net.URL;
+import java.util.LinkedList;
+import java.util.List;
 
-public class ValidXsdExpression implements Expression {
+public class ValidXsdExpression implements Expression, Predicate<Exchange> {
 
     private static final SchemaFactory factory =
         SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final Schema schema;
 
     public ValidXsdExpression(final String pathToXsd) throws SAXException {
@@ -57,27 +66,88 @@ public class ValidXsdExpression implements Expression {
         this.schema = schema;
     }
 
+    /**
+     * Utility method to create a {@link Schema} object for a given xml string.
+     * @param schemaXml A {@link String} containing the schema xml.
+     * @return A new {@link Schema} instance.
+     * @throws SAXException if the schema cannot be loaded.
+     */
+    public static ValidXsdExpression forSchema(final String schemaXml) throws SAXException {
+        final Schema schema =
+            factory.newSchema(new StreamSource(IOUtils.toInputStream(schemaXml)));
+        return new ValidXsdExpression(schema);
+    }
+
+    /**
+     * {@inheritDoc}
+     */    
     @Override public Boolean evaluate(final Exchange exchange) {
-        final Object body = exchange.getIn().getBody();
+        //TODO: when input body is null, make the choice between a runtime exception and validation failure a configurable policy
+        final List<Exception> errors = new LinkedList<Exception>();
+        final List<Exception> warnings = new LinkedList<Exception>();
+        final Message inputChannel = exchange.getIn();
+        final String body = inputChannel.getBody(String.class);
         if (body == null ) {
             throw new InvalidPayloadRuntimeException(exchange, String.class);
         }
-        final Validator validator = schema.newValidator();
-        validator.setErrorHandler(
-            new ErrorHandler() {
-                @Override public void warning(final SAXParseException e) throws SAXException {
-                    //To change body of implemented methods use File | Settings | File Templates.
-                }
+        try {
+            final Validator validator = schema.newValidator();
+            validator.setErrorHandler(
+                new ErrorHandler() {
+                    @Override public void warning(final SAXParseException e) throws SAXException {
+                        warnings.add(e);
+                    }
 
-                @Override public void error(final SAXParseException e) throws SAXException {
-                    //To change body of implemented methods use File | Settings | File Templates.
-                }
+                    @Override public void error(final SAXParseException e) throws SAXException {
+                        errors.add(e);
+                    }
 
-                @Override public void fatalError(final SAXParseException e) throws SAXException {
-                    //To change body of implemented methods use File | Settings | File Templates.
+                    @Override public void fatalError(final SAXParseException e) throws SAXException {
+                        error(e);
+                    }
                 }
-            }
-        );
-        return null;
+            );
+            logger.debug("Validating xml schema against {}", body);
+            validator.validate(new StreamSource(IOUtils.toInputStream(body)));
+        } catch (SAXException e) {
+            errors.add(e);
+        } catch (IOException e) {
+            errors.add(e);
+        }
+        final Message outputChannel = exchange.getOut();
+        outputChannel.setBody(body, String.class);
+        setTraceInfoHeader(outputChannel);
+        if (!warnings.isEmpty()) {
+            logger.debug("Validation yielded warnings.");
+            outputChannel.setHeader(Environment.TRACE_WARNINGS, warnings);
+        }
+        if (!errors.isEmpty()) {
+            logger.debug("Validation failed.");
+            outputChannel.setHeader(Environment.TRACE_ERRORS, errors);
+            return false;
+        } else {
+            return true;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override public boolean matches(final Exchange exchange) {
+        return evaluate(exchange);
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override public void assertMatches(final String text, final Exchange exchange) throws AssertionError {
+        if (!matches(exchange)) {
+            //TODO: something a bit more explanatory!?
+            throw new AssertionError(text);
+        }
+    }
+
+    private void setTraceInfoHeader(final Message message) {
+        message.setHeader(Environment.META_CONTENT, Environment.TRACE_INFO_HEADER);
     }
 }

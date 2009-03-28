@@ -25,6 +25,8 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
+require 'axiom'
+
 import org.axiom.integration.jruby.JRubyScriptEvaluator
 
 module Axiom
@@ -38,7 +40,9 @@ module Axiom
 
       def evaluate(source)
         # NB: a simple `alias evaluate eval` might've worked?
-        instance_eval source
+        logging {
+          instance_eval source
+        }
       end
 
       attr_accessor :camel_context

@@ -57,9 +57,11 @@ module Axiom
       # configures the supplied script source in the context of a RouteBuilder instance
       def configure script_body
         logger.debug "Evaluating configuration script."
-        response = instance_eval script_body
-        logger.debug "Script evaluated to #{response}."
-        response
+        logging {
+          response = instance_eval script_body
+          logger.debug "Script evaluated to #{response}."
+          response
+        }
       end
 
     end

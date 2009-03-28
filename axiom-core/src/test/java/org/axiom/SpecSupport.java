@@ -29,7 +29,7 @@
 package org.axiom;
 
 import jdave.*;
-import org.apache.camel.CamelContext;
+import org.apache.camel.*;
 import org.apache.camel.spi.Registry;
 import org.apache.commons.beanutils.BeanToPropertyValueTransformer;
 import org.apache.commons.collections.Transformer;
@@ -38,6 +38,7 @@ import org.apache.commons.lang.ObjectUtils;
 import org.axiom.integration.Environment;
 import static org.axiom.util.CollectionUtils.*;
 import org.axiom.util.Operation;
+import org.hamcrest.*;
 import org.jmock.Expectations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,6 +61,28 @@ public abstract class SpecSupport extends Expectations {
         will(returnValue(registry));
         allowing(registry).lookup(Environment.CONFIG_BEAN, Configuration.class);
         will(returnValue(config));
+    }
+
+    public static Matcher<Expression> shouldEvaluateExchangeAndReturn(final Exchange input, final Object expectedValue) {
+        return new TypeSafeMatcher<Expression>() {
+            @SuppressWarnings({"unchecked"})
+            @Override public boolean matchesSafely(final Expression expression) {
+                final Expression nillableExpr = (Expression<Exchange>) ObjectUtils.defaultIfNull(
+                    expression,
+                    new Expression<Exchange>() {
+                        @Override public Object evaluate(final Exchange exchange) {
+                            return false;
+                        }
+                    }
+                );
+                return ObjectUtils.equals(nillableExpr.evaluate(input), expectedValue);
+            }
+
+            @Override public void describeTo(final Description description) {
+                description.appendText(format("ExpressionMatcher[matching=%s, for=%s]",
+                    expectedValue, input));
+            }
+        };
     }
 
     public static IContract propertyValueContract(final String propertyName, final Object expectedValue) {

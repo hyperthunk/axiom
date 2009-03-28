@@ -40,7 +40,9 @@ module Axiom
       end
 
       def __call__ *args
-        @func.call *args
+        logging {
+          @func.call *args
+        }
       end
 
       def to_proc

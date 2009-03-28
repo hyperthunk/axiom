@@ -47,15 +47,18 @@ import org.axiom.service.Launcher
 import org.apache.commons.configuration.PropertiesConfiguration
 import java.lang.System
 
-include FileUtils
+describe "proxying and validating inter-system communications over http" do
 
-describe "proxying inter-system communications over http" do
-
+  include FileUtils
   include HTTPSpecSupport
   include Axiom::Core::Configuration
 
   def inbound_uri
     URI.parse("http://#{config >> 'http.test.inbound.uri'}")
+  end
+
+  def invalid_request_log
+    File.join *[:dir, :file].collect { |x| config >> "http.test.failures.#{x}" }
   end
 
   before :all do
@@ -67,14 +70,21 @@ describe "proxying inter-system communications over http" do
     conf.add_configuration(PropertiesConfiguration.new config_path)
     self.setProperties conf
 
+    #TODO: copy the xsd somewhere we can read
+    source_xsd = File.join($axiom_testdir, 'http.request.xsd')
+    target_xsd = config >> 'http.test.data.schema.file'
+    cp source_xsd, target_xsd, :verbose => true
+
     @logfile = File.join *[:dir, :file].collect { |x| config >> "http.test.data.#{x}" }
-    logger.debug("Creating log file #{@logfile}.")
+    logger.debug("Creating log files [#{@logfile}, #{invalid_request_log}].")
+
     (mkdir_p File.dirname(@logfile); touch @logfile) unless File.exist? @logfile
+    (mkdir_p File.dirname(invalid_request_log); touch invalid_request_log) 
 
     logger.debug("Launching http listener")
     @listener = URI.parse("http://#{config >> 'http.test.outbound.uri'}")
     start_http! @listener do |request, response|
-      logger.debug("request-body: #{request.body}")
+      logger.debug("request-body: #{request.body}")   #this line is request to trigger evaluation of the body input stream!
       @requests.push request
       response.status = 200
     end
@@ -88,10 +98,11 @@ describe "proxying inter-system communications over http" do
   after :all do
     logger.debug("Stopping http test listener.")
     stop_http!
-  end
+    rm config >> 'http.test.data.schema.file', :force => true, :verbose => true
+  end 
 
   it "should spool up an http endpoint listening on the given port" do
-    http_interaction inbound_uri, 'ignored....\n' do |response|
+    http_interaction inbound_uri, '<request />' do |response|
       response.code.to_i.should 200
     end
   end
@@ -104,26 +115,27 @@ describe "proxying inter-system communications over http" do
         <data />
       </request>
     EOF
-    http_interaction inbound_uri, post_data 
+    post_data.strip!
+    http_interaction inbound_uri, post_data
     request = @requests.pop
-    request.body.should == post_data.chop   # the final newline is stripped by the server
+    request.body.should =~ /#{post_data}/   # the final newline is stripped by the server
   end
 
-  it "should intercept all inbound requests and push then to the specified log file" do
+  it "should route schema compliant messages to the outbound channel directly" do
     data=<<-EOF
       <request id='foo' />
     EOF
+    data.lstrip!
     http_interaction inbound_uri, data
-    log_entries = File.readlines @logfile
-    log_entries.last.should include(data)
+    fail_entries = File.readlines invalid_request_log
+    fail_entries.find { |e| e =~ /#{data}/ }.should be_nil
   end
 
-end
-
-describe "validating inter-system communications over http" do
-
-  #it "should validate and proceed to route schema compliant messages"
-
-  #it "should fail and stop routing non-compliant messages"
+  it "should fail and stop routing non-compliant messages" do
+    invalid_payload = "<foo><bar /></foo>\n";
+    http_interaction inbound_uri, invalid_payload
+    fail_entries = File.readlines invalid_request_log
+    fail_entries.should include(invalid_payload)
+  end
 
 end

@@ -49,12 +49,14 @@ module Axiom
         logger.debug "Signal header set to [#{sig}]."
         return unless [:start, :stop, :configure].include? sig
 
-        if sig.eql? :configure
-          @context.addRoutes in_channel.body
-          logger.debug "Configuration update handled."
-        else
-          @context.send sig
-        end
+        logging {
+          if sig.eql? :configure
+            @context.addRoutes in_channel.body
+            logger.debug "Configuration update handled."
+          else
+            @context.send sig
+          end
+        }
       end
 
       

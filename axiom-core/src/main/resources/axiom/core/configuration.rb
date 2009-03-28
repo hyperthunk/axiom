@@ -33,9 +33,10 @@ module Axiom
       alias setProperties properties=
 
       def [] key
-        key = key.to_s
-        # fail "no configuration exists for key #{key}" unless @properties.containsKey key
-        @properties.getString key
+        logging {
+          key = key.to_s
+          @properties.getString key
+        }
       end
 
       alias_method :>>, :[]
