@@ -1,13 +1,7 @@
  - axiom-core
-  - URGENT:
-   - migrate the shutdown/wait code from control channel to termination/shutdown channel
-   - convert termination channel to use a count down latch so that queries are possible
-   - expose termination channel via control channel or delegate via a public method???
-   - change the default processing node to write the builder instance to the target context instead of the route list
   - set up the control channel (class) to puke on method invocations when in an invalid state
   - align the terminology in the model to the naming convention in the channels
    - (e.g., use either 'shutdown' or 'terminate' but not a different combination of both) 
-  - hook up the bootstrap
   - deal with route/rule specifications coming in off the wire
    - write xlst for xml2code
     - think about whether transformations should go the other way!?
@@ -17,11 +11,11 @@
      - if they can be serialized without much hassle - we should put this in for completeness
      - otherwise it is a prioritization that doesn' need to take place in the first few weeks of Beta.
  - axiom-server
-   - add an 'axiom-server' child project and in it:
-   - create a default entry point so the jar is executable
-   - wire the main method with commons-cli so that argument handling is well tested
-   - have the main method work out the args and start a ControlChannel using a BootstrapRouteLoader
-   - write an axiom mojo so you can run `mvn axiom:deploy axiom:run`
+ * - add an 'axiom-server' child project and in it:
+  *  - create a default entry point so the jar is executable
+    - wire the main method with commons-cli so that argument handling is well tested
+    - have the main method work out the args and start a ControlChannel using a BootstrapRouteLoader
+    - write an axiom mojo so you can run `mvn axiom:deploy axiom:run`
  - add an 'axiom-client' project
    - decide on how
     - a jar and Main.java that just wrap around a jruby script is probably the most consistent approach
@@ -30,11 +24,8 @@
  - misc
   - move direct junit4 dependencies out of the poms
   - get either the cobertura or emma plugins working (they currently seem to break the build)
- * - general switch from commons-logging to slf4j (API)
-   - implementations might use logback, as this looks preferable to log4j
   - get maven-assembly-plugin set up to create a proper (usable) bundle of jars and scripts
   - set up profiles so you can build and package (for distribution) individual components
   - find somewhere to host binaries for downloading, perhaps sourceforge. 
-  - get maven build generating javadoc
   - start writing some documentation on github/wiki
-  - set up an axiom blog
+ 

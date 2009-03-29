@@ -62,9 +62,10 @@
     <modules>
         <module>axiom-core</module>
         <module>axiom-integration-test</module>
+        <module>axiom-server</module>
     </modules>
 
-    <!-- repositories - might be better to strip these out later on -->
+    <!-- repositories - enable these if you can't find jdave in any of your mirrors -->
     <!--<repositories>
         <repository>
             <id>laughing-panda</id>
@@ -126,6 +127,7 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.4.2</version>
         </dependency>
+
         <!-- using log4j as backend -->
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -380,9 +382,12 @@
                 <plugin>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <configuration>
-                        <descriptorRefs>
+                        <!--<descriptorRefs>
                             <descriptorRef>jar-with-dependencies</descriptorRef>
-                        </descriptorRefs>
+                        </descriptorRefs>-->
+                        <descriptors>
+                            <descriptor>src/assemble/assembly.xml</descriptor>
+                        </descriptors>
                     </configuration>
                     <executions>
                         <execution>
