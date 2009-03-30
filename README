@@ -43,5 +43,11 @@ to get to beta status by the end of March 2009.
 Getting Started
 ----------------
 
-For details on how to build and/or install please read the relevant INSTALL document.
+For details on how to build and/or install please read the relevant INSTALL and/or
+BUILD document(s).
+
+Further information is available from the sourceforge home page (http://axiomcit.sourceforge.net/),
+and "axiology", the axiom blog (http://axiology.wordpress.com). The source code for this 
+project is available at http://github.com/hyperthunk/axiom.
+
 

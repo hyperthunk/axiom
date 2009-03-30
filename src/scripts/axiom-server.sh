@@ -103,7 +103,7 @@ case "$1" in
         fi
         exit 0
     fi
-    $SCRIPT
+    $SCRIPT "$SCRIPT $ARGS...\n"
 	;;
 
 'stop')

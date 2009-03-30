@@ -1,0 +1,9 @@
+These instructions assume that you have downloaded a binary distribution from
+sourceforge.net (or built one yourself using the maven build). 
+
+Standard Installation:
+
+After deflating the distribution archive, you should run the 'install.sh' script
+(residing in the top level of the archive), optionally passing the Installation-Target
+and Axiom-Home directories as the first and second arguments.
+

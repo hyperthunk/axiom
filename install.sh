@@ -1,9 +1,6 @@
-#!/bin/sh
+#!/usr/bin/env sh
 #
-# startup		Starts the standalone axiom test server
-#
-# TODO: setup chk-config
-# description: Starts the standalone axiom test server.
+# install		Install script for the Axiom Integration Testing Framework
 #
 #################################################################################################
 #
@@ -34,25 +31,54 @@
 # OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #
 
-###### START LOCAL CONFIGURATION
-# You may wish to modify these variables to suit your local configuration
+ensure_dir() {
+	if [ ! -d "$1" ]; then
+		echo "Creating $1 directory."
+		x=`mkdir -p $1`
+		# TODO: this (next) approach is horrible - do it a cleaner way when there's time
+		if [ $x ]; then
+			echo "Failed to create $1"
+		fi
+	fi
+}
 
-# TODO: validate that the environment is set up correctly
-
-# ENDORSED_DIR      Location of the endorsed folder (not overridable)
-ENDORSED_DIR=$AXIOM_HOME/endorsed
-
-
-# ARGS  Command line arguments to this script
-ARGS="$@"
-
-CLASSPATH="-classpath $AXIOM_INSTALL/lib/*:$ENDORSED_DIR/lib/*"
-JAVA_MEM_OPTS="-Xmx1024m"
-JAVA_OPTIONS="-server -showversion $JAVA_MEM_OPTS $CLASSPATH"
-
-if [ $DEBUG ] ; then
-    echo "Command \c"
-    echo "java $JAVA_OPTIONS org.axiom.HostService $ARGS...\n"
+INSTALL_DIR=/opt/axiom
+if [ "$1" ]; then
+	INSTALL_DIR="$1"
 fi
-java $JAVA_OPTIONS org.axiom.HostService $ARGS -Daxiom.home="$AXIOM_HOME"
+echo "Installing axiom to $INSTALL_DIR."
+x=`ensure_dir $INSTALL_DIR`
+if [[ $x == *Failed* ]]; then
+	echo "$x:\nCancelling installation."
+	exit 1	# TODO: use the correct exit code
+fi
 
+AXIOM_HOME=~/.axiom
+if [ "$2" ]; then
+	AXIOM_HOME="$2"
+fi
+echo "Setting axiom home to $AXIOM_HOME."
+x=`ensure_dir "$AXIOM_HOME"`
+if [[ $x == *Failed* ]]; then
+	echo "$x:\nCancelling installation."
+	rm -drf "$INSTALL_DIR"
+	exit 1	# TODO: use the correct exit code
+fi
+ensure_dir "$AXIOM_HOME/conf"
+ensure_dir "$AXIOM_HOME/endorsed"
+ensure_dir "$AXIOM_HOME/endorsed/lib"
+
+cd ..
+for d in 'lib' 'bin'; do 
+	echo "cp -r $d $INSTALL_DIR/"
+	cp -r "$d" "$INSTALL_DIR/"
+done
+
+echo "Installing init.d script to $INIT_DIR"
+x=ensure_dir "$INIT_DIR"
+if [[ $x = *Failed* ]]; then
+	echo "Failed to install init.d script. This can be installed manually later on."
+	echo "Installation complete. You can start the server by running $INSTALL_DIR/bin/startup.sh"
+else
+	echo "Installation complete. You can start the server by running '> $INIT_DIR start'"
+fi
