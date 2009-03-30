@@ -72,10 +72,20 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        
+        <!-- not sure this is really needed now!? -->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jetty</artifactId>
             <version>${camel.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!-- log4j specific jar is in here just for testing purposes -->
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.9</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

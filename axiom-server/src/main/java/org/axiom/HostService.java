@@ -28,8 +28,35 @@
 
 package org.axiom;
 
+import org.axiom.service.Launcher;
+import org.springframework.context.ApplicationContext;
+
 public class HostService {
 
-    public static void main(final String... argv) {}
+    public static void main(final String... argv) throws ClassNotFoundException {
+        System.out.println(Launcher.class.getCanonicalName());
+        System.out.println(ApplicationContext.class.getCanonicalName());
+        System.out.println(Class.forName("JdkXmlValidator"));
+        /*System.out.println(Environment.AXIOM_HOME);*/
+        
+    }
 
+    /*private static class EndorsedJarFinderDirectoryWalker extends DirectoryWalker {
+        public EndorsedJarFinderDirectoryWalker() {
+            super(FileFilterUtils.trueFileFilter(),
+                FileFilterUtils.suffixFileFilter(".jar"), -1);
+        }
+
+        @Override protected void handleFile(final File file, final int depth, final Collection results)
+            throws IOException {
+            //noinspection unchecked
+            results.add(file);
+        }
+
+        public Collection getEndorsedJars() throws IOException {
+            final ArrayList<File> results = new ArrayList<File>();
+            walk(new File("."), results);
+            return results;
+        }
+    }*/
 }

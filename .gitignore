@@ -14,4 +14,5 @@ ebin/
 target/*
 axiom-core/target/*
 axiom-integration-test/target/*
+axiom-server/target/*
 axiom-integration-test/integration-test.log

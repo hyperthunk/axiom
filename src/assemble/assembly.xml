@@ -1,0 +1,44 @@
+<assembly>
+    <id>distribution</id>
+    <formats>
+        <format>zip</format>
+		<!-- <format>tar.gz</format> -->
+    </formats>
+    <includeBaseDirectory>false</includeBaseDirectory>
+    <moduleSets>
+        <moduleSet>
+            <includes>
+                <include>org.axiom:axiom-core</include>
+                <include>org.axiom:axiom-server</include>
+            </includes>
+            <binaries>
+                <outputDirectory>lib</outputDirectory>
+                <unpack>false</unpack>
+            </binaries>
+        </moduleSet>
+    </moduleSets>
+	<dependencySets>
+	    <dependencySet>
+	    	<unpack>false</unpack>
+	      	<scope>runtime</scope>
+			<outputDirectory>lib</outputDirectory>
+	    </dependencySet>
+	</dependencySets>
+	<fileSets>
+	    <fileSet>
+	      	<includes>
+	        	<include>${project.basedir}/README*</include>
+	        	<include>${project.basedir}/LICENSE*</include>
+	        	<include>${project.basedir}/INSTALL*</include>	
+	      	</includes>
+	    </fileSet>
+        <fileSet>
+			<directory>src/scripts</directory>
+			<includes>
+				<include>*.sh</include>
+			</includes>
+			<fileMode>0540</fileMode>
+			<outputDirectory>bin</outputDirectory>
+        </fileSet>
+    </fileSets> 
+</assembly>

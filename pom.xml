@@ -33,7 +33,7 @@
 
     <!-- properties -->
     <properties>
-        <axiom.version>0.3.0</axiom.version>
+        <axiom.version>0.4.0</axiom.version>
         <ant.version>1.7.1</ant.version>
         <asm.version>2.2.3</asm.version>
         <jdk.version>1.6</jdk.version>
@@ -44,7 +44,6 @@
         <camel.version>1.5.0</camel.version>
         <activemq.version>4.1.1</activemq.version>
         <spring.version>2.5.6</spring.version>
-        <spring.classpath.uri>/Users/pax/.m2/repository/org/springframework/spring-core/2.5.6</spring.classpath.uri>
         <spring.jruby.version>1.0</spring.jruby.version>
         <jdave.version>1.1</jdave.version>
         <surefire.version>2.3</surefire.version>
@@ -119,6 +118,31 @@
                     <artifactId>jruby-complete</artifactId>
                 </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-beans</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context-support</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jms</artifactId>
+            <version>${spring.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-tx</artifactId>
+            <version>${spring.version}</version>
         </dependency>
 
         <!-- switched from commons logging to slf4j -->
@@ -247,14 +271,6 @@
             <version>${spring.version}</version>
             <scope>test</scope>
         </dependency>
-
-        <!-- log4j specific jar is in here just for testing purposes -->
-        <dependency>
-            <groupId>log4j</groupId>
-            <artifactId>log4j</artifactId>
-            <version>1.2.9</version>
-            <scope>test</scope>
-        </dependency>
     </dependencies>
     <build>
         <pluginManagement>
@@ -275,7 +291,6 @@
                     <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-javadoc-plugin</artifactId>
                     <version>2.5</version>
-                    <!-- TODO: figure out what this should look like -->
                     <!--<executions>
                         <execution>
                             <phase>install</phase>
@@ -380,16 +395,17 @@
                     </executions>
                 </plugin>
                 <plugin>
+                    <groupId>org.apache.maven.plugins</groupId>
                     <artifactId>maven-assembly-plugin</artifactId>
                     <configuration>
-                        <!--<descriptorRefs>
-                            <descriptorRef>jar-with-dependencies</descriptorRef>
-                        </descriptorRefs>-->
+                        <descriptorRefs />
                         <descriptors>
                             <descriptor>src/assemble/assembly.xml</descriptor>
                         </descriptors>
                     </configuration>
-                    <executions>
+                    <!-- setting executions for plugins at the top level of a multi-module
+                         project doesn't work - you need to explicitly call them -->
+                    <!--<executions>
                         <execution>
                             <id>make-assembly</id>
                             <phase>package</phase>
@@ -397,7 +413,7 @@
                                 <goal>attached</goal>
                             </goals>
                         </execution>
-                    </executions>
+                    </executions>-->
                 </plugin>
             </plugins>
         </pluginManagement>
@@ -411,6 +427,7 @@
     </build>
     <reporting>
         <plugins>
+            <!-- TODO: find a way to transform the jdave output into surefire compatible xml -->
             <plugin>
                 <groupId>org.jdave</groupId>
                 <artifactId>jdave-report-plugin</artifactId>

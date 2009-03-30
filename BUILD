@@ -3,14 +3,20 @@ order to run the jtestr tests on os-x, it seems to be necessary that you use
 Java 1.6. I've therefore made this the default source and JDK level in the pom
 build section - you can probably change these without great issue on other platforms.
 
-Install:
+Local Install:
 
 You should be able to accomplish a local maven install by running the command:
 
     $ mvn clean install
 
-For installing the binaries and/or running axiom, please see the USAGE_GUIDE that
-sits alongside this document.
+To create a binary distribution you need to run the package task, specifying that 
+the maven-assembly-plugin should run, like so:
+
+    $ mvn package assembly:assembly
+
+For installing the binaries and/or running axiom, please see the INSTALL doc that
+sits alongside this document. 
+
 
 Testing:
 
