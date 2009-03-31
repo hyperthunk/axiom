@@ -46,13 +46,13 @@ ENDORSED_DIR=$AXIOM_HOME/endorsed
 # ARGS  Command line arguments to this script
 ARGS="$@"
 
-CLASSPATH="-classpath $AXIOM_INSTALL/lib/*:$ENDORSED_DIR/lib/*"
+CLASSPATH="-classpath $AXIOM_INSTALL/lib/*:$ENDORSED_DIR/:$ENDORSED_DIR/lib/*"
 JAVA_MEM_OPTS="-Xmx1024m"
 JAVA_OPTIONS="-server -showversion $JAVA_MEM_OPTS $CLASSPATH"
 
 if [ $DEBUG ] ; then
     echo "Command \c"
-    echo "java $JAVA_OPTIONS org.axiom.HostService $ARGS...\n"
+    echo "java $JAVA_OPTIONS org.axiom.HostService $ARGS -Daxiom.home=$AXIOM_HOME...\n"
 fi
 java $JAVA_OPTIONS org.axiom.HostService $ARGS -Daxiom.home="$AXIOM_HOME"
 

@@ -24,14 +24,30 @@
 			<outputDirectory>lib</outputDirectory>
 	    </dependencySet>
 	</dependencySets>
+	<files>
+	  	<file>
+	    	<source>README</source>
+			<fileMode>0444</fileMode>	
+	  	</file>
+		<file>
+			<source>LICENSE</source>
+			<fileMode>0444</fileMode>
+		</file>
+		<file>
+			<source>INSTALL</source>
+			<fileMode>0444</fileMode>
+		</file>		
+		<file>
+			<source>install.sh</source>
+			<fileMode>0540</fileMode>
+		</file>
+		<file>
+			<source>src/config/log4j.properties</source>
+			<fileMode>0666</fileMode>
+			<outputDirectory>config</outputDirectory>
+		</file>		
+	</files>
 	<fileSets>
-	    <fileSet>
-	      	<includes>
-	        	<include>${project.basedir}/README*</include>
-	        	<include>${project.basedir}/LICENSE*</include>
-	        	<include>${project.basedir}/INSTALL*</include>	
-	      	</includes>
-	    </fileSet>
         <fileSet>
 			<directory>src/scripts</directory>
 			<includes>

@@ -93,7 +93,7 @@ case "$1" in
 
     if [ $DEBUG ] ; then
         echo "Command \c"
-        echo "$SCRIPT... \n"
+        echo "$SCRIPT $@ ...\n"
     fi
 
     # Check if the server is already running.
@@ -103,7 +103,7 @@ case "$1" in
         fi
         exit 0
     fi
-    $SCRIPT "$SCRIPT $ARGS...\n"
+    $AXIOM_INSTALL/bin/startup.sh $@
 	;;
 
 'stop')

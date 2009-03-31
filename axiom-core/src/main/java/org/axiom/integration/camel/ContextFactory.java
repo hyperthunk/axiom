@@ -35,8 +35,11 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 
 public class ContextFactory {
 
+    /**
+     * Convenience method to create the core axiom camel context.
+     * @return
+     */
     public CamelContext create() {
-        
         ApplicationContext applicationContext =
             new ClassPathXmlApplicationContext("axiom-core-default-context.xml");
         return (CamelContext) applicationContext.getBean(Environment.HOST_CONTEXT);

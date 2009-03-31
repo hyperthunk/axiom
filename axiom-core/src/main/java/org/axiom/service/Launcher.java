@@ -20,7 +20,7 @@ import java.util.Collections;
  */
 public class Launcher {
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private ControlChannelBootstrapper bootstrapper;
 
     public Launcher() { this(new ControlChannelBootstrapper()); }
@@ -50,6 +50,7 @@ public class Launcher {
      * @return
      */
     public ControlChannel launch(final ControlChannel channel) {
+        logger.info("Launching control channel.");
         bootstrapper.bootstrap(channel);
         channel.activate();
         reconfigureExistingRoutes(channel);
@@ -69,7 +70,7 @@ public class Launcher {
             new Operation<File>() {
                 @Override public void apply(final File input) {
                     final String script = input.getAbsolutePath();
-                    log.debug("Restoring routes from '{}'.", script);
+                    logger.debug("Restoring routes from '{}'.", script);
                     channel.configure(new RouteScriptLoader(script,
                         channel.getRouteScriptEvaluator()));
                 }
@@ -78,7 +79,7 @@ public class Launcher {
 
     private Collection locateRouteScripts(final Configuration config) {
         final String scriptPath = config.getString(Environment.SCRIPT_REPOSITORY_URI);
-        log.info("Restoring existing routes from '{}'.", scriptPath);
+        logger.info("Restoring existing routes from '{}'.", scriptPath);
         final String[] extensions =
             config.getStringArray(Environment.SCRIPT_FILE_EXTENSIONS);
         final File directory = new File(scriptPath);

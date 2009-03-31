@@ -34,22 +34,30 @@
 ensure_dir() {
 	if [ ! -d "$1" ]; then
 		echo "Creating $1 directory."
-		x=`mkdir -p $1`
-		# TODO: this (next) approach is horrible - do it a cleaner way when there's time
-		if [ $x ]; then
+		if mkdir -p $1; then
+			echo "mkdir -p $1"
+			return 0
+		else
 			echo "Failed to create $1"
+  			return 1
 		fi
 	fi
 }
+
+#x="--dest=/usr/local/axiom"
+#if [[ $x == *--dest=* ]]; then
+#    x=${x:7}
+#fi
+#echo $x
 
 INSTALL_DIR=/opt/axiom
 if [ "$1" ]; then
 	INSTALL_DIR="$1"
 fi
-echo "Installing axiom to $INSTALL_DIR."
-x=`ensure_dir $INSTALL_DIR`
-if [[ $x == *Failed* ]]; then
-	echo "$x:\nCancelling installation."
+if ensure_dir $INSTALL_DIR; then
+	echo "Installing axiom to $INSTALL_DIR."
+else
+	echo "Cancelling installation."
 	exit 1	# TODO: use the correct exit code
 fi
 
@@ -57,26 +65,33 @@ AXIOM_HOME=~/.axiom
 if [ "$2" ]; then
 	AXIOM_HOME="$2"
 fi
-echo "Setting axiom home to $AXIOM_HOME."
-x=`ensure_dir "$AXIOM_HOME"`
-if [[ $x == *Failed* ]]; then
-	echo "$x:\nCancelling installation."
+if ensure_dir $AXIOM_HOME; then
+	echo "Setting axiom home to $AXIOM_HOME."
+else
+	echo "Cancelling installation."
 	rm -drf "$INSTALL_DIR"
 	exit 1	# TODO: use the correct exit code
 fi
+# TODO: check these as well
 ensure_dir "$AXIOM_HOME/conf"
 ensure_dir "$AXIOM_HOME/endorsed"
 ensure_dir "$AXIOM_HOME/endorsed/lib"
 
-cd ..
-for d in 'lib' 'bin'; do 
-	echo "cp -r $d $INSTALL_DIR/"
-	cp -r "$d" "$INSTALL_DIR/"
+# move over a set of default logging properties
+cp config/log4j.properties "$AXIOM_HOME/endorsed/"
+
+# link the app distribution to the home directory
+ln -s "$INSTALL_DIR" "$AXIOM_HOME/dist"
+
+for d in 'lib' 'bin'; do
+	if cp -r "$d" "$INSTALL_DIR/"; then  
+		echo "cp -r $d $INSTALL_DIR/"
+	fi
 done
 
 echo "Installing init.d script to $INIT_DIR"
-x=ensure_dir "$INIT_DIR"
-if [[ $x = *Failed* ]]; then
+#x=ensure_dir "$INIT_DIR"
+if true; then
 	echo "Failed to install init.d script. This can be installed manually later on."
 	echo "Installation complete. You can start the server by running $INSTALL_DIR/bin/startup.sh"
 else

@@ -39,7 +39,7 @@
     <name>Axiom Integration Tests</name>
     <version>${axiom.version}</version>
     <dependencies>
-        <dependency>
+        <!--<dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
             <version>${camel.version}</version>
@@ -48,7 +48,7 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring</artifactId>
             <version>${camel.version}</version>
-        </dependency>
+        </dependency>-->
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-jetty</artifactId>
@@ -63,7 +63,7 @@
         <dependency>
             <groupId>org.axiom</groupId>
             <artifactId>axiom-core</artifactId>
-            <version>0.3.0</version>
+            <version>${axiom.version}</version>
             <exclusions>
                 <exclusion>
                     <groupId>org.jruby</groupId>
@@ -72,7 +72,7 @@
             </exclusions>
         </dependency>
         <!-- springframework -->
-        <dependency>
+        <!--<dependency>
             <groupId>org.springframework</groupId>
             <artifactId>spring</artifactId>
             <version>${spring.version}</version>
@@ -93,7 +93,7 @@
                     <artifactId>jruby-complete</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
+        </dependency>-->
 
         <!-- log4j specific jar is in here just for testing purposes -->
         <dependency>
