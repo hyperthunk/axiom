@@ -65,10 +65,10 @@ public class ShutdownChannel {
      */
     public boolean waitShutdown(final long timeout) {
         try {
-            log.info("Entering wait shutdown ({}ms timeout).", timeout);
+            log.debug("Entering wait shutdown ({}ms timeout).", timeout);
             final boolean wasShutdown = latch.await(timeout, TimeUnit.MILLISECONDS);
             if (!wasShutdown) {
-                log.info("Wait Shutdown timed out after {}ms.", timeout);
+                log.debug("Wait Shutdown timed out after {}ms.", timeout);
             }
             return wasShutdown;
         } catch (InterruptedException e) {
@@ -82,7 +82,7 @@ public class ShutdownChannel {
      */
     public void waitShutdown() {
         try {
-            log.info("Entering wait shutdown.");
+            log.debug("Entering wait shutdown.");
             latch.await();
         } catch (InterruptedException e) {
             throw new LifecycleException(e.getLocalizedMessage(), e);

@@ -58,7 +58,7 @@
         <dependency>
             <groupId>org.axiom</groupId>
             <artifactId>axiom-core</artifactId>
-            <version>0.3.0</version>
+            <version>${axiom.version}</version>
         </dependency>
         <dependency>
             <groupId>commons-cli</groupId>

@@ -1,5 +1,7 @@
 .coverage
+NOTES
 *.kpf
+*.bak
 *.pyc
 *.beam
 *.o

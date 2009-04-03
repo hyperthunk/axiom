@@ -44,28 +44,38 @@ ensure_dir() {
 	fi
 }
 
-#x="--dest=/usr/local/axiom"
-#if [[ $x == *--dest=* ]]; then
-#    x=${x:7}
-#fi
-#echo $x
+if [[ "$1" == *--help*  ]]; then
+	echo "install.sh [Options]"
+	echo "--dest	Destination folder (default = /opt/axiom)"
+	echo "--home 	Axiom Home folder (default = $INSTALL/.axiom)"
+	echo "--bin		Location for the executable script (optional, default = /usr/bin)"
+	exit 1
+fi
 
 INSTALL_DIR=/opt/axiom
-if [ "$1" ]; then
-	INSTALL_DIR="$1"
-fi
-if ensure_dir $INSTALL_DIR; then
+AXIOM_HOME="$INSTALL_DIR/.axiom"
+EXECUTABLE_PATH=/usr/bin
+
+for arg in $@; do
+	if [[ $arg == *--dest=* ]]; then
+	    INSTALL_DIR=${arg:7}
+	fi	
+	if [[ $arg == *--home=* ]]; then
+	    AXIOM_HOME=${arg:7}
+	fi
+	if [[ $arg == *--bin=* ]]; then
+		EXECUTABLE_PATH=${arg:6}
+	fi
+done
+
+if ensure_dir "$INSTALL_DIR"; then
 	echo "Installing axiom to $INSTALL_DIR."
 else
 	echo "Cancelling installation."
 	exit 1	# TODO: use the correct exit code
 fi
 
-AXIOM_HOME=~/.axiom
-if [ "$2" ]; then
-	AXIOM_HOME="$2"
-fi
-if ensure_dir $AXIOM_HOME; then
+if ensure_dir "$AXIOM_HOME"; then
 	echo "Setting axiom home to $AXIOM_HOME."
 else
 	echo "Cancelling installation."
@@ -83,17 +93,36 @@ cp config/log4j.properties "$AXIOM_HOME/endorsed/"
 # link the app distribution to the home directory
 ln -s "$INSTALL_DIR" "$AXIOM_HOME/dist"
 
+# make a symlink to the startup script in /usr/bin (or equiv)
+ln -s "$INSTALL_DIR/bin/axiom-server.sh" "$EXECUTABLE_PATH/axiom"
+
 for d in 'lib' 'bin'; do
 	if cp -r "$d" "$INSTALL_DIR/"; then  
 		echo "cp -r $d $INSTALL_DIR/"
+	else
+		echo "Failed to copy $d to $INSTALL_DIR/"
+		echo "Cancelling installation."
+		rm -drf "$INSTALL_DIR $AXIOM_HOME"
+		exit 1
 	fi
 done
 
-echo "Installing init.d script to $INIT_DIR"
-#x=ensure_dir "$INIT_DIR"
+echo $AXIOM_HOME | sed 's/\//\\\//g' | awk '/.*/ { print $0 }' >> tmpfile
+home=`cat tmpfile`
+rm tmpfile
+
+# overwrite the original launch/init.d script with the actual home folder location
+echo "sed -E -i .bak s/AXIOM_HOME=%AXIOM_HOME%/AXIOM_HOME=$home/ $INSTALL_DIR/bin/axiom-server.sh"
+sed -E -i ".bak" "s/AXIOM_HOME=%AXIOM_HOME%/AXIOM_HOME=$home/" "$INSTALL_DIR/bin/axiom-server.sh"
+
+# TODO: find a way to do this that isn't platform specific
+# TODO: generate a launchd script (interpolating settings using sed?) for osx 
+
+# echo "Installing init.d script to $INIT_DIR"
+# x=ensure_dir "$INIT_DIR"
 if true; then
 	echo "Failed to install init.d script. This can be installed manually later on."
-	echo "Installation complete. You can start the server by running $INSTALL_DIR/bin/startup.sh"
+	echo "Installation complete. You can start the server by running $INSTALL_DIR/bin/axiom-server.sh start"
 else
 	echo "Installation complete. You can start the server by running '> $INIT_DIR start'"
 fi

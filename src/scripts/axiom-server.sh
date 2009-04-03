@@ -38,7 +38,7 @@
 # You may wish to modify these variables to suit your local configuration
 
 # AXIOM_HOME    Location of the Axiom Test Framework home folder
-AXIOM_HOME=~/.axiom
+AXIOM_HOME=%AXIOM_HOME%
 #
 # Set this AXIOM_HOME value if you want the Axiom Test Framework
 # to use a location other than the default ~/.axiom as its home folder

@@ -10,12 +10,6 @@
     - if they are (both easy to access/find in the runtime object graph
      - if they can be serialized without much hassle - we should put this in for completeness
      - otherwise it is a prioritization that doesn' need to take place in the first few weeks of Beta.
- - axiom-server
- * - add an 'axiom-server' child project and in it:
-  *  - create a default entry point so the jar is executable
-    - wire the main method with commons-cli so that argument handling is well tested
-    - have the main method work out the args and start a ControlChannel using a BootstrapRouteLoader
-    - write an axiom mojo so you can run `mvn axiom:deploy axiom:run`
  - add an 'axiom-client' project
    - decide on how
     - a jar and Main.java that just wrap around a jruby script is probably the most consistent approach
@@ -24,8 +18,6 @@
  - misc
   - move direct junit4 dependencies out of the poms
   - get either the cobertura or emma plugins working (they currently seem to break the build)
-  - get maven-assembly-plugin set up to create a proper (usable) bundle of jars and scripts
   - set up profiles so you can build and package (for distribution) individual components
-  - find somewhere to host binaries for downloading, perhaps sourceforge. 
   - start writing some documentation on github/wiki
  
