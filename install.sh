@@ -49,7 +49,7 @@ if [[ "$1" == *--help*  ]]; then
 	echo "--dest	Destination folder (default = /opt/axiom)"
 	echo "--home 	Axiom Home folder (default = $INSTALL/.axiom)"
 	echo "--bin		Location for the executable script (optional, default = /usr/bin)"
-	exit 1
+	exit 0 
 fi
 
 INSTALL_DIR=/opt/axiom
