@@ -30,6 +30,7 @@ package org.axiom.scenario;
 
 import org.apache.camel.Exchange;
 import org.apache.camel.Predicate;
+import static org.apache.commons.lang.Validate.notNull;
 
 /**
  * Defines an {@link Expectation} predicated upon an instance of
@@ -38,12 +39,19 @@ import org.apache.camel.Predicate;
 public class PredicateExpectation<E extends Exchange> implements Expectation<E> {
 
     private final Predicate<E> predicate;
+    private final String description;
 
     public PredicateExpectation(final Predicate<E> predicate) {
+        this(String.valueOf(predicate), predicate);
+    }
+
+    public PredicateExpectation(final String description, final Predicate<E> predicate) {
+        notNull(predicate, "predicate cannot be null");
         this.predicate = predicate;
+        this.description = description;
     }
 
     @Override public void verify(final E exchange) throws VerificationFailureException {
-        //To change body of implemented methods use File | Settings | File Templates.
+        predicate.assertMatches(description, exchange);
     }
 }
