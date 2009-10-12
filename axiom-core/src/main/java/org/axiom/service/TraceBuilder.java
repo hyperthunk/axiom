@@ -28,7 +28,7 @@
 
 package org.axiom.service;
 
-import org.apache.camel.processor.LoggingLevel;
+import org.apache.camel.model.LoggingLevel;
 import org.apache.camel.processor.interceptor.TraceFormatter;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;

@@ -28,8 +28,9 @@
 require 'java'
 require 'axiom'
 require 'axiom/plugins'
+require 'axiom/core/processor'
 
-route {
+route do
 
   # the global request log
   request_log = File.join *[:dir, :file].collect { |x| config >> "http.test.data.#{x}" }
@@ -50,7 +51,9 @@ route {
     to("file://#{invalid_schema_log}")
 
   from("jetty:http://#{config >> 'http.test.inbound.uri'}").
-    to("http://#{config >> 'http.test.outbound.uri'}")
+    process(Axiom::Core::Processor.new do |ex|
+      ex.out.headers['foobar'] = ex.request.getRequestURI
+    end).to("http://#{config >> 'http.test.outbound.uri'}")
 
 #  outbound_route = "http://#{config >> 'http.test.outbound.uri'}"
 
@@ -61,4 +64,4 @@ route {
 #    otherwise.
 #      to(outbound_route)
 
-}
+end

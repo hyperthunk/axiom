@@ -31,7 +31,7 @@ package org.axiom.service;
 import jdave.Block;
 import jdave.Specification;
 import jdave.junit4.JDaveRunner;
-import org.apache.camel.processor.LoggingLevel;
+import org.apache.camel.model.LoggingLevel;
 import org.apache.camel.processor.interceptor.Tracer;
 import org.apache.commons.configuration.Configuration;
 import org.axiom.SpecSupport;

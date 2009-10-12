@@ -41,7 +41,7 @@
         <junit.version>4.5</junit.version>
         <jmock.version>2.5.1</jmock.version>
         <jtestr.version>0.3.1</jtestr.version>
-        <camel.version>1.5.0</camel.version>
+        <camel.version>1.6.0</camel.version>
         <activemq.version>4.1.1</activemq.version>
         <spring.version>2.5.6</spring.version>
         <spring.jruby.version>1.0</spring.jruby.version>
@@ -65,7 +65,7 @@
     </modules>
 
     <!-- repositories - enable these if you can't find jdave in any of your mirrors -->
-    <!--<repositories>
+    <repositories>
         <repository>
             <id>laughing-panda</id>
             <name>Laughing Panda</name>
@@ -79,7 +79,7 @@
             <name>Laughing Panda</name>
             <url>http://www.laughingpanda.org/maven2/</url>
         </pluginRepository>
-    </pluginRepositories>-->
+    </pluginRepositories>
 
     <!-- common dependencies -->
     <dependencies>
@@ -89,11 +89,23 @@
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-core</artifactId>
             <version>${camel.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jruby</groupId>
+                    <artifactId>jruby-complete</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>org.apache.camel</groupId>
             <artifactId>camel-spring</artifactId>
             <version>${camel.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>org.jruby</groupId>
+                    <artifactId>jruby-complete</artifactId>
+                </exclusion>                
+            </exclusions>
         </dependency>
 
         <!-- springframework -->

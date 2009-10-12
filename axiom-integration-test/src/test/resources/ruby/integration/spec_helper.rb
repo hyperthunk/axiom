@@ -55,9 +55,9 @@ module HTTPSpecSupport
 
   def http_interaction uri, post_data, headers={'Content-Type' => 'text/xml'}
     Net::HTTP.start(uri.host, uri.port) do |http|
-      http.post(uri.path, post_data, headers) do |response|
-        yield response if block_given?
-      end
+      response = http.post(uri.path, post_data, headers)
+      logger.debug("response = " + response)
+      yield response if block_given?
     end
   end
 

@@ -10,7 +10,7 @@ require 'axiom/plugins'
 import org.axiom.integration.Environment
 
 #logging(:info) do
-route {
+route do
   intercept(header(Environment::PAYLOAD_CLASSIFIER).isEqualTo('code')).
       process(route_config lookup(Environment::ROUTE_SCRIPT_EVALUATOR)).
       proceed
@@ -22,5 +22,5 @@ route {
       otherwise.
         processRef(Environment::DEFAULT_PROCESSOR)
 
-}
+end
 #end

@@ -103,7 +103,13 @@ describe "proxying and validating inter-system communications over http" do
 
   it "should spool up an http endpoint listening on the given port" do
     http_interaction inbound_uri, '<request />' do |response|
-      response.code.to_i.should 200
+      response.code.to_i.should eql(200)
+    end
+  end
+
+  it "should transparently pass on any additional uri path components" do
+    http_interaction inbound_uri + "/foo/bar", '<request />' do |response|
+      response.code.to_i.should eql(200)
     end
   end
 
