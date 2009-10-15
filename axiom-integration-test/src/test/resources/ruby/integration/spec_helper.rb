@@ -28,6 +28,9 @@
 require 'axiom'
 require 'webrick'
 
+require "uri"
+uri = URI.parse "http://0.0.0.0:10001/test/inbound"
+
 module HTTPTestListener
 
   def start_http! uri, &block
@@ -54,9 +57,12 @@ module HTTPSpecSupport
   include HTTPTestListener
 
   def http_interaction uri, post_data, headers={'Content-Type' => 'text/xml'}
+    logger.debug("host=#{uri.host}")
+    logger.debug("port=#{uri.port}")
+    logger.debug("path=#{uri.path}")
     Net::HTTP.start(uri.host, uri.port) do |http|
       response = http.post(uri.path, post_data, headers)
-      logger.debug("response = " + response)
+      logger.debug("response = " + response.to_s)
       yield response if block_given?
     end
   end

@@ -26,9 +26,12 @@
 #
 
 require 'java'
+require 'uri'
 require 'axiom'
 require 'axiom/plugins'
 require 'axiom/core/processor'
+
+import org.apache.camel.component.http.HttpProducer
 
 route do
 
@@ -50,10 +53,21 @@ route do
   intercept(is_not(valid_schema?(xsd_file))).
     to("file://#{invalid_schema_log}")
 
-  from("jetty:http://#{config >> 'http.test.inbound.uri'}").
+  in_uri = URI.parse("jetty:http://#{config >> 'http.test.inbound.uri'}")
+  in_context_path = in_uri.path
+  
+  out_uri = URI.parse("http://#{config >> 'http.test.outbound.uri'}")
+  out_context_path = out_uri.path
+
+  from(in_uri.to_s).
     process(Axiom::Core::Processor.new do |ex|
-      ex.out.headers['foobar'] = ex.request.getRequestURI
-    end).to("http://#{config >> 'http.test.outbound.uri'}")
+      logger.warn("EXCHANGE INFO: " + ex.inspect)
+      logger.warn("CHANNEL INFO: " + ex.in.inspect)
+      logger.warn("HTTP INFO: " + ex.in.getExchange())
+      url = "foobar"
+      context_path = url.sub(/#{in_context_path}/, out_context_path)
+      ex.out.headers[HttpProducer.HTTP_URI] = 'nil'
+    end).to(out_uri.to_s)
 
 #  outbound_route = "http://#{config >> 'http.test.outbound.uri'}"
 

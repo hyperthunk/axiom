@@ -101,47 +101,48 @@ describe "proxying and validating inter-system communications over http" do
     rm config >> 'http.test.data.schema.file', :force => true, :verbose => true
   end 
 
-  it "should spool up an http endpoint listening on the given port" do
-    http_interaction inbound_uri, '<request />' do |response|
-      response.code.to_i.should eql(200)
-    end
-  end
+#  it "should spool up an http endpoint listening on the given port" do
+#    http_interaction inbound_uri, '<request />' do |response|
+#      response.code.to_i.should eql(200)
+#    end
+#  end
 
   it "should transparently pass on any additional uri path components" do
-    http_interaction inbound_uri + "/foo/bar", '<request />' do |response|
+    extended_uri = URI.parse("http://#{config >> 'http.test.inbound.uri'}/foo/bar")
+    http_interaction extended_uri, '<request />' do |response|
       response.code.to_i.should eql(200)
     end
   end
 
-  it "should forward incoming requests to the specified outbound http endpoint" do
-    timeout = 25 # seconds
-    # Ping.pingecho(@listener.host, timeout, @listener.port).should be_true
-    post_data=<<-EOF
-      <request>
-        <data />
-      </request>
-    EOF
-    post_data.strip!
-    http_interaction inbound_uri, post_data
-    request = @requests.pop
-    request.body.should =~ /#{post_data}/   # the final newline is stripped by the server
-  end
-
-  it "should route schema compliant messages to the outbound channel directly" do
-    data=<<-EOF
-      <request id='foo' />
-    EOF
-    data.lstrip!
-    http_interaction inbound_uri, data
-    fail_entries = File.readlines invalid_request_log
-    fail_entries.find { |e| e =~ /#{data}/ }.should be_nil
-  end
-
-  it "should fail and stop routing non-compliant messages" do
-    invalid_payload = "<foo><bar /></foo>\n";
-    http_interaction inbound_uri, invalid_payload
-    fail_entries = File.readlines invalid_request_log
-    fail_entries.should include(invalid_payload)
-  end
+#  it "should forward incoming requests to the specified outbound http endpoint" do
+#    timeout = 25 # seconds
+#    # Ping.pingecho(@listener.host, timeout, @listener.port).should be_true
+#    post_data=<<-EOF
+#      <request>
+#        <data />
+#      </request>
+#    EOF
+#    post_data.strip!
+#    http_interaction inbound_uri, post_data
+#    request = @requests.pop
+#    request.body.should =~ /#{post_data}/   # the final newline is stripped by the server
+#  end
+#
+#  it "should route schema compliant messages to the outbound channel directly" do
+#    data=<<-EOF
+#      <request id='foo' />
+#    EOF
+#    data.lstrip!
+#    http_interaction inbound_uri, data
+#    fail_entries = File.readlines invalid_request_log
+#    fail_entries.find { |e| e =~ /#{data}/ }.should be_nil
+#  end
+#
+#  it "should fail and stop routing non-compliant messages" do
+#    invalid_payload = "<foo><bar /></foo>\n";
+#    http_interaction inbound_uri, invalid_payload
+#    fail_entries = File.readlines invalid_request_log
+#    fail_entries.should include(invalid_payload)
+#  end
 
 end
