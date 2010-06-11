@@ -37,8 +37,9 @@ DSL in java and jruby and provides a simple and intuitive mechanism for loading 
 Status
 -------
 
-Axiom-core is in the Alpha/Prototyping stage but is under active development. We hope
-to get to beta status by the end of March 2009.  
+Axiom-core is in the Alpha/Prototyping stage and has not been under active 
+development since late 2009. I hope this situation will change in the near future. 
+Contributions are most welcome. 
 
 Getting Started
 ----------------

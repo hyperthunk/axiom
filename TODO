@@ -1,3 +1,10 @@
+ - distribution
+  - rework the installation script (or produce a proper package install)
+ - roadmap
+  - complete the 'scenario' API and DSL
+  - integrate surefire as the default reporting output 
+  - provide hooks (API) for alternate reporting output
+  - provide better support for build integration (certainly maven, possibly ant!?)  
  - axiom-core
   - set up the control channel (class) to puke on method invocations when in an invalid state
   - align the terminology in the model to the naming convention in the channels
