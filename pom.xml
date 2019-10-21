@@ -41,7 +41,7 @@
         <junit.version>4.5</junit.version>
         <jmock.version>2.5.1</jmock.version>
         <jtestr.version>0.3.1</jtestr.version>
-        <camel.version>1.6.0</camel.version>
+        <camel.version>2.24.2</camel.version>
         <activemq.version>4.1.1</activemq.version>
         <spring.version>2.5.6</spring.version>
         <spring.jruby.version>1.0</spring.jruby.version>
